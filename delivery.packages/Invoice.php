@@ -69,10 +69,11 @@ class Invoice extends InvoiceModel implements InvoiceInterface
      */
     public function callingCourier()
     {
-        $this->writeCallCourier();
+        $this->writeCallCourier();  // запись вызова курьера в базу
         $obj = $this->setCallCourier();
-        $arRes = $this->arFromUtfToWin($obj);
-        $this->changeStatCallCourier($arRes);
+        self::AddToLogs('callingCourierI', ['Invoice.74' => $obj]);
+        $obj = self::arFromUtfToWin2($obj);
+        $this->changeStatCallCourier($obj);
         $this->setDocsList();
         return $this;
     }
@@ -117,7 +118,7 @@ class Invoice extends InvoiceModel implements InvoiceInterface
         $event = new CEvent;
         $event->SendImmediate("NEWPARTNER_LK", "S5", $arEventFields, "N", 220, [$fileId]);
         $arHistory[] = ['date' => date('d.m.Y H:i:s'), 'status' => 316, 'status_descr' => 'Отправлена на почту', 'comment' => $this->arResult['PROPERTY_570']];
-        $arHistoryUTF = self::convArrayToUTF($arHistory);
+        $arHistoryUTF = self::convArrayToUTF2($arHistory);
         if( (int)$this->arResult['PROPERTIES_861'] == 1){
             $event->SendImmediate("NEWPARTNER_LK", "S5", $arEventFields, "N", 290);
         }

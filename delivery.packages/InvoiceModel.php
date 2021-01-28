@@ -179,6 +179,7 @@ abstract class InvoiceModel
     public function __construct()
     {
         CModule::IncludeModule("iblock");
+        CModule::IncludeModule("main");
         $this->idlogoprint = $this->GetSettingValue(716);
         $arUser = self::getUser();
         $agent_id = (int)$arUser["UF_COMPANY_RU_POST"];
@@ -420,7 +421,7 @@ abstract class InvoiceModel
         $this->id_in_cur = $id_in_cur = self::GetMaxIDIN(static::INF_CC, 7);
         $arHistory = [['date' => date('d.m.Y H:i:s'), 'status' => 315,
             'status_descr' => 'Оформлена', 'comment' => '']];
-        $arHistoryUTF = self::convArrayToUTF($arHistory);
+        $arHistoryUTF = self::convArrayToUTF2($arHistory);
 
         $arLoadProductArray = [
             "MODIFIED_BY" => $USER->GetID(),
@@ -462,6 +463,9 @@ abstract class InvoiceModel
     protected  function setCallCourier()
     {
         $ob = $this->getTypeDev();
+       /* $artest = $this->arResult;
+        $artest1 = self::convArrayToUTF2($artest);
+        self::AddToLogs('CallingCourierI', ['InvoiceModel.468' => $artest1 ]);*/
         $arJs = [
             'IDWEB' => $this->z_id,
             'INN' =>  $this->inn_creator,
@@ -481,11 +485,14 @@ abstract class InvoiceModel
             'INSTRUCTIONS' => ' Накладная № '. $this->number,
             "TRANSPORT_TYPE" => $this->arResult['PROPERTY_861'],
         ];
-        self::convArrayToUTF($arJs);
+        $arJs = self::convArrayToUTF2($arJs);
+        self::AddToLogs('CallingCourierI', ['InvoiceModel.489' => $arJs ]);
         try {
             $client = self::soap_inc();
+            self::AddToLogs('CallingCourierI', ['InvoiceModel.492' => $client ]);
             $result = $client->SetCallingTheCourier(['ListOfDocs' => json_encode($arJs)]);
             $mResult = $result->return;
+            self::AddToLogs('CallingCourierI', ['InvoiceModel.495' => $mResult ]);
             $obj = json_decode($mResult, true);
             return $obj;
         } catch (SoapFault $e) {
@@ -514,7 +521,7 @@ abstract class InvoiceModel
         }
         $arHistory[] = ['date' => date('d.m.Y H:i:s'), 'status' => $state_id,
             'status_descr' => $state_descr, 'comment' => $arRes[0]['comment']];
-        self::convArrayToUTF($arHistory);
+        $arHistory = self::convArrayToUTF2($arHistory);
         CIBlockElement::SetPropertyValuesEx($this->z_id, 87, ["STATE"=>$state_id,
             "STATE_HISTORY"=>json_encode($arHistory)]);
         return $this;
@@ -563,7 +570,7 @@ abstract class InvoiceModel
             "TRANSPORT_TYPE" => (int)$this->arResult['PROPERTY_861'],
         ];
         $this->arDeliverySequence = $arDeliverySequence;
-        self::convArrayToUTF($arDeliverySequence);
+        $arDeliverySequence = self::convArrayToUTF2($arDeliverySequence);
         $arParamsJson = [
             'ListOfDocs' => "[".json_encode($arDeliverySequence)."]"
         ];
@@ -1301,7 +1308,7 @@ table{font-family: Arial, Helvetica, sans-serif;}
     static public function soap_inc()
     {
         $id_uk = static::UK_ID;
-        $res = CIBlockElement::GetList(array(), array("IBLOCK_ID" => static::INF_CONF, "ID" => $id_uk),
+        $res = CIBlockElement::GetList([], array("IBLOCK_ID" => static::INF_CONF, "ID" => $id_uk),
             false, false, array("PROPERTY_683", "PROPERTY_704", "PROPERTY_705", "PROPERTY_706"));
         if ($ob = $res->GetNextElement()) {
             $arFields = $ob->GetFields();
@@ -1332,7 +1339,7 @@ table{font-family: Arial, Helvetica, sans-serif;}
                 }
             }
         }
-
+        return null;
     }
     /**
      *
@@ -1355,10 +1362,187 @@ table{font-family: Arial, Helvetica, sans-serif;}
      * @return mixed
      */
     static public function convArrayToUTF(&$obj) {
+        foreach ($obj as &$item) {
+            if (is_array($item)) {
+                self::convArrayToUTF($item);
+            } else {
+                $item = iconv('windows-1251', 'utf-8', htmlspecialchars($item));
+            }
+        }
+        return $obj;
+
+    }
+
+    /**
+     * @param $obj
+     * @return mixed
+     */
+    static public function convArrayToUTF1(&$obj) {
         array_walk_recursive($obj, function(&$item){
             $item = iconv('windows-1251', 'utf-8', htmlspecialchars($item));
         });
         return $obj;
+    }
+
+    /**
+     * @param $obj
+     * @return array
+     */
+    static function convArrayToUTF2($obj) {
+        $arRes = array();
+        foreach ($obj as $k => $v)
+        {
+            $k_tr = iconv('windows-1251', 'utf-8', $k);
+            if (is_array($v))
+            {
+                foreach ($v as $kk => $vv)
+                {
+                    $kk_tr = iconv('windows-1251', 'utf-8', $kk);
+                    if (is_array($vv))
+                    {
+                        foreach ($vv as $kkk => $vvv)
+                        {
+                            $kkk_tr = iconv('windows-1251', 'utf-8', $kkk);
+                            if (is_array($vvv))
+                            {
+                                foreach ($vvv as $kkkk => $vvvv)
+                                {
+                                    $kkkk_tr = iconv('windows-1251', 'utf-8', $kkkk);
+                                    if (is_array($vvvv))
+                                    {
+                                        foreach ($vvvv as $kkkkk => $vvvvv)
+                                        {
+                                            $kkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkk);
+                                            if (is_array($vvvvv))
+                                            {
+                                                foreach ($vvvvv as $kkkkkk => $vvvvvv)
+                                                {
+                                                    $kkkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkkk);
+                                                    if (is_array($vvvvvv))
+                                                    {
+                                                        foreach ($vvvvvv as $kkkkkkk => $vvvvvvv)
+                                                        {
+                                                            $kkkkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkkkk);
+                                                            $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr][$kkkkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvvvv);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvvv);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvv);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr] = iconv('windows-1251', 'utf-8', $vvvv);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $arRes[$k_tr][$kk_tr][$kkk_tr] = iconv('windows-1251', 'utf-8', $vvv);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $arRes[$k_tr][$kk_tr] = iconv('windows-1251', 'utf-8', $vv);
+                    }
+                }
+            }
+            else
+            {
+                $arRes[$k_tr] = iconv('windows-1251', 'utf-8', $v);
+            }
+        }
+        return $arRes;
+    }
+
+    /**
+     * @param $obj
+     * @return array
+     */
+    static function arFromUtfToWin2($obj)
+    {
+        $arRes = [];
+        foreach ($obj as $k => $v)
+        {
+            $k_tr = iconv('utf-8', 'windows-1251', $k);
+            if (is_array($v))
+            {
+                foreach ($v as $kk => $vv)
+                {
+                    $kk_tr = iconv('utf-8', 'windows-1251', $kk);
+                    if (is_array($vv))
+                    {
+                        foreach ($vv as $kkk => $vvv)
+                        {
+                            $kkk_tr = iconv('utf-8', 'windows-1251', $kkk);
+                            if (is_array($vvv))
+                            {
+                                foreach ($vvv as $kkkk => $vvvv)
+                                {
+                                    $kkkk_tr = iconv('utf-8', 'windows-1251', $kkkk);
+                                    if (is_array($vvvv))
+                                    {
+                                        foreach ($vvvv as $kkkkk => $vvvvv)
+                                        {
+                                            $kkkkk_tr = iconv('utf-8', 'windows-1251', $kkkkk);
+                                            if (is_array($vvvvv))
+                                            {
+                                                foreach ($vvvvv as $kkkkkk => $vvvvvv)
+                                                {
+                                                    $kkkkkk_tr = iconv('utf-8', 'windows-1251', $kkkkkk);
+                                                    if (is_array($vvvvvv))
+                                                    {
+                                                        foreach ($vvvvvv as $kkkkkkk => $vvvvvvv)
+                                                        {
+                                                            $kkkkkkk_tr = iconv('utf-8', 'windows-1251', $kkkkkkk);
+                                                            $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr][$kkkkkkk_tr] = iconv('utf-8', 'windows-1251', $vvvvvvv);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr] = iconv('utf-8', 'windows-1251', $vvvvvv);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr] = iconv('utf-8', 'windows-1251', $vvvvv);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr] = iconv('utf-8', 'windows-1251', $vvvv);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $arRes[$k_tr][$kk_tr][$kkk_tr] = iconv('utf-8', 'windows-1251', $vvv);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $arRes[$k_tr][$kk_tr] = iconv('utf-8', 'windows-1251', $vv);
+                    }
+                }
+            }
+            else
+            {
+                $arRes[$k_tr] = iconv('utf-8', 'windows-1251', $v);
+            }
+        }
+        return $arRes;
     }
 
     /**
@@ -1699,4 +1883,56 @@ table{font-family: Arial, Helvetica, sans-serif;}
         }
         return $arR;
     }
+
+    /**
+     * @param string $folder
+     * @param array $params
+     * @param string $mainfolder
+     * @return bool
+     */
+    static public function AddToLogs($folder = '', $params = [], $mainfolder = '')
+        {
+            if ((!strlen(trim($folder))) || (!is_array($params)))
+            {
+                return false;
+            }
+        if (!strlen(trim($mainfolder)))
+        {
+            $mainfolder = $_SERVER['DOCUMENT_ROOT'].'/logs';
+        }
+        if (!file_exists($mainfolder))
+        {
+            mkdir($mainfolder);
+        }
+        $mainfolder .= '/'.$folder;
+        if (!file_exists($mainfolder))
+        {
+            mkdir($mainfolder);
+        }
+        $mainfolder .= '/'.date('Y');
+        if (!file_exists($mainfolder))
+        {
+            mkdir($mainfolder);
+        }
+        $mainfolder .= '/'.date('m');
+        if (!file_exists($mainfolder))
+        {
+            mkdir($mainfolder);
+        }
+        $mainfolder .= '/log.txt';
+        $file = fopen($mainfolder,'a');
+        global $USER;
+        $user = "[".$USER->GetID()."] (".$USER->GetLogin().") ".$USER->GetFullName();
+        fwrite($file,date('d.m.Y H:i:s').' '.$user."\n");
+        $params_str = [];
+        foreach ($params as $k => $v)
+        {
+            $params_str[] = $k.': '.$v;
+        }
+        fwrite($file,implode("\n",$params_str)."\n");
+        fwrite($file,"\n");
+        fclose($file);
+        file_put_contents($mainfolder, print_r($params, true), FILE_APPEND);
+        return true;
+        }
 }
