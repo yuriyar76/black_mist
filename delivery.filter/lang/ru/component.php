@@ -1,0 +1,31 @@
+<?
+$MESS["LABEL_N_ZAKAZ"] = "Номер заказа"; 
+$MESS["LABEL_DATE_CREATE"] = "Дата создания";
+$MESS["LABEL_DATE_TO_DELIVERY"] = "Дата передачи на доставку";
+$MESS["LABEL_AGENT"] = "Агент";
+$MESS["OPTION_ALL"] = "все";
+$MESS["LABEL_FILTER"] = "Статус";
+$MESS['LABEL_EXCEPTIONS'] = 'Исключительные ситуации';
+$MESS['EXCEPTIONS_ALL'] = 'Все';
+$MESS['EXCEPTIONS_YES'] = 'Только искл. сит.';
+$MESS['EXCEPTIONS_NO'] = 'Без искл. сит.';
+$MESS['LABEL_SHOP'] = 'Интернет-магазин';
+$MESS['LABEL_SIGN_IM'] = 'Подпись ИМ';
+$MESS['SIGN_IM_ALL'] = 'Все';
+$MESS['SIGN_IM_YES'] = 'Подписанные';
+$MESS['SIGN_IM_NO'] = 'Неподписанные';
+$MESS['LABEL_SIGN_UK'] = 'Подпись УК';
+$MESS['SIGN_UK_ALL'] = 'Все';
+$MESS['SIGN_UK_YES'] = 'Подписанные';
+$MESS['SIGN_UK_NO'] = 'Неподписанные';
+$MESS['LABEL_PAYMENTS'] = 'Выплата по отчету';
+$MESS['PAYMENTS_ALL'] = 'Все';
+$MESS['PAYMENTS_YES'] = 'Произведена';
+$MESS['PAYMENTS_NO'] = 'Не производилась';
+$MESS['LABEL_CITY'] = 'Город';
+$MESS['LABEL_MESSAGE_TYPE'] = 'Тип сообщения';
+$MESS['LABEL_MESSAGE_READ'] = 'Прочитано';
+$MESS['All'] = 'Все';
+$MESS['YES'] = 'Да';
+$MESS['NO'] = 'Нет';
+?>

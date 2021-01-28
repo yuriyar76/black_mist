@@ -1,0 +1,1 @@
+<?=$arResult['RES_JSON'];?>

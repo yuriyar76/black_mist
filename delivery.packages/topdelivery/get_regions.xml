@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xml>
+	<request>
+	<auth>
+		<login>Webshop</login>
+		<password>pass</password>
+	</auth>
+	<body>
+    <response_type>xml</response_type>
+		<reqname>GET_REGIONS</reqname>
+		<params>
+		</params>
+	</body>
+	</request>
+</xml>

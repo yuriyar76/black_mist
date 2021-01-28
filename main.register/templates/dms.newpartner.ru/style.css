@@ -1,0 +1,6 @@
+.bx-auth-reg .content table td, .bx-auth-reg .content table th
+{
+    border: none;
+}
+.content table.register_table td, .content table.register_table th {border: none;}
+.g-recaptcha {display: inline-block;}
