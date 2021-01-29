@@ -1,10 +1,10 @@
 <?php
 if(!defined("B_PROLOG_INCLUDED")||B_PROLOG_INCLUDED!==true)die();
-use Myclass\DumpClass;
+//use Myclass\DumpClass;
 ini_set("soap.wsdl_cache_enabled", "0" );
 ini_set("default_socket_timeout", "300");
 include_once($_SERVER['DOCUMENT_ROOT']."/bitrix/components/black_mist/delivery.packages/functions.php");
-$dumper = new DumpClass();
+//$dumper = new DumpClass();
 
 $arResult['ADMIN_AGENT'] = false;
 $arResult["CURRENT_USER"] = $USER->GetID();
@@ -419,7 +419,7 @@ if ($arResult['OPEN'])
 						$arResult['NUMBER'] = iconv('utf-8','windows-1251',$_POST['number']);
 					}
 
-                    $dumper->log([$USER->GetLogin() => $arResult['NUMBER']]);
+                 //   $dumper->log([$USER->GetLogin() => $arResult['NUMBER']]);
 					if (!strlen($_POST['date']))
 					{
 						$arResult["ERRORS"][] = GetMessage('ERR_NO_DATE');

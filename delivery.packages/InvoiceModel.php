@@ -464,7 +464,7 @@ abstract class InvoiceModel
     {
         $ob = $this->getTypeDev();
        /* $artest = $this->arResult;
-        $artest1 = self::convArrayToUTF2($artest);
+        $artest1 = self::convArrayToUTF($artest);
         self::AddToLogs('CallingCourierI', ['InvoiceModel.468' => $artest1 ]);*/
         $arJs = [
             'IDWEB' => $this->z_id,
@@ -571,6 +571,7 @@ abstract class InvoiceModel
         ];
         $this->arDeliverySequence = $arDeliverySequence;
         $arDeliverySequence = self::convArrayToUTF2($arDeliverySequence);
+        self::AddToLogs('CallingCourierI', ['InvoiceModel.574' => $arDeliverySequence ]);
         $arParamsJson = [
             'ListOfDocs' => "[".json_encode($arDeliverySequence)."]"
         ];
@@ -1361,7 +1362,7 @@ table{font-family: Arial, Helvetica, sans-serif;}
      * @param $obj
      * @return mixed
      */
-    static public function convArrayToUTF(&$obj) {
+    static public function convArrayToUTF($obj) {
         foreach ($obj as &$item) {
             if (is_array($item)) {
                 self::convArrayToUTF($item);
@@ -1377,7 +1378,7 @@ table{font-family: Arial, Helvetica, sans-serif;}
      * @param $obj
      * @return mixed
      */
-    static public function convArrayToUTF1(&$obj) {
+    static public function convArrayToUTF1($obj) {
         array_walk_recursive($obj, function(&$item){
             $item = iconv('windows-1251', 'utf-8', htmlspecialchars($item));
         });
