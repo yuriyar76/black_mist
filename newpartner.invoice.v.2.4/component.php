@@ -5177,8 +5177,8 @@ if ($arResult['MODE'] != 'close')
                             [570 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => $newInstructions]]]);
 
 
-
-                        if($arResult['CURRENT_CLIENT'] == ID_SUKHOI || $arResult['CURRENT_CLIENT'] == ID_TEST) {
+//$arResult['CURRENT_CLIENT'] == ID_SUKHOI || $arResult['CURRENT_CLIENT'] == ID_TEST
+                        if($_POST['pack_description']) {
                             $gabarit1 = "Наименование: ".$_POST['pack_description'][0]['name']."; Мест: ".$_POST['pack_description'][0]['place']."; Вес: ".$_POST['pack_description'][0]['weight']."кг; Размеры: ".$_POST['pack_description'][0]['size'][0]."Х".$_POST['pack_description'][0]['size'][1]."Х".$_POST['pack_description'][0]['size'][2]." см";
                             $gabarit2 = "Наименование: ".$_POST['pack_description'][1]['name']."; Мест: ".$_POST['pack_description'][1]['place']."; Вес: ".$_POST['pack_description'][1]['weight']."кг; Размеры: ".$_POST['pack_description'][1]['size'][0]."Х".$_POST['pack_description'][1]['size'][1]."Х".$_POST['pack_description'][1]['size'][2]." см";
                             $gabarit3 = "Наименование: ".$_POST['pack_description'][2]['name']."; Мест: ".$_POST['pack_description'][2]['place']."; Вес: ".$_POST['pack_description'][2]['weight']."кг; Размеры: ".$_POST['pack_description'][2]['size'][0]."Х".$_POST['pack_description'][2]['size'][1]."Х".$_POST['pack_description'][2]['size'][2]." см";
@@ -5220,8 +5220,8 @@ if ($arResult['MODE'] != 'close')
                             'PAYER' => $delivery_payer1,
                             "POST" => "client@newpartner.ru, logist@newpartner.ru",
                         ];
-
-                        if($arResult['CURRENT_CLIENT'] == ID_SUKHOI || $arResult['CURRENT_CLIENT'] == ID_TEST) {
+                        // || $arResult['CURRENT_CLIENT'] == ID_TEST
+                       // if($arResult['CURRENT_CLIENT'] == ID_SUKHOI ) {
                             if (!empty($_POST['pack_description'])) {
                                 $arEventFields['SIZE'] = "Габариты:" . "<br />";
                                 foreach ($_POST['pack_description'] as $key => $value) {
@@ -5238,9 +5238,9 @@ if ($arResult['MODE'] != 'close')
                                     }
 
                                 }
-                            }
+                          //  }
 
-                        }   else{
+                        }   else {
                             if (!empty($_POST['DIMENSIONS'])) {
                                 $arEventFields['SIZE'] = "Габариты:" . "<br />";
                                 foreach ($_POST['DIMENSIONS'] as $key => $value) {
