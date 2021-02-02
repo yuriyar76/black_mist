@@ -3087,10 +3087,19 @@ if ($arResult['MODE'] != 'close')
 
                 if (count($arResult["ERR_FIELDS"]) == 0)
                 {
+
                     CIBlockElement::SetPropertyValuesEx($_POST['id'], 83, $arChanges);
                     // сделать из накладной накладную С возвратом
+
                     if (!empty($_POST['WITH_RETURN']) && empty($arResult['INVOICE']['PROPERTY_WITH_RETURN_VALUE'])){
-                        $invoice = new Invoice($arResult['INVOICE']['NAME'], $arResult['UK']);
+
+                        $db_props_uk = CIBlockElement::GetProperty(40, $arResult['UK'], ["sort" => "asc"], ["ID" => 474]);
+                        if ($ar_props_uk = $db_props_uk->Fetch())
+                        {
+                            $sets_id_uk = $ar_props_uk["VALUE"];
+                        }
+
+                        $invoice = new Invoice($arResult['INVOICE']['NAME'], $sets_id_uk);
                        try{
                            $invoice->getBaseInv()
                                ->makeReturnInvoice() // создаем возвратную накладную
@@ -3593,7 +3602,6 @@ if ($arResult['MODE'] != 'close')
 
         if ($_GET['copy'] === 'Y' && isset($_GET['numdoc']) && (int)$_GET['copyfrom'] == 0){
             $num_doc = htmlspecialcharsEx($_GET['numdoc']);
-           // $client = soap_inc();
             $ar_dev_sequence = convArrayToUTF($num_doc);
 
             $ar_params_json = [

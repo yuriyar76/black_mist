@@ -25,6 +25,7 @@ abstract class InvoiceModel
     protected const INF_ORG = 40;   // инфоблок с организациями
     protected const INF_CC = 87; // инфоблок Вызовы курьера
     protected const UK_EMAIL = ''; // email UK
+    protected $sets_id_uk;  // id УК в инфоблоке 47 настройки
     protected $objsetDocsList;
     protected $delivery_type1;
     protected $payment_type_seq;
@@ -162,7 +163,7 @@ abstract class InvoiceModel
             'SPEC_INSTR',
         ]
     ];
-    protected $AGENT;
+    protected  $AGENT;
     protected $EMAIL_CALLCOURIER;
     protected $USER_IN_BRANCH;
     protected $CURRENT_BRANCH;
@@ -489,8 +490,8 @@ abstract class InvoiceModel
         $arJs = self::convArrayToUTF2($arJs);
         self::AddToLogs('CallingCourierI', ['InvoiceModel.489' => $arJs ]);
         try {
-            $client = self::soap_inc();
-            self::AddToLogs('CallingCourierI', ['InvoiceModel.492' => $client ]);
+            $client = self::soap_inc($this->uk_id);
+            self::AddToLogs('CallingCourierI', ['InvoiceModel.492' => $client, 'uk' => $this->uk_id ]);
             $result = $client->SetCallingTheCourier(['ListOfDocs' => json_encode($arJs)]);
             $mResult = $result->return;
             self::AddToLogs('CallingCourierI', ['InvoiceModel.495' => $mResult ]);
@@ -503,6 +504,18 @@ abstract class InvoiceModel
        return false;
     }
 
+    /**
+     * @return mixed
+     * Получить ID управляющей компании с настройками
+     */
+    protected function getIdUkSettings(){
+        $db_props_uk = CIBlockElement::GetProperty(40, $this->UK, ["sort" => "asc"], ["ID" => 474]);
+        if ($ar_props_uk = $db_props_uk->Fetch())
+        {
+           $this->sets_id_uk =  $ar_props_uk["VALUE"];
+           return $sets_id_uk = $ar_props_uk["VALUE"];
+        }
+    }
 
     /**
      * @param $arRes
@@ -1308,18 +1321,16 @@ table{font-family: Arial, Helvetica, sans-serif;}
      * @return SoapClient|string
      * @throws SoapFault
      */
-    static public function soap_inc($uk_id = false)
+    static public function soap_inc($uk_id=false)
     {
-        if ($uk_id){
+        if($uk_id){
             $id_uk = $uk_id;
-        }
-        else
-        {
+        }else{
             $id_uk = static::UK_ID;
         }
 
-        $res = CIBlockElement::GetList([],["IBLOCK_ID" => static::INF_CONF, "ID" => $id_uk],
-            false, false, ["PROPERTY_683", "PROPERTY_704", "PROPERTY_705", "PROPERTY_706"]);
+        $res = CIBlockElement::GetList([], array("IBLOCK_ID" => static::INF_CONF, "ID" => $id_uk),
+            false, false, array("PROPERTY_683", "PROPERTY_704", "PROPERTY_705", "PROPERTY_706"));
         if ($ob = $res->GetNextElement()) {
             $arFields = $ob->GetFields();
             $currentip = $arFields['PROPERTY_683_VALUE'];
@@ -1330,13 +1341,13 @@ table{font-family: Arial, Helvetica, sans-serif;}
                 (trim($pass1c) !== '')) {
                 $url = "http://" . $currentip . $currentlink;
                 $curl = curl_init();
-                curl_setopt_array($curl, [
+                curl_setopt_array($curl, array(
                     CURLOPT_URL => $url,
                     CURLOPT_HEADER => true,
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_NOBODY => true,
                     CURLOPT_TIMEOUT => 10
-                ]);
+                ));
                 $header = explode("\n", curl_exec($curl));
                 curl_close($curl);
                 if (trim($header[0]) !== ''){
