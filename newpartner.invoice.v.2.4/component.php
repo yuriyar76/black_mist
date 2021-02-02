@@ -3090,7 +3090,7 @@ if ($arResult['MODE'] != 'close')
                     CIBlockElement::SetPropertyValuesEx($_POST['id'], 83, $arChanges);
                     // сделать из накладной накладную С возвратом
                     if (!empty($_POST['WITH_RETURN']) && empty($arResult['INVOICE']['PROPERTY_WITH_RETURN_VALUE'])){
-                        $invoice = new Invoice($arResult['INVOICE']['NAME']);
+                        $invoice = new Invoice($arResult['INVOICE']['NAME'], $arResult['UK']);
                        try{
                            $invoice->getBaseInv()
                                ->makeReturnInvoice() // создаем возвратную накладную

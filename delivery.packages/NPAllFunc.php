@@ -251,6 +251,7 @@ abstract class NPAllFunc
     static public function soap_inc()
     {
         $id_uk = 2378056;
+
         $res = CIBlockElement::GetList(array(), array("IBLOCK_ID" => 47, "ID" => $id_uk),
             false, false, array("PROPERTY_683", "PROPERTY_704", "PROPERTY_705", "PROPERTY_706"));
         if ($ob = $res->GetNextElement()) {
@@ -263,13 +264,13 @@ abstract class NPAllFunc
                 (trim($pass1c) !== '')) {
                 $url = "http://" . $currentip . $currentlink;
                 $curl = curl_init();
-                curl_setopt_array($curl, array(
+                curl_setopt_array($curl, [
                     CURLOPT_URL => $url,
                     CURLOPT_HEADER => true,
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_NOBODY => true,
                     CURLOPT_TIMEOUT => 10
-                ));
+                ]);
                 $header = explode("\n", curl_exec($curl));
                 curl_close($curl);
                 if (trim($header[0]) !== ''){

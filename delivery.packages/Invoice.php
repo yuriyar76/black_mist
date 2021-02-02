@@ -20,12 +20,14 @@ class Invoice extends InvoiceModel implements InvoiceInterface
      * Invoice constructor.
      * @param $request
      */
-    public function __construct($number)
+    public function __construct($number, $id_uk=false)
 {
     parent::__construct();
     $this->number = $number;
-
-}
+    if($id_uk){
+        $this->uk_id = $id_uk;
+    }
+   }
 
     /**
      * @param $number
@@ -71,7 +73,6 @@ class Invoice extends InvoiceModel implements InvoiceInterface
     {
         $this->writeCallCourier();  // запись вызова курьера в базу
         $obj = $this->setCallCourier();
-        self::AddToLogs('callingCourierI', ['Invoice.74' => $obj]);
         $obj = self::arFromUtfToWin2($obj);
         $this->changeStatCallCourier($obj);
         $this->setDocsList();

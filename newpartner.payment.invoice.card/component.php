@@ -33,7 +33,7 @@ if($arParams['PAYMENT_INVOICE_CARD'] === "Y"){
         }elseif($inn == '7717739535'){
             $org = 'NP';
         }
-         
+
         echo json_encode(convArrayToUTF(['sum' => $sum, 'Org' => $org]));
     }
 }
