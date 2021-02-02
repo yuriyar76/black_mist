@@ -534,7 +534,8 @@ if ($mode == 'add')
 			}
 			else
 			{
-				$city_sender = GetCityId(trim($_POST['CITY_SENDER']));
+               $city_sender = GetCityId(trim($_POST['CITY_SENDER']));
+
 				if ($city_sender == 0)
 				{
 					$arResult["ERR_FIELDS"]["CITY_SENDER"] = 'has-error';
@@ -696,17 +697,20 @@ if ($mode == 'add_exel')
                                 }
                                 /* добавление записей в бд */
                                 foreach($arrResCompany as $key=>$value){
+                                    $city_name =  $value[3]['value'];
+                                    $city_id = GetCityId($city_name);
+
                                     $el = new CIBlockElement;
-                                    $arLoadProductArray = Array(
+                                    $arLoadProductArray = [
                                         "MODIFIED_BY" => $USER->GetID(),
                                         "IBLOCK_SECTION_ID" => false,
                                         "IBLOCK_ID" => 84,
                                         "PROPERTY_VALUES" => array(
                                             579 => $arResult['ADMIN_AGENT'] ? $_SESSION['CURRENT_CLIENT'] : $agent_id,
                                             580 => $arParams['TYPE'],
-                                            574 => $value[1]['value'],
+                                            574 => $value[1]['value'],  //
                                             575 => $value[2]['value'],
-                                            576 => $value[3]['value'],
+                                            576 => $city_id,   // id  город
                                             577 => $value[4]['value'],
                                             578 => $value[5]['value'],
                                             581 => 0,
@@ -714,7 +718,7 @@ if ($mode == 'add_exel')
                                         ),
                                         "NAME" => $value[0]['value'],
                                         "ACTIVE" => "Y"
-                                    );
+                                    ];
                                     $resadd = $el->Add($arLoadProductArray);
                                 }
                                 if($resadd){
