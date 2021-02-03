@@ -25,6 +25,7 @@ define('ID_VKOM4', 56389272);    // вымпелком4
 define('ID_SKOLKOVO', 52254529); // сколково
 define('ID_UK_NP', 2197189);  // новый партнер
 define('ID_NATIMBIO', 23522997);  // Нацимбио
+define('ID_MOSKOLL', 62587452); //   Москоллектор
 
 $vcom = false;
 $vcomm = false;
@@ -3098,6 +3099,7 @@ if ($arResult['MODE'] != 'close')
                         {
                             $sets_id_uk = $ar_props_uk["VALUE"];
                         }
+
 
                         $invoice = new Invoice($arResult['INVOICE']['NAME'], $sets_id_uk);
                        try{

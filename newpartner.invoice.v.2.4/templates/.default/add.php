@@ -28,6 +28,8 @@ foreach($arResult["COUNTRY_EXEC"]  as $key=>$value){
         $('[data-toggle="tooltip"]').tooltip()
     });
     $(document).ready(function(){
+
+
         // запрет вызова по воскресеньям
         $('#callcourierdate').on('change', function(){
             let dateForCalling = $('#callcourierdate').val();
@@ -87,24 +89,88 @@ foreach($arResult["COUNTRY_EXEC"]  as $key=>$value){
             let expr2 = $('#expr2');
             let expr4 = $('#expr4');
             let expr8 = $('#expr8');
+            let mskol = false;
+            let userId = expr4[0].attributes.userid.value;   // 62587452 Москоллектор
+            if (userId === '62587452'){
+                mskol = true;
+            }
 	        let str = this.value;
             let result = str.match(/Москва/);
             if(result !== null){
-                console.log(result[0]);
-
-
+              console.log(result[0]);
               expr2.parent().attr('style', 'display:block');
               expr4.parent().attr('style', 'display:block');
               expr8.parent().attr('style', 'display:block');
             }else{
-
-
                 expr2.parent().attr('style', 'display:none');
                 expr4.parent().attr('style', 'display:none');
                 expr8.parent().attr('style', 'display:none');
             }
+            /* Костыль для Москоллектор  */
+            if(mskol){
+                let result = str.match(/Московская/);
+                let result1 = str.match(/Москва/);
+                if(result !== null || result1 !== null){
+                    console.log(result[0]);
+                    expr4.parent().attr('style', 'display:block');
+                  }else{
+                    expr4.parent().attr('style', 'display:none');
+                 }
+            }
 
         });
+
+        function AutoCompany()
+        {
+            var url = '/search_city.php?type=name_company&company=<?=$arResult['CURRENT_CLIENT'];?>&type_company=<?=$arResult['TYPE_CLIENT_RECIPIENTS'];?>&branch=<?=intval($arResult["CURRENT_BRANCH"]);?>';
+            $('#company').autocomplete({
+                source: url,
+                minLength: 0,
+                select: function( event, ui ) {
+                    console.log(ui);
+                    $('#sum_pay_request').attr('data_city_id' , ui.item.id_city);
+                    $(this).val( ui.item.company);
+                    $('#name').val(ui.item.name);
+                    $('#phone').val(ui.item.phone);
+                    $('#autocity_recipient').val(ui.item.city);
+                    let str = ui.item.city;
+                    let expr4 = $('#expr4');
+                    let expr2 = $('#expr2');
+                    let expr8 = $('#expr8');
+                    let company = $('#company');
+                    let mskol = false;
+                    if(company[0].attributes.userid.value){
+                        let userId = company[0].attributes.userid.value;
+                        if (userId === '62587452'){
+                            mskol = true;
+                        }
+                    }
+
+                    console.log(mskol);
+                    let result = str.match(/Москва/);
+                    if (result !== null){
+                        expr2.parent().attr('style', "display:block");
+                        expr4.parent().attr('style', "display:block");
+                        expr8.parent().attr('style', "display:block");
+                    }
+                      if(mskol){
+                          let res = str.match(/Московская/);
+                          let res1 = str.match(/Москва/);
+                          if(res !== null || res1 !== null){
+
+                              expr4.parent().attr('style', 'display:block');
+                          }else{
+                              expr4.parent().attr('style', 'display:none');
+                          }
+                      }
+                    $('#index').val(ui.item.index);
+                    $('#adress').val(ui.item.adress);
+                    return false;
+                }
+            });
+        }
+
+
         functioncallcourier();
 	    $("#add_geography_modal").on('click', function(){
            let req   = $('#form_add_g').serialize();
@@ -467,33 +533,7 @@ foreach($arResult["COUNTRY_EXEC"]  as $key=>$value){
 		}
 	}
 	
-	function AutoCompany()
-	{
-		var url = '/search_city.php?type=name_company&company=<?=$arResult['CURRENT_CLIENT'];?>&type_company=<?=$arResult['TYPE_CLIENT_RECIPIENTS'];?>&branch=<?=intval($arResult["CURRENT_BRANCH"]);?>';
-		$('#company').autocomplete({
-			source: url,
-			minLength: 0,
-			select: function( event, ui ) {
-			    console.log(ui);
-                $('#sum_pay_request').attr('data_city_id' , ui.item.id_city);
-				$(this).val( ui.item.company);
-				$('#name').val(ui.item.name);
-				$('#phone').val(ui.item.phone);
-				$('#autocity_recipient').val(ui.item.city);
-				let str = ui.item.city;
-                let result = str.match(/Москва/);
-	    		if (result !== null){
-                   $('#expr2').parent().attr('style', "display:block");
-                   $('#expr4').parent().attr('style', "display:block");
-                   $('#expr8').parent().attr('style', "display:block");
 
-                }
-				$('#index').val(ui.item.index);
-				$('#adress').val(ui.item.adress);
-				return false;
-			}
-		});
-	}
 	
 	function AutoCompanySender()
 	{
@@ -746,7 +786,7 @@ if ($arResult['OPEN'])
 				<div class="form-group <?=$arResult['ERR_FIELDS']['COMPANY_SENDER'];?>">
 					<label  class="control-label">Компания</label>
 					<? if ($arResult['DEAULTS']['CHOICE_COMPANY'] == 2) : ?>
-                    <input type="text" class="form-control" name="COMPANY_SENDER"
+                    <input type="text"  class="form-control" name="COMPANY_SENDER"
                            value="<?=strlen($_POST['COMPANY_SENDER']) ? NewQuotes($_POST['COMPANY_SENDER']) : $arResult['DEAULTS']['COMPANY_SENDER'];?>"
                            id="COMPANY_SENDER">
                     <? else :
@@ -813,7 +853,7 @@ if ($arResult['OPEN'])
              	<h4><?=GetMessage("TITLE_RECIPIENT");?></h4>
 				<div class="form-group <?=$arResult['ERR_FIELDS']['COMPANY_RECIPIENT'];?>">
 					<label class="control-label">Компания</label>
-					<input type="text" class="form-control" name="COMPANY_RECIPIENT" value="<?=strlen($_POST['COMPANY_RECIPIENT']) ? $_POST['COMPANY_RECIPIENT'] : $arResult['DEAULTS']['COMPANY_RECIPIENT'];?>" id="company">
+					<input type="text" class="form-control" userid="<?=$arResult['CURRENT_CLIENT']?>" name="COMPANY_RECIPIENT" value="<?=strlen($_POST['COMPANY_RECIPIENT']) ? $_POST['COMPANY_RECIPIENT'] : $arResult['DEAULTS']['COMPANY_RECIPIENT'];?>" id="company">
 				</div>
 				<div class="form-group <?=$arResult['ERR_FIELDS']['NAME_RECIPIENT'];?>">
 					<label class="control-label">Фамилия</label>
@@ -892,7 +932,7 @@ if ($arResult['OPEN'])
 				<?php if (((int)$arResult['CURRENT_CLIENT_INFO']['PROPERTY_AVAILABLE_EXPRESS4_VALUE']) == 0){ ?>
 							 <div class="radio">
 							  <label>
-								<input id="expr4"  name="TYPE_DELIVERY" value="346" type="radio" <?=($type_delivery == 346) ? 'checked=""' : $stringoneFileds;?>>
+								<input id="expr4"  name="TYPE_DELIVERY" userid = "<?=$arResult['CURRENT_CLIENT']?>" value="346" type="radio" <?=($type_delivery == 346) ? 'checked=""' : $stringoneFileds;?>>
 								Экспресс 4
 							  </label>
 							</div>
