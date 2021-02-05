@@ -6,24 +6,25 @@ ini_set("default_socket_timeout", "300");
 
 $arResult = [];
 if($arParams['PAYMENT_INVOICE_CARD'] === "Y"){
+
     foreach($_POST as $key=>$value){
         $arResult[$key] = htmlspecialchars($value);
     }
-  //  $jsonParam = convArrayToUTF(['NumDoc' => , 'NumDocZ' => 'ÔË-06129']);
     $jsonParam = [
         "NumDoc" =>  $arResult['number'],
         "NumDocZ" => $arResult['number_z'],
     ];
-    $jsonParam1c = convArrayToUTF($jsonParam);
+    //$jsonParam1c = convArrayToUTF($jsonParam);
     $client = soap_inc();
-    $result = $client->GetDocInfoForPayment($jsonParam1c);
+    $result = $client->GetDocInfoForPayment($jsonParam);
     $mResult = $result->return;
     $res = json_decode($mResult, true);
-    $sum = str_replace('Â ','',$res['Sum']);
+    $sum = str_replace('Ð’Â ','',$res['Sum']);
     $res['Sum'] = $sum;
-    $res = arFromUtfToWin($res);
+   // $res = arFromUtfToWin($res);
+
     if($res['Error']){
-        echo json_encode(convArrayToUTF(['error' => $res['Error']]));
+        echo json_encode(['error' => $res['Error']]);
     }
     if (!empty($res['Sum'])){
         $number = trim($arResult['number']);
@@ -41,9 +42,11 @@ if($arParams['PAYMENT_INVOICE_CARD'] === "Y"){
             'Number_inv' => $number,
             'Number_inv_z' => $number_z
         ];
-        $arrJson = json_encode(convArrayToUTF($arJsonP));
-        $_SESSION['DataInvoicePay'] = $arrJson;
+       //  dump(mb_detect_encoding($arJsonP['Number_inv_z']));
+        $arrJson = json_encode($arJsonP);
 
-        echo json_encode(convArrayToUTF(['Sum' => $sum, 'Org' => $org, 'Number_inv' => $number, 'Number_inv_z' => $number_z]));
+        $_SESSION['DataInvoicePay'] = $arrJson;
+        echo $arrJson;
+
     }
 }
