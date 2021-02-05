@@ -26,14 +26,24 @@ if($arParams['PAYMENT_INVOICE_CARD'] === "Y"){
         echo json_encode(convArrayToUTF(['error' => $res['Error']]));
     }
     if (!empty($res['Sum'])){
-        $sum = (float)$res['Sum'];
+        $number = trim($arResult['number']);
+        $number_z = trim($arResult['number_z']);
+        $sum = (float)str_replace(',','.',$res['Sum']);
         $inn = (int)$res['Organization'];
         if($inn == '7718905538'){
             $org = 'MSD';
         }elseif($inn == '7717739535'){
             $org = 'NP';
         }
+        $arJsonP = [
+            'Sum' => $sum,
+            'Org' => $org,
+            'Number_inv' => $number,
+            'Number_inv_z' => $number_z
+        ];
+        $arrJson = json_encode(convArrayToUTF($arJsonP));
+        $_SESSION['DataInvoicePay'] = $arrJson;
 
-        echo json_encode(convArrayToUTF(['sum' => $sum, 'Org' => $org]));
+        echo json_encode(convArrayToUTF(['Sum' => $sum, 'Org' => $org, 'Number_inv' => $number, 'Number_inv_z' => $number_z]));
     }
 }
