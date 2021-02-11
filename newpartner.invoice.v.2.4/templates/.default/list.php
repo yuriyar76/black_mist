@@ -3,6 +3,8 @@
  if($USER->isAdmin()){
             $start = microtime(true);
             AddToLogs('test_logs', ['time_start' => $start, 'mess' => 'Начало выполнения скрипта в шаблоне']);
+           // dump($arResult);
+
         }
 
  /* для отчета Абсолют страхование */
@@ -62,7 +64,6 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
  ?>
 <script type="text/javascript">
 
-
     <?php
 
     if($arResult['CURRENT_CLIENT'] == 56103010 ):?>
@@ -87,19 +88,23 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
                 }
             });
         });
-        $('#report_as_center').on('click', function(){
-            jsonStrPhp = <?=$arrayreportjson?>;
+        $('#report_from_1c').on('click', function(){
+            var jsonStrPhp = $('form[name="filterform"]').serializeArray();
             jsonStr = JSON.stringify(jsonStrPhp);
+            $('#modal-for-alert').modal('show');
             $.ajax({
-                url: "/api/GetSum.php?report_as=Y",
+                url: "/api/GetSum.php?report_1с=Y",
                 type: "post",
-                data: {'numbersphp': jsonStr},
+                data: {'dataForReport': jsonStr},
                 dataType: "json",
                 success: function (data) {
                     if(data.path){
-                        window.open(data.path, '_blank');
-                    }else{
-                        alert(' Ошибка формирования отчета. Обратитесь в техподдержку ');
+                           $('#modal-for-alert').modal('hide');
+                           window.open(data.path, '_blank');
+                    }
+                    if(data.error){
+                            $('#modal-for-alert .modal-body').html('<p style="color:red">'+data.error+
+                                '</p>');
                     }
 
                 }
@@ -349,11 +354,13 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
     <?php endif;?>
 
     <?php
-    // массив накладных с Возвратом для отчета и вывода в списке (Вымпелком 56280706)
+    // массив накладных с Возвратом и Абсолют страхование для отчета и вывода в списке (Абсолют 56103010) ||
+    //    $arResult['CURRENT_CLIENT'] == 56103010
     if($arResult['CURRENT_CLIENT'] == 56280706 ||
     $arResult['CURRENT_CLIENT'] == 56389269 ||
     $arResult['CURRENT_CLIENT'] == 56389270 ||
-    $arResult['CURRENT_CLIENT'] == 56389272 ):
+    $arResult['CURRENT_CLIENT'] == 56389272 ||
+    ($arResult['CURRENT_CLIENT'] == 56103010 && $USER->GetID() == 1721)):
     ?>
     $(document).ready(function() {
         let collectnumbers = $('.numberinvoice');
@@ -376,7 +383,9 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
 
                 });
                 $("#report_return_form_input").attr('value', JSON.stringify(data));
+
                 $("#report_return_form_submit").removeAttr('disabled');
+
 
              //   console.log(JSON.stringify(data));
             }
@@ -385,7 +394,9 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
     });
     <?php endif;?>
 
-    <?php if( !$_SESSION['СontractEndDate']):?>
+    <?php
+    // исключить кнопку Вызов курьера у Вымпелком3
+    if( !$_SESSION['СontractEndDate'] && $arResult['CURRENT_CLIENT'] != 56389270):?>
     $(document).ready(function(){
         $('.maskdate').mask('99.99.9999');
         $('.bootstrap-table .fixed-table-toolbar').append('<div class="pull-left"><a href="/services/" class="btn btn-success">' +
@@ -533,6 +544,24 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
         display: block;
     }
 </style>
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" id="modal-for-alert" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div style="background-color: #ffffff;" class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+           <!-- <h4 class="modal-title" id="myModalLabel">Идет формирование отчета</h4>-->
+            <h4 class="modal-title" id="myModalLabel">Скачать отчет из 1с </h4>
+        </div>
+        <div style="background-color: #ffffff;" class="modal-body">
+            <small>Отчет выводится из 1с за период, который выбран для показа накладных в ЛК!</small><br>
+            <small style="color:red; font-weight: bold">В зависимости от выбранного периода, время формирования отчета будет увеличиваться!</small>
+            <div style="margin-top: 20px;display: flex;
+            flex-direction: row;
+            justify-content: center;" id="alert-preload">
+                <img src="/bitrix/components/black_mist/newpartner.invoice.v.2.4/templates/.default/images/preloader.gif" alt="">
+            </div>
+        </div>
+    </div>
+</div>
 <?php
 
 
@@ -585,7 +614,7 @@ if ($arResult['OPEN'])
             <?php if ($arResult['CURRENT_CLIENT'] > 0):?>
                 <div style="display:flex; flex-direction: row; justify-content: start; margin-left: 5px;" class="btn-group">
                     <?php if ((count($arResult['REQUESTS']) > 0) ||  (count($arResult['ARCHIVE']) > 0)) :?>
-                    <form action="<?=$arParams['LINK'];?>index.php?mode=list_xls&pdf=Y" method="post" name="xlsform"
+                    <form style="display: flex; flex-direction: row;" action="<?=$arParams['LINK'];?>index.php?mode=list_xls&pdf=Y" method="post" name="xlsform"
                           target="_blank">
                         <input type="hidden" name="DATA"
                                value="">
@@ -633,25 +662,27 @@ if ($arResult['OPEN'])
                       </div>
 
                        <div class="btn-group" role="group">
-                           <button id = "report_as_center"  class="btn btn-default" data-toggle="tooltip"
-                                   data-placement="bottom" title="Скачать отчет по Центру Затрат">
+                           <button id = "report_from_1c"  class="btn btn-default" data-toggle="tooltip"
+                                   data-placement="bottom" title="Скачать отчет из 1с">
                                <i style="font-weight: 600;" class="far fa-file-excel"></i>
                            </button>
                        </div>
 
                     <?php endif; ?>
                     <?php
-                    // отчет для Вымпелкома выводит накладные С Возвратом
+                    // отчет для Вымпелкома и Абсолюта выводит накладные С Возвратом
                     if(!$_SESSION['СontractEndDate']):?>
                         <form action="<?=$arParams['LINK'];?>api/reprt.php?mode=reportv_xls" method="post"
                               name="xlsvreport" target = "_blank">
                             <input id = "report_return_form_input" type="hidden" name="DATA_REPORTV">
                             <div class="btn-group" role="group">
+
                             <button disabled id = "report_return_form_submit" type="submit" class="btn btn-default"
                                     data-toggle="tooltip" data-placement="bottom"
                                         title="С Возвратом">
                                    <i style="font-weight: 600;" class="far fa-file-excel"></i>
                             </button>
+
                             </div>
                         </form>
 
@@ -722,6 +753,7 @@ if ($arResult['OPEN'])
                 ?>
                 <div class="form-group">
                     <div class="input-group" id="input-group-list-from-date">
+                        <input type="hidden" name="hidden_inn" value="<?=$arResult['CURRENT_CLIENT_INN']?>">
                         <input type="text" class="form-control maskdate" aria-describedby="basic-addon1"
                                name="dateperiodfrom" placeholder="ДД.ММ.ГГГГ" value="<?=$arResult['LIST_FROM_DATE'];?>" onChange="ChangePeriodNew();" id="list-from-date">
                         <span class="input-group-addon" id="basic-addon1">
@@ -1545,6 +1577,7 @@ if($USER->isAdmin()){
         </form>
         </div>
         </div>
+
         <?php if ($arResult['AGENT']['PROPERTY_SHOW_LIMITS_VALUE'] == 1) : ?>
         <div class="row">
             <div class="col-md-3"><i>Итого за месяц: <strong><?=number_format($itogo, 2, ',', ' ');?></strong></i></div>
