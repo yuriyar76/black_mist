@@ -1,4 +1,7 @@
 <?php
+if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) {
+    die();
+}
 
  if($USER->isAdmin()){
             $start = microtime(true);
@@ -370,7 +373,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
         }
         jsonString = JSON.stringify(arrobj);
         $.ajax({
-            url: "/api/GetSum.php?return=Y",
+            url: "/api/GetSum.php?return=Y&user=<?=$USER->GetID()?>&client=<?=$arResult['CURRENT_CLIENT']?>",
             type: "post",
             data: {'numbers': jsonString},
             dataType: "json",
@@ -380,6 +383,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
                     let num = value.NAME;
                     $("#ret_"+num).text('В');
                     data[index]['state_text'] = $("#stat_"+num).text();
+                    data[index]['state_date'] = $("#stat_date_"+num).text();
 
                 });
                 $("#report_return_form_input").attr('value', JSON.stringify(data));
@@ -394,7 +398,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
     });
     <?php endif;?>
 
-    <?php
+    <?php 
     // исключить кнопку Вызов курьера у Вымпелком3
     if( !$_SESSION['СontractEndDate'] && $arResult['CURRENT_CLIENT'] != 56389270):?>
     $(document).ready(function(){
@@ -1476,7 +1480,10 @@ if($USER->isAdmin()){
                             if($arResult['CURRENT_CLIENT'] == 41478141 ):?>
                                 <td  class="b7"  width="20"><?=$r['test'];?></td>
                             <?php endif;?>
-                            <td  class="b8" ><span id = "stat_<?=$r['NAME']?>"><?=$r['state_text'];?></span></td>
+                            <td  class="b8" >
+                                <span id = "stat_<?=$r['NAME']?>"><?=$r['state_text'];?></span><br />
+                                <span id = "stat_date_<?=$r['NAME']?>"><?=$r['PROPERTY_STATE_DATE_VALUE'];?></span><br />
+                            </td>
                             <td  class="b9">
                                 <?php
                                 /* Абсолют страхование показать дату создания накладной  */
