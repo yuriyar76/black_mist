@@ -9,7 +9,45 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
         $(window).resize(function () {
             $('#tableId').bootstrapTable('resetView');
         });
+        $('#tableId').on('click', function(e){
+            let el = e.target;
+            let id = el.id;
+            let uid = $('#'+id).attr('data-uid');
+            let ukid = $('#'+id).attr('data-uk');
+            let inn_agent = $('#'+id).attr('data-inn');
+            let data = {
+                'id': id, 'uid': uid, 'uk': ukid, 'inn_agent': inn_agent,
+            };
+            $.ajax({
+                type: "POST",
+                dataType: "json",
+                url: "/inapps/inapps_update.php",
+                data: data,
+                success: function(data){
+                    let id = data.ID;
+                    $(`#${id} #status_${id}`).text(data.PROPERTY_1062);
 
+                    $(`#NAME_${id}`).text(data.NAME);
+                    $(`#PROPERTY_1023_${id}`).text(data.PROPERTY_1023);
+                    $(`#PROPERTY_1061_${id}`).text(data.PROPERTY_1061);
+                    $(`#PROPERTY_1053_${id}`).text(data.PROPERTY_1053);
+                    $(`#PROPERTY_1025_${id}`).text(data.PROPERTY_1025);
+                    $(`#PROPERTY_1026_${id}`).text(data.PROPERTY_1026);
+                    $(`#PROPERTY_1027_${id}`).text(data.PROPERTY_1027);
+                    $(`#PROPERTY_1028_${id}`).text(data.PROPERTY_1028);
+                    $(`#PROPERTY_1032_${id}`).text(data.PROPERTY_1032);
+                    $(`#PROPERTY_1033_${id}`).text(data.PROPERTY_1033);
+                    $(`#PROPERTY_1036_${id}`).text(data.PROPERTY_1036);
+                    $(`#PROPERTY_1037_${id}`).text(data.PROPERTY_1037);
+                    $(`#PROPERTY_1038_${id}`).text(data.PROPERTY_1038);
+                    $(`#PROPERTY_1039_${id}`).text(data.PROPERTY_1039);
+                    $(`#PROPERTY_1043_${id}`).text(data.PROPERTY_1043);
+                    $(`#PROPERTY_1060_${id}`).text(data.PROPERTY_1060);
+                    console.log(data);
+                }
+            });
+
+        });
     });
 </script>
 
@@ -57,12 +95,21 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
     </thead>
     <tbody>
       <? foreach($arResult['AGENT_DATA'] as $res):?>
-        <tr>
-            <td><?=$res['NAME']?></td>
-            <td><?=$res['PROPERTY_1023']?></td>
-            <td><?=$res['PROPERTY_1061']?></td>
-            <td><?=$res['PROPERTY_1053']?></td>
-            <td><?=$res['PROPERTY_1062']?></td>
+        <tr id = "<?=$res['ID'];?>">
+            <td id="NAME_<?=$res['ID'];?>"><?=$res['NAME']?></td>
+            <td id="PROPERTY_1023_<?=$res['ID'];?>"><?=$res['PROPERTY_1023']?></td>
+            <td id="PROPERTY_1061_<?=$res['ID'];?>"><?=$res['PROPERTY_1061']?></td>
+            <td id="PROPERTY_1053_<?=$res['ID'];?>"><?=$res['PROPERTY_1053']?></td>
+            <td>
+             <span style="cursor: pointer;" id="update_<?=$res['ID'];?>"
+                   class="glyphicon glyphicon-repeat" data-uk='<?=$res['PROPERTY_1075'];?>'
+                   data-uid="<?=$res['PROPERTY_1056'];?>" data-inn="<?=$res['PROPERTY_1076'];?>"
+                   aria-hidden="true" data-toggle="tooltip" data-placement="left"
+                   title="Обновить">
+             </span>
+                <br>
+             <span id="status_<?=$res['ID'];?>"><?=$res['PROPERTY_1062']?></span>
+            </td>
             <td>
                 <a href="" data-toggle="modal"
                    data-target="#modal_<?=$res['ID']?>">
@@ -72,18 +119,18 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                 </a>
 
             </td>
-            <td><?=$res['PROPERTY_1025']?></td>
-            <td><?=$res['PROPERTY_1026']?></td>
-            <td><?=$res['PROPERTY_1027']?></td>
-            <td><?=$res['PROPERTY_1028']?></td>
-            <td><?=$res['PROPERTY_1032']?></td>
-            <td><?=$res['PROPERTY_1033']?></td>
-            <td><?=$res['PROPERTY_1053']?></td>
-            <td><?=$res['PROPERTY_1037']?></td>
-            <td><?=$res['PROPERTY_1038']?></td>
-            <td><?=$res['PROPERTY_1039']?></td>
-            <td><?=$res['PROPERTY_1043']?></td>
-            <td><?=$res['PROPERTY_1060']?></td>
+            <td id="PROPERTY_1025_<?=$res['ID'];?>"><?=$res['PROPERTY_1025']?></td>
+            <td id="PROPERTY_1026_<?=$res['ID'];?>"><?=$res['PROPERTY_1026']?></td>
+            <td id="PROPERTY_1027_<?=$res['ID'];?>"><?=$res['PROPERTY_1027']?></td>
+            <td id="PROPERTY_1028_<?=$res['ID'];?>"><?=$res['PROPERTY_1028']?></td>
+            <td id="PROPERTY_1032_<?=$res['ID'];?>"><?=$res['PROPERTY_1032']?></td>
+            <td id="PROPERTY_1033_<?=$res['ID'];?>"><?=$res['PROPERTY_1033']?></td>
+            <td id="PROPERTY_1036_<?=$res['ID'];?>"><?=$res['PROPERTY_1036']?></td>
+            <td id="PROPERTY_1037_<?=$res['ID'];?>"><?=$res['PROPERTY_1037']?></td>
+            <td id="PROPERTY_1038_<?=$res['ID'];?>"><?=$res['PROPERTY_1038']?></td>
+            <td id="PROPERTY_1039_<?=$res['ID'];?>"><?=$res['PROPERTY_1039']?></td>
+            <td id="PROPERTY_1043_<?=$res['ID'];?>"><?=$res['PROPERTY_1043']?></td>
+            <td id="PROPERTY_1060_<?=$res['ID'];?>"><?=$res['PROPERTY_1060']?></td>
         </tr>
 
       <? endforeach;?>
@@ -95,6 +142,7 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                    <div class="modal-content">
 
                        <div class="modal-body">
+
                            <div class="row">
                                <div class="col-md-12 text-right">
                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">

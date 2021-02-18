@@ -7493,8 +7493,8 @@ function MakeInvoicePDF($reqv)
 
 function GetIDAgentByINN($inn, $type = false, $onlyone = true, $returnname = false, $uk = false, $onlyactive = false, $real_inn = false)
 {
-	$a = array();
-	$filter = array("IBLOCK_ID" => 40, "PROPERTY_INN" => $inn);
+	$a = [];
+	$filter = ["IBLOCK_ID" => 40, "PROPERTY_INN" => $inn];
 	if ($type)
 	{
 		$filter['PROPERTY_211'] = $type;
@@ -7508,11 +7508,11 @@ function GetIDAgentByINN($inn, $type = false, $onlyone = true, $returnname = fal
         $filter['ACTIVE'] = 'Y';
     }
 	$res = CIBlockElement::GetList(
-		array("ID" => "asc"),
+		["ID" => "asc"],
 		$filter, 
 		false, 
 		false, 
-		array("ID","NAME")
+		["ID","NAME"]
 	);
 	while ($ob = $res->GetNextElement())
 	{
@@ -7536,11 +7536,11 @@ function GetIDAgentByINN($inn, $type = false, $onlyone = true, $returnname = fal
 			unset($filter['PROPERTY_INN']);
 			$filter['PROPERTY_INN_REAL'] = $inn;
 			$res = CIBlockElement::GetList(
-				array("ID" => "asc"),
+				["ID" => "asc"],
 				$filter, 
 				false, 
 				false, 
-				array("ID","NAME")
+				["ID","NAME"]
 			);
 			while ($ob = $res->GetNextElement())
 			{
@@ -9083,8 +9083,8 @@ function soap_inc($id_uk=false)
          $id_uk = 2378056;
      }  // новый партнер
 
-     $res = CIBlockElement::GetList(array(), array("IBLOCK_ID" => 47, "ID" => $id_uk),
-        false, false, array("PROPERTY_683", "PROPERTY_704", "PROPERTY_705", "PROPERTY_706"));
+     $res = CIBlockElement::GetList([], ["IBLOCK_ID" => 47, "ID" => $id_uk],
+        false, false, ["PROPERTY_683", "PROPERTY_704", "PROPERTY_705", "PROPERTY_706"]);
     if ($ob = $res->GetNextElement()) {
         $arFields = $ob->GetFields();
         $currentip = $arFields['PROPERTY_683_VALUE'];
@@ -9095,28 +9095,79 @@ function soap_inc($id_uk=false)
             (trim($pass1c) !== '')) {
             $url = "http://" . $currentip . $currentlink;
             $curl = curl_init();
-            curl_setopt_array($curl, array(
+            curl_setopt_array($curl, [
                 CURLOPT_URL => $url,
                 CURLOPT_HEADER => true,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_NOBODY => true,
                 CURLOPT_TIMEOUT => 10
-            ));
+            ]);
             $header = explode("\n", curl_exec($curl));
             curl_close($curl);
             if (trim($header[0]) !== ''){
-                $clientw = new SoapClient($url, array("login" => $login1c, "password" => $pass1c,
-                    "exceptions" => false));
+                $clientw = new SoapClient($url, ["login" => $login1c, "password" => $pass1c,
+                    "exceptions" => false]);
                 return $clientw;
-            }else{
+            }
 
                 return "Нет соединения";
-            }
+
         }
     }
-
+    return "Общая ошибка";
 }
 
+function soap_include($id_uk){
+
+    $currentip = GetSettingValue(683, false, $id_uk);
+    $currentport = GetSettingValue(761, false, $id_uk);
+    $currentlink = GetSettingValue(704, false, $id_uk);
+    $login1c = GetSettingValue(705, false, $id_uk);
+    $pass1c = GetSettingValue(706, false, $id_uk);
+    AddToLogs('1c_pickup', [
+        'functions-9127'=>[
+            'currentip'=>$currentip,
+            'currentport'=>$currentport,
+            'currentlink'=>$currentlink,
+            'login1c'=>$login1c,
+            'pass1c'=>$pass1c,
+        ]]);
+    if ((strlen(trim($currentip))) && (strlen(trim($currentlink))) && (strlen(trim($login1c))) &&
+        (strlen(trim($pass1c))))
+    {
+        if ($currentport > 0) {
+            $url = "http://".$currentip.':'.$currentport.$currentlink;
+        }
+        else {
+            $url = "http://".$currentip.$currentlink;
+        }
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_HEADER => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_NOBODY => true,
+            CURLOPT_TIMEOUT => 10
+        ]);
+        $header = explode("\n", curl_exec($curl));
+        curl_close($curl);
+        if (strlen(trim($header[0])))
+        {
+
+            if ($currentport > 0) {
+                $client = new SoapClient($url, ['login' => $login1c, 'password' => $pass1c, 'proxy_host' => $currentip, 'proxy_port' => $currentport, 'exceptions' => false]);
+            }
+            else {
+                $client = new SoapClient($url, ['login' => $login1c, 'password' => $pass1c,'exceptions' => false]);
+
+            }
+            return $client;
+        }
+
+
+    }
+    return false;
+}
 /**
  * @param $id
  * @return array|bool
@@ -9250,4 +9301,257 @@ function countDaysBetweenDates($d1, $d2)
     $seconds = abs($d1_ts - $d2_ts);
 
     return floor($seconds / 86400);
+}
+
+
+function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent=false, $id_rec=false){
+    if ($id_rec){
+        $arFilter = ["IBLOCK_ID" => 117, "ACTIVE" => "Y",  "ID" => $id_rec];
+        $arSelect = [
+            "ID","NAME", "ACTIVE", "IBLOCK_ID", 'PROPERTY_1061'
+        ];
+        $resUid = CIBlockElement::GetList([], $arFilter, false,false, $arSelect);
+        while ($ob = $resUid->GetNextElement()) {
+            $uid = $ob->GetFields();
+        }
+        $data_create = $uid['PROPERTY_1061_VALUE'];
+
+        if(!empty($uid['ID'])){
+            $action = 'update';
+        }else{
+            $action = 'add';
+        }
+        AddToLogs('1c_pickup', ['functions-9324'=> $action] );
+    }
+    if(!empty($result['Doc'])){
+        $arResult['APP_FOR_AGENT'] = [];
+        if (!empty($result['Treking'])){
+            $event_last_count = count($result['Treking']);
+            $event_last = $result['Treking']['_'.$event_last_count]['Event'];
+            $event_last_date = $result['Treking']['_'.$event_last_count]['Date'];
+            $event_last_info = $result['Treking']['_'.$event_last_count]['Info'];
+            $arResult['APP_FOR_AGENT']['EVENT_LAST'] = $event_last;
+            $arResult['APP_FOR_AGENT']['EVENT_LAST_DATE'] = $event_last_date;
+            $arResult['APP_FOR_AGENT']['EVENT_LAST_INFO'] = $event_last_info;
+            $events = json_encode(convArrayToUTF($result['Treking']));
+            $arResult['APP_FOR_AGENT']['EVENTS'] = $events;
+
+        }else{
+            $arResult['APP_FOR_AGENT']['EVENT_LAST'] = 'Назначена агенту';
+            $arResult['APP_FOR_AGENT']['EVENT_LAST_DATE'] = date('d.m.Y');
+        }
+
+        if (!empty($result['Dimensions'])){
+
+            $arResult['APP_FOR_AGENT']['weight'] = $weight   = $result['Dimensions']['_1']['Weight'];
+            $arResult['APP_FOR_AGENT']['weightV'] =  $weightV = $result['Dimensions']['_1']['WeightV'];
+            $arResult['APP_FOR_AGENT']['places'] =  $places =  $result['Dimensions']['_1']['Places'];
+            $arResult['APP_FOR_AGENT']['info'] = $info = $result['Dimensions']['_1']['Info'];
+
+        }
+
+
+        foreach($result['Doc'] as $key=>$val){
+            $value = htmlspecialcharsEx(trim($val));
+            if($key === 'НомерНакладной')  {$arResult['APP_FOR_AGENT']['NumberInvoice'] = $value; continue;}  // [NumDoc] => 90-3287296
+            if($key === 'НомерЗаявки')  {$arResult['APP_FOR_AGENT']['NumberApp'] = $value; continue;}  //  [НомерЗаявки] => 2416-00104
+            if($key === 'ВыборОтправителя')  {$arResult['APP_FOR_AGENT']['Sender'] = $value; continue;}  // [ВыборОтправителя] => ФГУП «Калужское» ФСИН России
+            if($key === 'ФамилияОтправителя')  {$arResult['APP_FOR_AGENT']['SenderName'] = $value; continue;}  //  [ФамилияОтправителя] => Товзуркаев Амирхан Лечиевич
+            if($key === 'КомпанияОтправителя')  {$arResult['APP_FOR_AGENT']['SenderCompany'] = $value; continue;}  // [КомпанияОтправителя] => ФГУП «Калужское» ФСИН России
+            if($key === 'ТелефонОтправителя')  {$arResult['APP_FOR_AGENT']['SenderPhone'] = $value; continue;} //   [ТелефонОтправителя] => 8-967-425-32-16
+            if($key === 'ИндексОтправителя')  {$arResult['APP_FOR_AGENT']['SenderIndex'] = $value; continue;}  //  [ИндексОтправителя] =>
+            if($key === 'СтранаОтправителя')  {$arResult['APP_FOR_AGENT']['SenderCountry'] = $value; continue;}  //  [СтранаОтправителя] => Россия
+            if($key === 'ОбластьОтправителя')  {$arResult['APP_FOR_AGENT']['SenderRegion'] = $value; continue;}  //  [ОбластьОтправителя] => Респ Чеченская
+            if($key === 'ГородОтправителя')  {$arResult['APP_FOR_AGENT']['SenderCity'] = $value; continue;}  //   [ГородОтправителя] => Гудермез
+            if($key === 'АдресОтправителя')  {$arResult['APP_FOR_AGENT']['SenderAdress'] = $value; continue;}  //   [АдресОтправителя] => ул.Чапаева д.31
+            if($key === 'КакПроехатьОтправителя')  {$arResult['APP_FOR_AGENT']['SenderGeoPlace'] = $value; continue;}  //  [КакПроехатьОтправителя] =>
+            if($key === 'ПримечаниеОтправителя')  {$arResult['APP_FOR_AGENT']['SenderPrim'] = $value; continue;}  //   [ПримечаниеОтправителя] =>
+
+            if($key === 'ВыборПолучателя')  {$arResult['APP_FOR_AGENT']['Recipient'] = $value; continue;}           //  [ВыборПолучателя] => ФГУП «Калужское» ФСИ
+            if($key === 'ФамилияПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientName'] = $value; continue;}    //   [ФамилияПолучателя] => Любовь Лихачёва
+            if($key === 'КомпанияПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientCompany'] = $value; continue;}  //  [КомпанияПолучателя] => ФГУП «Калужское»
+            if($key === 'ТелефонПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientPhone'] = $value; continue;}  //   [ТелефонПолучателя] => +79621785550
+            if($key === 'ИндексПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientIndex'] = $value; continue;}  //   [ИндексПолучателя] =>
+            if($key === 'СтранаПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientCountry'] = $value; continue;}  //   [СтранаПолучателя] => Россия
+            if($key === 'ОбластьПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientRegion'] = $value; continue;}  //  [ОбластьПолучателя] => Калужская обл.
+            if($key === 'ГородПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientCity'] = $value; continue;}     //     [ГородПолучателя] => Калуга
+            if($key === 'АдресПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientAdress'] = $value; continue;}   //    [АдресПолучателя] => Болдина здание 71
+            if($key === 'КакПроехатьПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientGeoPlace'] = $value; continue;}  //   [КакПроехатьПолучателя] =>
+            if($key === 'ПримечаниеПолучателя')  {$arResult['APP_FOR_AGENT']['RecipientPrim'] = $value; continue;}   //    [ПримечаниеПолучателя] =>
+
+            if($key === 'ДатаВыполненияЗаявки')  {$arResult['APP_FOR_AGENT']['RecipientDataApp'] = $value; continue;} //  [ДатаВыполненияЗаявки] => 2021-02-15T00:00:00
+            if($key === 'ВремяЗабораС')  {$arResult['APP_FOR_AGENT']['TimeFrom'] = $value; continue;} //     [ВремяЗабораС] => 0001-01-01T10:00:00
+            if($key === 'ВремяЗабораПо')  {$arResult['APP_FOR_AGENT']['TimeTo'] = $value; continue;} //  [ВремяЗабораПо] => 0001-01-01T18:00:00
+            if($key === 'ПризнакТипОплаты')  {$arResult['APP_FOR_AGENT']['TypePay'] = $value; continue;}  //  [ПризнакТипОплаты] => Безналичные
+            if($key === 'ПризнакПлательщик')  {$arResult['APP_FOR_AGENT']['TypePayer'] = $value; continue;} //      [ПризнакПлательщик] => Отправитель
+            if($key === 'СуммаКОплате')  {$arResult['APP_FOR_AGENT']['SummPay'] = $value; continue;}   //  [СуммаКОплате] => 0
+
+            if($key === 'СпециальныеИнструкции')  {$arResult['APP_FOR_AGENT']['Instruction'] = $value; continue;}   //   [СпециальныеИнструкции] => Заранее позвонить отправителю Забрать 18.02.2021 с 10:00 до 16:00
+            if($key === 'СпециальныеУсловия')  {$arResult['APP_FOR_AGENT']['SpecU'] = $value; continue;}   //  [СуммаКОплате] => 0
+            if($key === 'ОписаниеОтправления')  {$arResult['APP_FOR_AGENT']['Desc_items'] = $value; continue;}   //  [СуммаКОплате] => 0
+            if($key === 'ПризнакДокументы')  {$arResult['APP_FOR_AGENT']['DocP'] = $value; continue;}   //  [СуммаКОплате] => 0
+        }
+        $arResult['APP_FOR_AGENT']['INN_Agent'] = $inn_agent;
+        $arResult['APP_FOR_AGENT']['Id_uk'] = $id_uk;
+
+        if($arResult['APP_FOR_AGENT']['TypePay'] === 'Безналичные'){
+            $arResult['APP_FOR_AGENT']['TypePayText'] = 'Безналичные';
+            $arResult['APP_FOR_AGENT']['TypePay'] = 419;
+        }
+        if($arResult['APP_FOR_AGENT']['TypePay'] === 'Наличные'){
+            $arResult['APP_FOR_AGENT']['TypePayText'] = 'Наличные';
+            $arResult['APP_FOR_AGENT']['TypePay'] = 420;
+        }
+        if($arResult['APP_FOR_AGENT']['TypePayer'] === 'Отправитель'){
+            $arResult['APP_FOR_AGENT']['TypePayerText'] = 'Отправитель';
+            $arResult['APP_FOR_AGENT']['TypePayer'] = 421;
+        }
+        if($arResult['APP_FOR_AGENT']['TypePayer'] === 'Получатель'){
+            $arResult['APP_FOR_AGENT']['TypePayerText'] = 'Получатель';
+            $arResult['APP_FOR_AGENT']['TypePayer'] = 422;
+        }
+
+        $arResult['APP_FOR_AGENT']['CreatorName'] = $arrC[0]['NAME'];
+        $arResult['APP_FOR_AGENT']['Creator'] = $arrC[0]['ID'];
+
+        $city_sender_id = GetCityId($arResult['APP_FOR_AGENT']['SenderCity'] . ', ' . $arResult['APP_FOR_AGENT']['SenderRegion'] . ', ' . $arResult['APP_FOR_AGENT']['SenderCountry']);
+        $arResult['APP_FOR_AGENT']['CitySenderId'] = $city_sender_id;
+        $city_recipient_id = GetCityId($arResult['APP_FOR_AGENT']['RecipientCity'] . ', ' . $arResult['APP_FOR_AGENT']['RecipientRegion'] . ', ' . $arResult['APP_FOR_AGENT']['RecipientCountry']);
+        $arResult['APP_FOR_AGENT']['CityRecipientId'] = $city_recipient_id;
+
+        $arResult['APP_FOR_AGENT']['RecipientDataAppFormat'] = date('d.m.Y H:i:s', strtotime($arResult['APP_FOR_AGENT']['RecipientDataApp']));
+        $arResult['APP_FOR_AGENT']['DataAppCreate'] = $data_create;
+        if($action === 'add')
+        $arResult['APP_FOR_AGENT']['DataAppCreate'] = date('d.m.Y H:i:s');
+
+        $arResult['APP_FOR_AGENT']['TimeFrom'] = substr(trim($arResult['APP_FOR_AGENT']['TimeFrom']), -8);
+        $arResult['APP_FOR_AGENT']['TimeTo'] = substr(trim($arResult['APP_FOR_AGENT']['TimeTo']), -8);
+        $arResult['APP_FOR_AGENT']['UID'] = $number_uid;
+
+        // 117
+        $el = new CIBlockElement;
+
+        $arLoadArray = [
+            'IBLOCK_ID' => 117,
+            "IBLOCK_SECTION_ID" => false,
+            "NAME" => $arResult['APP_FOR_AGENT']['NumberApp'],
+            "ACTIVE" => "Y",
+            "PROPERTY_VALUES" => [
+                1023 => $arResult['APP_FOR_AGENT']['NumberInvoice'],
+                1024 => $arResult['APP_FOR_AGENT']['NumberApp'],
+                1025 => $arResult['APP_FOR_AGENT']['Sender'],
+                1026 => $arResult['APP_FOR_AGENT']['SenderName'],
+                1027 => $arResult['APP_FOR_AGENT']['SenderCompany'],
+                1028 => $arResult['APP_FOR_AGENT']['SenderPhone'],
+                1029 => $arResult['APP_FOR_AGENT']['SenderIndex'],
+                1030 => $arResult['APP_FOR_AGENT']['SenderCountry'],
+                1031 => $arResult['APP_FOR_AGENT']['SenderRegion'],
+                1032 => $arResult['APP_FOR_AGENT']['SenderCity'],
+                1033 => $arResult['APP_FOR_AGENT']['SenderAdress'],
+                1034 => $arResult['APP_FOR_AGENT']['SenderGeoPlace'],
+                1035 => $arResult['APP_FOR_AGENT']['SenderPrim'],
+                1036 => $arResult['APP_FOR_AGENT']['Recipient'],
+                1037 => $arResult['APP_FOR_AGENT']['RecipientName'],
+                1038 => $arResult['APP_FOR_AGENT']['RecipientCompany'],
+                1039 => $arResult['APP_FOR_AGENT']['RecipientPhone'],
+                1040 => $arResult['APP_FOR_AGENT']['RecipientIndex'],
+                1041 => $arResult['APP_FOR_AGENT']['RecipientCountry'],
+                1042 => $arResult['APP_FOR_AGENT']['RecipientRegion'],
+                1043 => $arResult['APP_FOR_AGENT']['RecipientCity'],
+                1060 => $arResult['APP_FOR_AGENT']['RecipientAdress'],
+                1044 => $arResult['APP_FOR_AGENT']['RecipientGeoPlace'],
+                1045 => $arResult['APP_FOR_AGENT']['RecipientPrim'],
+                1046 => $arResult['APP_FOR_AGENT']['RecipientDataApp'],
+                1047 => $arResult['APP_FOR_AGENT']['TimeFrom'],
+                1048 => $arResult['APP_FOR_AGENT']['TimeTo'],
+                1049 => $arResult['APP_FOR_AGENT']['TypePayer'],
+                1050 => $arResult['APP_FOR_AGENT']['SummPay'],
+                1051 => $arResult['APP_FOR_AGENT']['CitySenderId'],
+                1052 => $arResult['APP_FOR_AGENT']['CityRecipientId'],
+                1053 => $arResult['APP_FOR_AGENT']['RecipientDataAppFormat'],
+                1054 => $arResult['APP_FOR_AGENT']['Creator'],
+                1055 => $arResult['APP_FOR_AGENT']['TypePay'],
+                1056 => $arResult['APP_FOR_AGENT']['UID'],
+                1057 => $arResult['APP_FOR_AGENT']['CreatorName'],
+                1061 => $arResult['APP_FOR_AGENT']['DataAppCreate'],
+                1062 => $arResult['APP_FOR_AGENT']['EVENT_LAST'],
+                1063 => $arResult['APP_FOR_AGENT']['EVENT_LAST_DATE'],
+                1064 => $arResult['APP_FOR_AGENT']['EVENT_LAST_INFO'],
+                1059 => $arResult['APP_FOR_AGENT']['EVENTS'],
+                1066 => $arResult['APP_FOR_AGENT']['TypePayText'],
+                1065 => $arResult['APP_FOR_AGENT']['TypePayerText'],
+                1067 => $arResult['APP_FOR_AGENT']['Instruction'],
+                1068 => $arResult['APP_FOR_AGENT']['weight'],
+                1069 => $arResult['APP_FOR_AGENT']['weightV'],
+                1070 => $arResult['APP_FOR_AGENT']['places'],
+                1071 => $arResult['APP_FOR_AGENT']['info'],
+                1072 => $arResult['APP_FOR_AGENT']['SpecU'],
+                1073 => $arResult['APP_FOR_AGENT']['Desc_items'],
+                1074 => $arResult['APP_FOR_AGENT']['DocP'],
+                1075 => $arResult['APP_FOR_AGENT']['Id_uk'],
+                1076 => $arResult['APP_FOR_AGENT']['INN_Agent'],
+            ],
+        ];
+
+        //->Add
+        if($action==='add'){
+            $rec_id = $el->Add($arLoadArray);
+            if(!$rec_id){
+                AddToLogs('1c_pickup', ['functions-9494'=> ['Error' =>
+                    "Ошибка добавления заявки. UID - {$arResult['APP_FOR_AGENT']['UID']}"]] );
+                exit();
+            }
+        }
+
+        // Update
+        if($action==='update'){
+            $el->Update($uid['ID'], $arLoadArray);
+            $rec_id_upd = $uid['ID'];
+        }
+
+
+        if ($creator)
+        {
+            $rsUser = CUser::GetList(($by="id"), ($order="asc"),
+                ["GROUPS_ID" => [4,16], "UF_COMPANY_RU_POST" => $creator],
+                ["SELECT" => ["UF_BRANCH","UF_ROLE"]]);
+            while($arUser = $rsUser->Fetch())
+            {
+                $users_to[] = $arUser['ID'];
+            }
+            CModule::IncludeModule('im');
+            $user_from = false;
+            foreach ($users_to as $user_to)
+            {
+                if($action==='update'){
+                    $arMessageFields['NOTIFY_MESSAGE'] = "Обновлена Заявка {$arResult['APP_FOR_AGENT']['NumberApp']} для агента  {$arResult['APP_FOR_AGENT']['CreatorName']} ";
+                }
+                if($action==='add'){
+                    $arMessageFields['NOTIFY_MESSAGE'] = "Поступила Заявка {$arResult['APP_FOR_AGENT']['NumberApp']} для агента  {$arResult['APP_FOR_AGENT']['CreatorName']} ";
+                }
+
+
+                $arMessageFields = [
+                    "TO_USER_ID" => $user_to,
+                    "FROM_USER_ID" => $user_from,
+                    "NOTIFY_MODULE" => "im",
+                    "NOTIFY_TYPE" => ($user_from) ? IM_NOTIFY_FROM : IM_NOTIFY_SYSTEM,
+
+                ];
+                CIMNotify::Add($arMessageFields);
+            }
+        }
+        if($action==='add'){
+            AddToLogs('1c_pickup', ['functions-add-9537'=> $arResult['APP_FOR_AGENT'],
+                'rec_id' => $rec_id, 'user_from'=>$users_to]);
+            return $rec_id;
+        }
+
+        if($action==='update'){
+            AddToLogs('1c_pickup', ['functions-update-9540'=> $arResult['APP_FOR_AGENT'],
+                'rec_id' => $rec_id_upd, 'user_from'=>$users_to]);
+            return $rec_id_upd;
+        }
+
+    }
 }
