@@ -1472,7 +1472,7 @@ if ($arResult['MODE'] != 'close')
 
             $ind_nakl = 0;
 
-         //   AddToLogs('ObjDocs', ['component-1475'=> $obj['Docs']]);
+            AddToLogs('ObjDocs', ['component.invoice.2.4-1475'=> $obj['Docs']]);
             $arResult['ARCHIVE'] = [];
             foreach ($obj['Docs'] as $d)
             {
@@ -1498,6 +1498,7 @@ if ($arResult['MODE'] != 'close')
                     'PROPERTY_WEIGHT_VALUE' => 0,
                     'PROPERTY_OB_WEIGHT' => 0,
                     'PROPERTY_RATE_VALUE' => (float)str_replace(',', '.', $d['Tarif']),
+                    'PROPERTY_STATE_VALUE' => 'Принято',
                     'PROPERTY_STATE_DESCR_VALUE' => '',
                     'PROPERTY_NAME_RECIPIENT_VALUE' =>  $d['NameRecipient'],
                     'PROPERTY_NAME_SENDER_VALUE' =>  $d['NameSender'],
@@ -1992,7 +1993,6 @@ if ($arResult['MODE'] != 'close')
 
     if ($arResult['MODE'] == 'prints')
     {
-
         if (!$arResult['ADMIN_AGENT'])
         {
             $arResult['CURRENT_CLIENT'] = $agent_id;
@@ -2015,7 +2015,10 @@ if ($arResult['MODE'] != 'close')
         ){
             $vcom = true;
         }
+        if ($_GET['label'] === 'Y'){
+            $arResult['MODE'] = 'prints_label';
 
+        }
         /* скачать архив сканов со страницы массовой печати накладных  */
         if (!empty($_GET['scandocs'])){
             $dcs = [];
@@ -6386,7 +6389,7 @@ if ($arResult['MODE'] != 'close')
                 $arData[$i] = [
                     $value['NAME'],
                     $value['state_text'],
-                    $value['state_date'],
+                    $value['PROPERTY_STATE_DATE_VALUE'],
                     $value['DATE_CREATE'],
                     $value['PROPERTY_CITY_SENDER_NAME'],
                     $value['PROPERTY_COMPANY_SENDER_VALUE'],

@@ -9241,7 +9241,7 @@ function getSumDev($total_weight, $total_gabweight, $city_recipient, $client = 0
         if(preg_match('/^[0-9]+(\.([0-9]){2})?$/', json_decode($output))){
             $sum_dev = json_decode($output);
             $sum_dev =  (float)iconv('utf-8','windows-1251',$sum_dev);
-            return $sum_dev ;
+            return $sum_dev;
         }
     }
     return false;
@@ -9315,13 +9315,10 @@ function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agen
             $uid = $ob->GetFields();
         }
         $data_create = $uid['PROPERTY_1061_VALUE'];
-
-        if(!empty($uid['ID'])){
-            $action = 'update';
-        }else{
-            $action = 'add';
-        }
-        AddToLogs('1c_pickup', ['functions-9324'=> $action] );
+        $action = 'update';
+        AddToLogs('1c_pickup', ['functions-9319'=> $action] );
+    }else{
+        $action = 'add';
     }
     if(!empty($result['Doc'])){
         $arResult['APP_FOR_AGENT'] = [];
@@ -9497,7 +9494,7 @@ function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agen
         if($action==='add'){
             $rec_id = $el->Add($arLoadArray);
             if(!$rec_id){
-                AddToLogs('1c_pickup', ['functions-9494'=> ['Error' =>
+                AddToLogs('1c_pickup', ['functions-9497'=> ['Error' =>
                     "Ошибка добавления заявки. UID - {$arResult['APP_FOR_AGENT']['UID']}"]] );
                 exit();
             }
@@ -9542,13 +9539,13 @@ function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agen
             }
         }
         if($action==='add'){
-            AddToLogs('1c_pickup', ['functions-add-9537'=> $arResult['APP_FOR_AGENT'],
+            AddToLogs('1c_pickup', ['functions-add-9542'=> $arResult['APP_FOR_AGENT'],
                 'rec_id' => $rec_id, 'user_from'=>$users_to]);
             return $rec_id;
         }
 
         if($action==='update'){
-            AddToLogs('1c_pickup', ['functions-update-9540'=> $arResult['APP_FOR_AGENT'],
+            AddToLogs('1c_pickup', ['functions-update-9548'=> $arResult['APP_FOR_AGENT'],
                 'rec_id' => $rec_id_upd, 'user_from'=>$users_to]);
             return $rec_id_upd;
         }

@@ -517,7 +517,11 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
     });
     <?php
     }
-    if ((isset($_POST['prints'])) && (count($_POST['ids']) > 0)):
+    if ((isset($_POST['prints_label'])) && (count($_POST['ids']) > 0)):?>
+    window.open('<?=$arParams['LINK'];?>index.php?mode=prints&ids=<?=implode(',',$_POST['ids']);?>&label=Y&print=Y');
+    <? endif;?>
+
+    <? if ((isset($_POST['prints'])) && (count($_POST['ids']) > 0)):
 
     if(isset($_POST['scandcs'])):?>
 
@@ -1576,10 +1580,17 @@ if($USER->isAdmin()){
                 </tbody>
             </table>
             <p>Всего накладных: <?=(count($arResult['REQUESTS'])+count($arResult['ARCHIVE']));?></p>
-            <div style="margin-bottom:50px;" class="btn-group" role="group" aria-label="...">
-                <button type="submit"  name="prints" value="Распечатать накладные"
-                        class="btn btn-warning testwarn">Распечатать отмеченные накладные</button>
+            <div style="display:flex; flex-direction: row; justify-content: end">
+                <div style="margin-bottom:50px;" class="btn-group" role="group" aria-label="...">
+                    <button type="submit"  name="prints" value="Распечатать накладные"
+                            class="btn btn-warning testwarn">Распечатать отмеченные накладные</button>
 
+                </div>
+                <div style="margin-bottom:50px; margin-left:20px;" class="btn-group" role="group" aria-label="...">
+                    <button type="submit"  name="prints_label" value="Распечатать этикетки"
+                            class="btn btn-warning testwarn">Распечатать этикетки</button>
+
+                </div>
             </div>
         </form>
         </div>
