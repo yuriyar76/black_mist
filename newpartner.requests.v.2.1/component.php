@@ -208,14 +208,26 @@ if ($mode === 'inapps'){
     $arSelect = [
         "ID","NAME", "ACTIVE", "IBLOCK_ID", "PROPERTY_*"
     ];
-    $res = CIBlockElement::GetList(['ID'=>'DESC'], $arFilter, false, ["nPageSize" => 10], $arSelect);
+    $res = CIBlockElement::GetList(['ID'=>'DESC'], $arFilter, false, ["nPageSize" => 20], $arSelect);
     $res->NavStart(0);
+    $i = 0;
     while ($ob = $res->GetNextElement()) {
         $arResult['AGENT_DATA'][] = $ob->GetFields();
+        if(!empty($arResult['AGENT_DATA'][$i]['PROPERTY_1059']) && !empty($arResult['AGENT_DATA'][$i]['~PROPERTY_1059'])){
+            $arResult['AGENT_DATA'][$i]['PROPERTY_1059'] = $arResult['AGENT_DATA'][$i]['~PROPERTY_1059'];
+            $arrEv = json_decode($arResult['AGENT_DATA'][$i]['PROPERTY_1059'], true);
+            $arrEvents = arFromUtfToWin($arrEv);
+            foreach($arrEvents as $key=>$value){
+                $date = date('d-m-Y H:i ', strtotime($value['Date']));
+                $arrEvents[$key]['Date'] = $date;
+            }
+            $arResult['AGENT_DATA'][$i]['EVENTS_ARR'] = $arrEvents;
+
+        }
+        $i++;
     }
 
-    echo $res->NavPrint('Заявки', true);
-
+    $arResult['AGENT_DATA_OBJ']['obj'] = $res;
 
 }
 
@@ -2326,6 +2338,8 @@ if ($mode === '1c')
                 $v_tr = iconv('utf-8', 'windows-1251', $v);
                 $arRes[$k_tr] = $v_tr;
             }
+
+            // запись заявок на агента
             if ($_POST['type'] === 'pickup'){
                 $weight = '';
                 $weightV = '';
@@ -2335,7 +2349,7 @@ if ($mode === '1c')
                 $inn_uk = (int)$arRes['creatorinn'];
                 $inn_agent = $arRes['inn'];
                 $number_uid = htmlspecialcharsEx(trim($arRes['uid']));
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2338'=>['uid'=>$number_uid, 'uk'=>$inn_uk,
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2340'=>['uid'=>$number_uid, 'uk'=>$inn_uk,
                     'agent'=>$inn_agent, 'post'=> $_POST]]);
                 if(!( $inn_uk && $inn_agent && $number_uid) ){
                     exit();
@@ -2343,12 +2357,12 @@ if ($mode === '1c')
                 $arrC = GetIDAgentByINN($inn_agent, 53, false, true);
                 $creator = (int)$arrC[0]['ID'];
                 if(!$creator){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2346'=> ['Error' => 'Агент не найден', 'number_uid'=>$number_uid]] );
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2360'=> ['Error' => 'Агент не найден', 'number_uid'=>$number_uid]] );
                     exit();
                 }
                 $id_uk = GetIDAgentByINN($inn_uk, 51);
                 $client = soap_include($id_uk);
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2342'=>['client'=>$client, 'id_uk' => $id_uk]]);
+               // AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2353'=>['client'=>$client, 'id_uk' => $id_uk]]);
                 if(!$client) exit();
                 $arParamsJson = [
                     'UID' => $number_uid
@@ -2359,10 +2373,11 @@ if ($mode === '1c')
                 AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2359'=>['result'=>$result]]);
 
                 if(!empty($result['Error'])){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2362'=> ['Error' => $result['Error']]] );
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2376'=> ['Error' => $result['Error']]] );
                     exit();
                 }
-                setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent);
+                $rec_id = setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent);
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2380'=> ['id' => $rec_id]] );
                 exit();
             }
 
@@ -2558,10 +2573,18 @@ if ($mode === 'inapps_update'){
         $arRes[] = htmlspecialcharsEx(trim($item));
     }
     $arr_id_rec = explode('_', $arRes[0]);
+   /*
+    * arres
+    [0] => update_63423166
+    [1] => e482605f-727a-11eb-a29f-000c29cf960f
+    [2] => 2197189
+    [3] => postclub76  id обмена
+   */
+
     $id_rec = $arr_id_rec[1];
     $number_uid =  $arRes[1];
-    $id_uk = (int)$arRes[2];
-    $inn_agent = (int)$arRes[3];
+    $id_uk = $arRes[2];
+    $inn_agent = $arRes[3];
 
     if($id_uk){
         $client = soap_include($id_uk);
@@ -2597,8 +2620,11 @@ if ($mode === 'inapps_update'){
         while ($ob = $resUid->GetNextElement()) {
             $rec = $ob->GetFields();
         }
+        if(!empty($rec['PROPERTY_1059']) && !empty($rec['~PROPERTY_1059'])){
+            $rec['PROPERTY_1059'] = $rec['~PROPERTY_1059'];
+        }
         if (!empty($rec)){
-            AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2601'=>['result'=>$rec]]);
+            //AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2601'=>['result'=>$rec]]);
             $jsonArr = json_encode(convArrayToUTF($rec));
             echo $jsonArr;
             exit();

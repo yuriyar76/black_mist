@@ -9316,7 +9316,7 @@ function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agen
         }
         $data_create = $uid['PROPERTY_1061_VALUE'];
         $action = 'update';
-        AddToLogs('1c_pickup', ['functions-9319'=> $action] );
+      //  AddToLogs('1c_pickup', ['functions-9319'=> $action] );
     }else{
         $action = 'add';
     }
@@ -9332,6 +9332,7 @@ function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agen
             $arResult['APP_FOR_AGENT']['EVENT_LAST_INFO'] = $event_last_info;
             $events = json_encode(convArrayToUTF($result['Treking']));
             $arResult['APP_FOR_AGENT']['EVENTS'] = $events;
+            $arResult['APP_FOR_AGENT']['EVENTS_ARR'] = $result['Treking'];
 
         }else{
             $arResult['APP_FOR_AGENT']['EVENT_LAST'] = 'Назначена агенту';
@@ -9349,7 +9350,7 @@ function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agen
 
 
         foreach($result['Doc'] as $key=>$val){
-            $value = htmlspecialcharsEx(trim($val));
+            $value = strip_tags(trim($val));
             if($key === 'НомерНакладной')  {$arResult['APP_FOR_AGENT']['NumberInvoice'] = $value; continue;}  // [NumDoc] => 90-3287296
             if($key === 'НомерЗаявки')  {$arResult['APP_FOR_AGENT']['NumberApp'] = $value; continue;}  //  [НомерЗаявки] => 2416-00104
             if($key === 'ВыборОтправителя')  {$arResult['APP_FOR_AGENT']['Sender'] = $value; continue;}  // [ВыборОтправителя] => ФГУП «Калужское» ФСИН России
