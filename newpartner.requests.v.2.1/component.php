@@ -202,13 +202,72 @@ if (is_array($_SESSION['WARNINGS']))
     $_SESSION['WARNINGS'] = false;
 }
 
-if ($mode === 'inapps'){
+if ($mode === 'inapps')
+{
+    $arResult['INAPPS_TO_DATE'] = date('d.m.Y');
+    $prevdate = strtotime('-1 month');
+    $arResult['INAPPS_FROM_DATE'] = date('d.m.Y',$prevdate);
+    $arResult['INAPPS_FROM_DATE_FOR_1C'] = date('Y-m-d',$prevdate);
+    $arResult['INAPPS_TO_DATE_FOR_1C'] = date('Y-m-d');
 
-    $arFilter = ["IBLOCK_ID" => 117, "ACTIVE" => "Y",  "=PROPERTY_CREATOR" => $agent_id];
+    if ($_GET['ChangePeriodInapps'] === 'Y')
+    {
+        if ((strlen(trim($_GET['datefrom'])) > 0) && (strlen(trim($_GET['dateto']))))
+        {
+            $arPostDateFrom = date_parse_from_format("d.m.Y", trim($_GET['datefrom']));
+            $arPostDateTo = date_parse_from_format("d.m.Y", trim($_GET['dateto']));
+            $currentdate = strtotime(date('Y-m-d'));
+            $timePostDateTo = strtotime($arPostDateTo['year'].'-'.str_pad($arPostDateTo['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($arPostDateTo['day'],2,'0',STR_PAD_LEFT));
+            $timePostDateFrom = strtotime($arPostDateFrom['year'].'-'.str_pad($arPostDateFrom['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($arPostDateFrom['day'],2,'0',STR_PAD_LEFT));
+            if ($timePostDateFrom > $timePostDateTo)
+            {
+                $vremVar = $timePostDateTo;
+                $timePostDateTo = $timePostDateFrom;
+                $timePostDateFrom = $vremVar;
+                $timeFromToRazn = $timePostDateTo - $timePostDateFrom;
+            }
+            if ($timePostDateTo > $currentdate)
+            {
+                $timePostDateTo = $currentdate;
+            }
+            if ($timePostDateFrom > $timePostDateTo)
+            {
+                $timePostDateFrom = strtotime('-1 month',$timePostDateTo);
+            }
+            $timeFromToRazn = $timePostDateTo - $timePostDateFrom;
+            if (($timeFromToRazn/86400) > 90)
+            {
+                $timePostDateFrom = strtotime('-3 month',$timePostDateTo);
+            }
+            $arResult['INAPPS_FROM_DATE'] = date('d.m.Y',$timePostDateFrom);
+            $_SESSION['INAPPS_FROM_DATE'] = date('d.m.Y',$timePostDateFrom);
+            $arResult['INAPPS_TO_DATE'] = date('d.m.Y',$timePostDateTo);
+            $_SESSION['INAPPS_TO_DATE'] = date('d.m.Y',$timePostDateTo);
+
+        }
+    }
+
+
+    if (!empty($_SESSION['INAPPS_TO_DATE']))
+    {
+        $arResult['INAPPS_TO_DATE'] = $_SESSION['INAPPS_TO_DATE'];
+    }
+    if (!empty($_SESSION['INAPPS_FROM_DATE']))
+    {
+        $arResult['INAPPS_FROM_DATE'] = $_SESSION['INAPPS_FROM_DATE'];
+    }
+    $arFilter = [
+        "IBLOCK_ID" => 117,
+         "ACTIVE" => "Y",
+         ">=DATE_CREATE" => $arResult['INAPPS_FROM_DATE'].' 00:00:00',
+         "<=DATE_CREATE" => $arResult['INAPPS_TO_DATE'].' 23:59:59',
+         "=PROPERTY_CREATOR" => $agent_id,
+    ];
+
     $arSelect = [
         "ID","NAME", "ACTIVE", "IBLOCK_ID", "PROPERTY_*"
     ];
-    $res = CIBlockElement::GetList(['ID'=>'DESC'], $arFilter, false, ["nPageSize" => 20], $arSelect);
+    $res = CIBlockElement::GetList(['ID'=>'DESC'], $arFilter, false, ["nPageSize" => 20, "bShowAll" => true], $arSelect);
     $res->NavStart(0);
     $i = 0;
     while ($ob = $res->GetNextElement()) {
@@ -223,11 +282,17 @@ if ($mode === 'inapps'){
             }
             $arResult['AGENT_DATA'][$i]['EVENTS_ARR'] = $arrEvents;
 
+
         }
         $i++;
     }
-
-    $arResult['AGENT_DATA_OBJ']['obj'] = $res;
+    $res->nPageWindow = 5;
+    $arResult['AGENT_DATA_OBJ']['obj'] = $res->GetPageNavStringEx(
+        $navComponentObject,
+        "Заявки",
+        'pagination'
+    );
+    //$arResult['AGENT_DATA_OBJ']['obj'] = $res;
 
 }
 
@@ -334,6 +399,7 @@ if ($mode === 'list')
 		}
 	}
 	$arResult['CURRENT_AGENT_COEFFICIENT_VW'] = WhatIsGabWeightCompany($arResult['CURRENT_AGENT']);
+
 	if (strlen($_SESSION['LIST_TO_DATE']))
 	{
 		$arResult['LIST_TO_DATE'] = $_SESSION['LIST_TO_DATE'];
@@ -2340,29 +2406,42 @@ if ($mode === '1c')
             }
 
             // запись заявок на агента
-            if ($_POST['type'] === 'pickup'){
-                $weight = '';
-                $weightV = '';
-                $places =  '';
-                $info = '';
-
+            if ($_POST['type'] === 'pickup' || $_POST['type'] === 'updatepickup'){
+                $upd = false;
                 $inn_uk = (int)$arRes['creatorinn'];
-                $inn_agent = $arRes['inn'];
                 $number_uid = htmlspecialcharsEx(trim($arRes['uid']));
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2340'=>['uid'=>$number_uid, 'uk'=>$inn_uk,
-                    'agent'=>$inn_agent, 'post'=> $_POST]]);
-                if(!( $inn_uk && $inn_agent && $number_uid) ){
-                    exit();
+                $inn_agent = $arRes['inn'];
+                if(! $inn_agent ){
+                    $arFilter = ["IBLOCK_ID" => 117, "ACTIVE" => "Y",  "PROPERTY_1056" => $number_uid];
+                    $arSelect = [
+                        "ID","NAME", "ACTIVE", "IBLOCK_ID", 'PROPERTY_1076'
+                    ];
+                    $resUid = CIBlockElement::GetList([], $arFilter, false,false, $arSelect);
+                    while ($ob = $resUid->GetNextElement()) {
+                        $uid = $ob->GetFields();
+                    }
+                    $inn_agent = $uid['PROPERTY_1076_VALUE'];
+                    $id_rec = $uid['ID'];
+                    $upd = true;
                 }
-                $arrC = GetIDAgentByINN($inn_agent, 53, false, true);
-                $creator = (int)$arrC[0]['ID'];
-                if(!$creator){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2360'=> ['Error' => 'Агент не найден', 'number_uid'=>$number_uid]] );
+                if(!( $inn_uk && $inn_agent && $number_uid) ){
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2362'=>['ERROR'=>'Нет  данных']]);
                     exit();
                 }
                 $id_uk = GetIDAgentByINN($inn_uk, 51);
+                $arrC = GetIDAgentByINN($inn_agent, 53, false, true);
+                $creator = (int)$arrC[0]['ID'];
                 $client = soap_include($id_uk);
-               // AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2353'=>['client'=>$client, 'id_uk' => $id_uk]]);
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2369'=>['uid'=>$number_uid, 'uk'=>$inn_uk,
+                    'agent'=>$inn_agent, 'update' => $upd, 'post'=> $arRes]]);
+
+
+                if(!$creator){
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2374'=> ['Error' => 'Агент не найден', 'number_uid'=>$number_uid]] );
+                    exit();
+                }
+
+               // AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2378'=>['client'=>$client, 'id_uk' => $id_uk]]);
                 if(!$client) exit();
                 $arParamsJson = [
                     'UID' => $number_uid
@@ -2370,14 +2449,19 @@ if ($mode === '1c')
                 $request = $client->GetAgentsPickup($arParamsJson);
                 $result = $request->return;
                 $result = arFromUtfToWin(json_decode($result, true));
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2359'=>['result'=>$result]]);
+               // AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2386'=>['result'=>$result]]);
 
                 if(!empty($result['Error'])){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2376'=> ['Error' => $result['Error']]] );
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2389'=> ['Error' => $result['Error']]] );
                     exit();
                 }
-                $rec_id = setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent);
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2380'=> ['id' => $rec_id]] );
+                if(!$upd){
+                    $rec_id = setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent);
+                }else{
+                    $rec_id = setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent, $id_rec);
+                }
+
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2398'=> ['id' => $rec_id]] );
                 exit();
             }
 
@@ -2456,7 +2540,7 @@ if ($mode === '1c')
                         //NOTE Заявки
                         if ((int)($ar_res['IBLOCK_ID']) == 82)
                         {
-                            if ($_POST['type'] === 'accepted')
+                            if ($_POST['type'] == 'accepted')
                             {
                                 if (strlen(trim($arRes['Number'])))
                                 {
@@ -2500,8 +2584,9 @@ if ($mode === '1c')
                         //NOTE Накладные
                         elseif ((int)($ar_res['IBLOCK_ID']) == 83)
                         {
-                            if ($_POST['type'] === 'accepted')
+                            if ($_POST['type'] == 'accepted')
                             {
+                                AddToLogs('Accepted', ['ID'=>$arRes['ID']]);
                                 $id_state = 0;
                                 $db_props = CIBlockElement::GetProperty(83, (int)$arRes['ID'], ["sort" => "asc"], ["ID"=>572]);
                                 if ($ar_props = $db_props->Fetch())

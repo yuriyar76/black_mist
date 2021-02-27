@@ -2,20 +2,134 @@
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
 {
     die();
-
 }
 ?>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+        function ChangePeriodInApps() {
+            var fd = $('#input-group-inapps-from-date');
+            var td = $('#input-group-inapps-to-date');
+            fd.removeClass('has-error');
+            td.removeClass('has-error');
+            var datefrom = $("input#inapps-from-date").val();
+            var dateto = $("input#inapps-to-date").val();
+            if ((dateto.length > 0) && (datefrom.length > 0)) {
+                location.href = '<?=$arParams['LINK'];?>index.php?ChangePeriodInapps=Y&datefrom=' + datefrom + '&dateto=' + dateto;
+            } else {
+                if (dateto.length <= 0) {
+                    fd.addClass('has-error');
+                }
+                if (datefrom.length <= 0) {
+                    td.addClass('has-error');
+                }
+            }
+        }
 
+    </script>
 <div class="container">
     <div class="row">
         <div class="col-md-6">
             <h3>Страница в разработке</h3>
         </div>
-
     </div>
 </div>
+   <?php if($arResult['OPEN']):?>
+    <div class="container-fluid">
+       <div class="row">
+        <div class="col-md-3">
+            <div class="btn-group" role="group">
+                <a href="" class="btn btn-warning" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Обновить список">
+                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                </a>
+            </div>
+        </div>
+           <div class="col-md-9 text-right">
+               <form action="" method="get" name="filterform" class="form-inline">
+                   <?
+                   if ($arResult['LIST_OF_AGENTS'])
+                   {
+                       ?>
+                       <div class="form-group">
+                           <select name="agent" size="1" class="form-control selectpicker" id="agent" onChange="ChangeAgent();"  data-live-search="true" data-width="auto">
+                               <option value="0"></option>
+                               <?
+                               foreach ($arResult['LIST_OF_AGENTS'] as $k => $v)
+                               {
+                                   $s = ($arResult['CURRENT_AGENT'] == $k) ? ' selected' : '';
+                                   ?>
+                                   <option value="<?=$k;?>"<?=$s;?>><?=$v;?></option>
+                                   <?
+                               }
+                               ?>
+                           </select>
+                       </div>
+                       <?
+                   }
+                   ?>
+                   <div class="form-group">
+                       <div class="input-group" id="input-group-inapps-from-date">
+                           <input type="text" class="form-control maskdate" aria-describedby="basic-addon1"
+                                  name="dateperiodfrom" placeholder="ДД.ММ.ГГГГ"
+                                  value="<?=$arResult['INAPPS_FROM_DATE'];?>"
+                                  onChange="ChangePeriodInApps();" id="inapps-from-date">
+                           <span class="input-group-addon" id="basic-addon1">
+							<?
+                            $APPLICATION->IncludeComponent(
+                                "bitrix:main.calendar",
+                                ".default",
+                                [
+                                    "SHOW_INPUT" => "N",
+                                    "FORM_NAME" => "",
+                                    "INPUT_NAME" => "dateperiodfrom",
+                                    "INPUT_NAME_FINISH" => "",
+                                    "INPUT_VALUE" => "",
+                                    "INPUT_VALUE_FINISH" => false,
+                                    "SHOW_TIME" => "N",
+                                    "HIDE_TIMEBAR" => "Y",
+                                    "INPUT_ADDITIONAL_ATTR" => ''
+                                ],
+                                false
+                            );
+                            ?>
+						</span>
+                       </div>
+                   </div>
+                   <div class="form-group">&nbsp;&mdash;&nbsp;</div>
+                   <div class="form-group">
+                       <div class="input-group" id="input-group-inapps-to-date">
+                           <input type="text" class="form-control maskdate" aria-describedby="basic-addon2"
+                                  name="dateperiodto" placeholder="ДД.ММ.ГГГГ"
+                                  value="<?=$arResult['INAPPS_TO_DATE'];?>" onChange="ChangePeriodInApps();"
+                                  id="inapps-to-date">
+                           <span class="input-group-addon" id="basic-addon2">
+							<?
+                            $APPLICATION->IncludeComponent(
+                                "bitrix:main.calendar",
+                                ".default",
+                                [
+                                    "SHOW_INPUT" => "N",
+                                    "FORM_NAME" => "",
+                                    "INPUT_NAME" => "dateperiodto",
+                                    "INPUT_NAME_FINISH" => "",
+                                    "INPUT_VALUE" => "",
+                                    "INPUT_VALUE_FINISH" => false,
+                                    "SHOW_TIME" => "N",
+                                    "HIDE_TIMEBAR" => "Y",
+                                    "INPUT_ADDITIONAL_ATTR" => ''
+                                ],
+                                false
+                            );
+                            ?>
+						</span>
+                       </div>
+                   </div>
+               </form>
+           </div>
 
-
+    </div>
+    </div>
 <?php
 //if($_GET['dev'] == 1):
     $pagen = $arResult['AGENT_DATA_OBJ']['obj'];
@@ -26,7 +140,6 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
             <div class="modal-content">
                <!-- <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-
                  </div>-->
                 <div class="modal-body">
                     <h4 style="text-align: center">Обновляем...</h4>
@@ -38,14 +151,11 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
              </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
-
     <?php foreach($arResult['AGENT_DATA'] as $res):?>
         <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="modal_<?=$res['ID']?>" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-
                     <div class="modal-body">
-
                         <div class="row">
                             <div class="col-md-12 text-right">
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -57,11 +167,9 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                             <div id="NAME_MOD_<?=$res['ID'];?>" class="col-md-6"><h3>Номер заявки:
                                     <?=$res['NAME']?></h3>
                             </div>
-
                             <div id="PROPERTY_1023_MOD_<?=$res['ID'];?>" class="col-md-6 text-right">
                                 <h3>Номер накладной: <?=$res['PROPERTY_1023']?></h3>
                             </div>
-
                         </div>
                         <div class="row">
                             <div class="col-md-6">
@@ -303,7 +411,6 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
             </div>
         </div>
     <?php endforeach;?>
-
     <table class="table table-condensed table-hover" data-toggle="table" data-show-columns="true"
            data-search="true"
            data-select-item-name="toolbar1" data-height="500" id="tableId">
@@ -356,7 +463,6 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                                data-placement="right" title="" data-original-title="Просмотр накладной">
                    </span>
                     </a>
-
                 </td>
                 <td id="PROPERTY_1025_<?=$res['ID'];?>"><?=$res['PROPERTY_1025']?></td>
                 <td id="PROPERTY_1026_<?=$res['ID'];?>"><?=$res['PROPERTY_1026']?></td>
@@ -371,18 +477,15 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                 <td id="PROPERTY_1043_<?=$res['ID'];?>"><?=$res['PROPERTY_1043']?></td>
                 <td id="PROPERTY_1060_<?=$res['ID'];?>"><?=$res['PROPERTY_1060']?></td>
             </tr>
-
         <? endforeach;?>
         </tbody>
     </table>
     <div style="display:flex; flex-direction: row; justify-content: flex-start; " class="row">
         <div class="pagination">
-            <?php $pagen->NavPrint('Заявки', true);
+            <?php echo $pagen;
             ?>
         </div>
     </div>
 
-
-
-<?//endif;
+<?endif;
 
