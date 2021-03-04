@@ -17,18 +17,33 @@ $MESS['ERR_CLOSE_2'] = 'Не заданы настройки подключения. Пожалуйста, обратитесь 
 $MESS['ERR_CLOSE_3'] = 'Ошибка настройки пользователя. Пожалуйста, обратитесь в <a href="/support/">тех. поддержку</a>.';
 $MESS['ERR_CLOSE_4'] = 'Ошибка доступа. Пожалуйста, обратитесь в <a href="/support/">тех. поддержку</a>.';
 $MESS['DEFAULT_COUNTRY_EXEC'] = 'Россия';
+$MESS["EX-2"] = "э2";
 $MESS["EXPRESS-2"] = "Экспресс-2";
 $MESS["EXPRESS 2"] = "Экспресс 2";
+$MESS["EX-4"] = "э4";
 $MESS["EXPRESS 4"] = "Экспресс 4";
 $MESS["EXPRESS-4"] = "Экспресс-4";
+$MESS["EX-8"] = "э8";
 $MESS["EXPRESS 8"] = "Экспресс 8";
 $MESS["EXPRESS-8"] = "Экспресс-8";
+$MESS["EX"] = "э";
 $MESS["EXPRESS"] = "Экспресс";
+$MESS["CASH_1"] = "н";
 $MESS["CASH"] = "Наличными";
+$MESS["ST"] = "с";
 $MESS["STANDART"] = "Стандарт";
 $MESS["ECON"] = "Эконом";
+$MESS["ECON_1"] = "эк";
 $MESS["SKLAD"] = "Склад-Склад";
+$MESS["BANK"] = "б";
 $MESS["SCHET_B"] = "По счету";
 $MESS["CARD"] = "Банковской картой";
-
+$MESS["TYPE_PAYS_S"] = "Отправитель";
+$MESS["TYPE_PAYS_S_1"] = "о";
+$MESS["TYPE_PAYS_R"] = "Получатель";
+$MESS["TYPE_PAYS_R_1"] = "п";
+$MESS["TYPE_PAYS_O"] = "Другой";
+$MESS["TYPE_PAYS_O_1"] = "д";
+$MESS["DOCUM"] = "Документы";
+$MESS["UNDOC"] = "Не документы";
 ?>

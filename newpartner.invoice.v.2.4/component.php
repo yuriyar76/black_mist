@@ -3835,7 +3835,7 @@ if ($arResult['MODE'] != 'close')
                         $arPostLogsVal[$k] = $v;
                     }
                 }
-                AddToLogs('InvAddPostValues',$arPostLogsVal);
+               // AddToLogs('InvAddPostValues',$arPostLogsVal);
                 $_SESSION[$_POST["key_session"]] = $_POST["rand"];
 
 
@@ -4140,7 +4140,7 @@ if ($arResult['MODE'] != 'close')
                         $rec_id = $el2->Add($arLoadProductArray2);
                         if($rec_id>0){
                             $arLoadProductArray2['ID'] = $rec_id;
-                            AddToLogs('SaveRecipientId', $arLoadProductArray2);
+                          //  AddToLogs('SaveRecipientId', $arLoadProductArray2);
                         }else{
                             $errLog = [
                                 $mess => "Ошибка записи",
@@ -4356,7 +4356,7 @@ if ($arResult['MODE'] != 'close')
                         $number_nakl = $id_in['number'];
                     }
                     // сумма доставки для клиентов с инд. прайсом - лог url в 1с
-                    AddToLogs('url_for_sum', [ $number_nakl => $url_for_sum_dev ]);
+                    //AddToLogs('url_for_sum', [ $number_nakl => $url_for_sum_dev ]);
                     $number_internal = trim($_POST['InternalNumber']);
                     $date_to = deleteTabs($_POST['TO_DELIVER_BEFORE_DATE']);
                     // добавить в поле спец. инструкций
@@ -4415,15 +4415,15 @@ if ($arResult['MODE'] != 'close')
                         548 => NewQuotes($_POST['COMPANY_SENDER']),
                         549 => $city_sender,
                         550 => deleteTabs($_POST['INDEX_SENDER']),
-                        551 => array('VALUE' => array('TYPE' => 'text', 'TEXT' => NewQuotes($_POST['ADRESS_SENDER']))),
+                        551 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => NewQuotes($_POST['ADRESS_SENDER'])]],
                         552 => NewQuotes($_POST['NAME_RECIPIENT']),
                         553 => NewQuotes($_POST['PHONE_RECIPIENT']),
                         554 => NewQuotes($_POST['COMPANY_RECIPIENT']),
                         555 => $city_recipient,
                         556 => deleteTabs($_POST['INDEX_RECIPIENT']),
                         562 => $_POST['TYPE_PAYS'],
-                        570 => array('VALUE' => array('TYPE' => 'text', 'TEXT' => $spec_instr)),
-                        571 => array('VALUE' => array('TYPE' => 'text', 'TEXT' => NewQuotes($_POST['ADRESS_RECIPIENT']))),
+                        570 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => $spec_instr]],
+                        571 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => NewQuotes($_POST['ADRESS_RECIPIENT'])]],
                         560 => deleteTabs($_POST['IN_DATE_DELIVERY']),
                         565 => (float)str_replace(',', '.', $_POST['FOR_PAYMENT']),
                         733 => (float)str_replace(',', '.', $_POST['PAYMENT_COD']),
@@ -4541,9 +4541,9 @@ if ($arResult['MODE'] != 'close')
                         $z_nakl_id = $el->Add($arLoadProductArray);
                         if($z_nakl_id){
                             break;
-                        }else{
-                            sleep(1);
                         }
+
+                        sleep(1);
                         $i++;
                     }
 
@@ -4564,9 +4564,9 @@ if ($arResult['MODE'] != 'close')
                             $z_nakl_id_ret = $el_ret->Add($arLoadProductArrayRet);
                             if($z_nakl_id_ret){
                                 break;
-                            }else{
-                                sleep(1);
                             }
+
+                            sleep(1);
                             $i++;
                         }
 
@@ -4703,7 +4703,7 @@ if ($arResult['MODE'] != 'close')
                         'WITH_RETURN' => $WITH_RETURN,
                         'ISOFFICE' => $isoffice
                     ];
-                    AddToLogs('invoices',convArrayToUTF($arLog));
+                   // AddToLogs('invoices',convArrayToUTF($arLog));
                     ///////////////////////////
                     /* pdf */
                     $sitysender = explode(", ", $_POST['CITY_SENDER']);
@@ -5243,7 +5243,8 @@ if ($arResult['MODE'] != 'close')
                                 $arEventFields['SIZE'] = "Габариты:" . "<br />";
                                 foreach ($_POST['pack_description'] as $key => $value) {
                                     $k = $key+1;
-                                    if(!empty($value['name'])){
+                                    if(!empty($value['weight'])){
+                                        if(empty($value['name'])) $value['name'] = "Место-{$k}";
                                         $arEventFields['SIZE'] .= "Наименование:  {$value['name']} ; 
                                     Мест: {$value['place']}; Вес: {$value['weight']} кг;
                                      Размеры: {$value['size'][0]} Х {$value['size'][1]} Х
@@ -5327,7 +5328,7 @@ if ($arResult['MODE'] != 'close')
                             $arHistoryUTF = convArrayToUTF($arHistory);
                             CIBlockElement::SetPropertyValuesEx($z_id_cur_ret, 87,
                                 ["STATE" => 316,"STATE_HISTORY" => json_encode($arHistoryUTF)]);
-                            AddToLogs('SendPost', ['Send'=>$arEventFieldsRet,  'Date'=>date("d.m.Y H:i:s")] );
+                           // AddToLogs('SendPost', ['Send'=>$arEventFieldsRet,  'Date'=>date("d.m.Y H:i:s")] );
                         }
 
                         // Вымпелком своя форма печати
@@ -6162,10 +6163,10 @@ if ($arResult['MODE'] != 'close')
                 $arResult["ERRORS"][] = 'Отсутствует логин или пароль';
             }
             /*  -0.4.1 if end */
-            $arResult['RESULTS'] = array(
+            $arResult['RESULTS'] = [
                 'ERRORS' => $arResult["ERRORS"],
                 'REQUESTS' => $arResult["REQUESTS"]
-            );
+            ];
             foreach ($arResult['RESULTS'] as $k => $v)
             {
                 foreach ($v as $kk => $vv)
@@ -7268,7 +7269,7 @@ if ($arResult['MODE'] != 'close')
                 //var_dump($arResult['IndividualPrice']);
                 if ($_POST["rand"] == $_SESSION[$_POST["key_session"]])
                 {
-                    $_POST = array();
+                    $_POST = [];
                     $arResult["ERRORS"][] = GetMessage("ERR_REPEATED_FORM");
                 }
                 else {
@@ -7287,8 +7288,7 @@ if ($arResult['MODE'] != 'close')
                                 $resfile = arFromUtfToWin($resfile);
 
                                 $el_first = trim($resfile[0][0]);
-                               // var_dump($el_first);
-                                $el_first_value = 'ShipperFIO';
+                                $el_first_value = 'Number_invoice';
                                 if($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
                                     $el_first_value = 'Number';
                                 }
@@ -7297,12 +7297,12 @@ if ($arResult['MODE'] != 'close')
                                     foreach($resfile as $key => &$value){
                                         if($key === 0){
                                             foreach($value as $k => $val){
-                                                $val = htmlspecialcharsEx($val);
+                                                $val = strip_tags($val);
                                                 $headers[$k] = trim($val);
                                             }
                                         }else{
                                             foreach($value as $k => &$val){
-                                                $val = trim(htmlspecialcharsEx($val));
+                                                $val = trim(strip_tags($val));
                                             }
                                         }
                                     }
@@ -7310,21 +7310,27 @@ if ($arResult['MODE'] != 'close')
                                     unset($resfile[0]);
 
                                     foreach($resfile as $key => $item){
+                                       if($item){
+                                           foreach($item as $k => $val){
+                                               if($val){
+                                                   $res_arr[$key][$headers[$k]] = $val;
+                                               }
 
-                                        foreach($item as $k => $val){
+                                           }
+                                       }
 
-                                           $res_arr[$key][$headers[$k]] = $val;
-                                        }
 
                                     }
+
                                     $id_in = MakeInvoiceNumberNew(1, 7, '90-');
                                     if($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
                                         //dump($res_arr);
                                         foreach($res_arr as $key=>$value) {
-                                            $city_sender = GetCityId(strip_tags($value['CitySender']));
-                                            $city_recipient = GetCityId(strip_tags($value['CityRecipient']));
+                                            $city_sender = GetCityId($value['CitySender']);
+                                            $city_recipient = GetCityId($value['CityRecipient']);
                                             if ($value['DateApplicationExecution']) {
-                                                $date_call = preg_replace('/-+/', '/', strip_tags($value['DateApplicationExecution']));
+                                                $date_call = preg_replace('/-+/', '/',
+                                                    $value['DateApplicationExecution']);
                                                 $date_call = date('d.m.Y', strtotime($date_call));
 
                                             } else {
@@ -7333,11 +7339,12 @@ if ($arResult['MODE'] != 'close')
                                             $Payment = 256;  //  банк
                                             $TYPE_DELIVERY = 244; // тип Стандарт
                                             $TypePays = 251;  // отправитель
-                                            $resecho_places = (int)strip_tags($value['Places']);
-                                            $resecho_weight = (float)str_replace(',', '.', strip_tags($value['Weight']));
+                                            $resecho_places = (int)$value['Places'];
+                                            $resecho_weight = (float)str_replace(',', '.', $value['Weight']);
                                             $SpecDelivery = '';
                                             if($value['SpecialInstructions'] || $value['WhatShouldTake']){
-                                                $SpecDelivery = strip_tags($value['SpecialInstructions']).' Что забирать - '.strip_tags($value['WhatShouldTake']);
+                                                $SpecDelivery = $value['SpecialInstructions'] . ' Что забирать - ' .
+                                                    $value['WhatShouldTake'];
                                             }
                                             // посчитать стоимость если есть вес
                                             $sum_dev = 0;
@@ -7373,7 +7380,7 @@ if ($arResult['MODE'] != 'close')
                                             // центр затрат
                                             $center_cost = '';
                                             $center_cost_id = false;
-                                            $cc = strip_tags($value['CenterCost']);
+                                            $cc = $value['CenterCost'];
                                             if($cc){
                                                 $arrCenterCost = GetInfoArr(false, false, 115,
                                                     ['ID','NAME', 'IBLOCK_ID'], ['ACTIVE'=>'Y','NAME' => trim($cc)]);
@@ -7397,14 +7404,14 @@ if ($arResult['MODE'] != 'close')
                                                 544 => $id_in['max_id'],  /* порядковый номер */
                                                 545 => $arResult['CURRENT_CLIENT'],  /* id клиента  */
                                                 981 => $center_cost_id,
-                                                546 => strip_tags($value['ContactPerson']),
-                                                547 => strip_tags($value['PhoneSender']),
-                                                548 => strip_tags($value['Company']),
+                                                546 => $value['ContactPerson'],
+                                                547 => $value['PhoneSender'],
+                                                548 => $value['Company'],
                                                 549 => $city_sender,
-                                                551 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => strip_tags($value['AdressSender'])]],
-                                                552 => strip_tags($value['NameRecipient']),
-                                                553 => strip_tags($value['PhoneRecipient']),
-                                                554 => strip_tags($value['CompanyRecipient']),
+                                                551 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => $value['AdressSender']]],
+                                                552 => $value['NameRecipient'],
+                                                553 => $value['PhoneRecipient'],
+                                                554 => $value['CompanyRecipient'],
                                                 555 => $city_recipient,
                                                 557 => $TYPE_DELIVERY,
                                                 560 => $date_call,
@@ -7416,7 +7423,7 @@ if ($arResult['MODE'] != 'close')
                                                 569 => '',
                                                 570 => ($SpecDelivery)?['VALUE' => ['TYPE' => 'text', 'TEXT' => $SpecDelivery]]:'',
                                                 571 => ($value['AdressRecipient'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
-                                                    strip_tags($value['AdressRecipient'])]]:'',
+                                                    $value['AdressRecipient']]]:'',
                                                 572 => 257,
                                                 679	=> 1,
                                                 737 => false,
@@ -7446,7 +7453,7 @@ if ($arResult['MODE'] != 'close')
                                     }else{
                                         foreach($res_arr as $key=>$value){
                                             $city_sender = GetCityId($value['ShipperCity']);
-                                            $city_recipient = GetCityId($value['CityRecipient']);
+                                            $city_recipient = GetCityId($value['ConsigneeCity']);
                                             if ($value['DateDelivery']){
                                                 $date_call = preg_replace('/-+/','/',$value['DateDelivery']);
                                                 $date_call =date('d.m.Y',strtotime($date_call));
@@ -7458,9 +7465,11 @@ if ($arResult['MODE'] != 'close')
                                             switch($value['Payment'])
                                             {
                                                 case Loc::getMessage("CASH"):
+                                                case Loc::getMessage("CASH_1"):
                                                     $Payment = 255;
                                                     break;
                                                 case Loc::getMessage("SCHET_B"):
+                                                case Loc::getMessage("BANK"):
                                                     $Payment = 256;
                                                     break;
                                                 case Loc::getMessage("CARD"):
@@ -7474,23 +7483,29 @@ if ($arResult['MODE'] != 'close')
                                             {
                                                 case Loc::getMessage("EXPRESS-2"):
                                                 case Loc::getMessage("EXPRESS 2"):
+                                                case Loc::getMessage("EX-2"):
                                                     $TYPE_DELIVERY = 345;
                                                     break;
                                                 case Loc::getMessage("EXPRESS-4"):
                                                 case Loc::getMessage("EXPRESS 4"):
+                                                case Loc::getMessage("EX-4"):
                                                     $TYPE_DELIVERY = 346;
                                                     break;
                                                 case Loc::getMessage("EXPRESS-8"):
                                                 case Loc::getMessage("EXPRESS 8"):
+                                                case Loc::getMessage("EX-8"):
                                                     $TYPE_DELIVERY = 338;
                                                     break;
                                                 case Loc::getMessage("EXPRESS"):
+                                                case Loc::getMessage("EX"):
                                                     $TYPE_DELIVERY = 243;
                                                     break;
                                                 case Loc::getMessage("STANDART"):
+                                                case Loc::getMessage("ST"):
                                                     $TYPE_DELIVERY = 244;
                                                     break;
                                                 case Loc::getMessage("ECON"):
+                                                case Loc::getMessage("ECON_1"):
                                                     $TYPE_DELIVERY = 245;
                                                     break;
                                                 case Loc::getMessage("SKLAD"):
@@ -7527,15 +7542,18 @@ if ($arResult['MODE'] != 'close')
                                                     $WhoDelivery = $arResult['DEAULTS']['WHO_DELIVERY'];
                                                     break;
                                             }
-                                            switch ($value['TypePyas'])
+                                            switch ($value['TypePays'])
                                             {
-                                                case 'Отправитель':
+                                                case Loc::getMessage("TYPE_PAYS_S"):
+                                                case Loc::getMessage("TYPE_PAYS_S_1"):
                                                     $TypePyas = 251;
                                                     break;
-                                                case 'Получатель':
+                                                case Loc::getMessage("TYPE_PAYS_R"):
+                                                case Loc::getMessage("TYPE_PAYS_R_1"):
                                                     $TypePyas = 252;
                                                     break;
-                                                case 'Другой':
+                                                case Loc::getMessage("TYPE_PAYS_O"):
+                                                case Loc::getMessage("TYPE_PAYS_O_1"):
                                                     $TypePyas = 253;
                                                     break;
                                                 case 'Служебное':
@@ -7551,7 +7569,7 @@ if ($arResult['MODE'] != 'close')
                                             if(!$resecho_weight){
                                                 $resecho_weight = 0.1;
                                             }
-                                            $SpecDelivery = htmlspecialchars($value['SpecDelivery']);
+
                                             $arGoods = [];
                                             for($i = 0; $i <= 5; $i++){
                                                 $c = (string)$i;
@@ -7564,7 +7582,6 @@ if ($arResult['MODE'] != 'close')
                                                     $arGoods[$i]['GoodSumNDS'] = $value['GoodSumNDS'.$c];
                                                     $arGoods[$i]['GoodPersentNDS'] = $value['GoodPersentNDS'.$c];
                                                 }
-
                                             }
                                             $arGoods = convArrayToUTF($arGoods);
                                             $PackDescr = [];
@@ -7621,7 +7638,12 @@ if ($arResult['MODE'] != 'close')
 
                                             }
                                             $PackDescr = convArrayToUTF($PackDescr);
-                                            $number_nakl = $id_in['number'].'-'.$key;
+
+                                            if(!empty($value['Number_invoice'])){
+                                                $number_nakl = trim($value['Number_invoice']);
+                                            }else{
+                                                $number_nakl = $id_in['number'].'-'.$key;
+                                            }
                                             $resecho = [
                                                 544 => $id_in['max_id'],  /* порядковый номер */
                                                 545 => $arResult['CURRENT_CLIENT'],  /* id клиента  */
@@ -7630,7 +7652,8 @@ if ($arResult['MODE'] != 'close')
                                                 548 => $value['ShipperCompany'],
                                                 549 => $city_sender,
                                                 550 => $value['ShipperZip'],
-                                                551 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => $value['ShipperAddress']]],
+                                                551 =>  ($value['ShipperAddress'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
+                                                    $value['ShipperAddress']]]:'',
                                                 552 => $value['ConsigneeFIO'],
                                                 553 => $value['ConsigneePhone'],
                                                 554 => $value['ConsigneeCompany'],
@@ -7650,7 +7673,8 @@ if ($arResult['MODE'] != 'close')
                                                 567 => $resecho_places,
                                                 568 => $resecho_weight,
                                                 569 => '',
-                                                570 => ($SpecDelivery)?['VALUE' => ['TYPE' => 'text', 'TEXT' => $SpecDelivery]]:'',
+                                                570 => ($value['SpecDelivery'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
+                                                    $value['SpecDelivery']]]:'',
                                                 571 => ($value['ConsigneeAddress'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
                                                     $value['ConsigneeAddress']]]:'',
                                                 572 => 257,
@@ -7666,14 +7690,14 @@ if ($arResult['MODE'] != 'close')
                                             //dump($resecho);
                                             //exit;
                                             $el = new CIBlockElement;
-                                            $arLoadProductArray = Array(
+                                            $arLoadProductArray = [
                                                 "MODIFIED_BY" => $USER->GetID(),
                                                 "IBLOCK_SECTION_ID" => false,
                                                 "IBLOCK_ID" => 83,
                                                 "PROPERTY_VALUES" => $resecho,
                                                 "NAME" => $number_nakl,
                                                 "ACTIVE" => "Y"
-                                            );
+                                            ];
                                             if ($z_nakl_id = $el->Add($arLoadProductArray))
                                             {
                                                 $arResult["MESSAGE"][] = "Загрузка прошла успешно";
@@ -7780,8 +7804,9 @@ if ($arResult['MODE'] != 'close')
         }
 
 
+
         $z_id = (int)$arResult['REQUEST']['id'];
-        echo " <script>
+         echo " <script>
                    let el = $('#myCallCurier_$z_id');
                    el.modal('hide');
            </script>";
@@ -7824,11 +7849,11 @@ if ($arResult['MODE'] != 'close')
         $number_nakl = $arResult['REQUEST']['name'];
 
         $result = GetInfoArr(false, $z_id, 83 );
-
+        AddToLogs('arDeliverySequence', ['comp2.4-7851'=>$result] );
         /* записать вызов в базу */
         $id_in_cur = GetMaxIDIN(87, 7);
-        $arHistory = array(array('date' => date('d.m.Y H:i:s'), 'status' => 315,
-            'status_descr' => 'Оформлена', 'comment' => ''));
+        $arHistory = [['date' => date('d.m.Y H:i:s'), 'status' => 315,
+            'status_descr' => 'Оформлена', 'comment' => '']];
         $arHistoryUTF = convArrayToUTF($arHistory);
         $el = new CIBlockElement;
         $arLoadProductArray = [
@@ -8101,7 +8126,7 @@ if ($arResult['MODE'] != 'close')
             "DocNumber" => $number_nakl,
             "TRANSPORT_TYPE" => (int)$result['PROPERTIES']['TRANSPORT_TYPE']['VALUE'],
         ];
-
+        AddToLogs('arDeliverySequence', ['comp2.4-8128'=>$arDeliverySequence] );
         $arDeliverySequence = convArrayToUTF($arDeliverySequence);
         $arParamsJson = [
             'ListOfDocs' => "[".json_encode($arDeliverySequence)."]"
@@ -8109,7 +8134,7 @@ if ($arResult['MODE'] != 'close')
        // $client = soap_inc();
         set_time_limit(0);
         $i = 1;
-        while ($i <= 12) {
+        while ($i <= 5) {
             $resultSD = $client->SetDocsListClient($arParamsJson);
             $mResult = $resultSD->return;
             $obj = json_decode($mResult, true);
@@ -8117,7 +8142,7 @@ if ($arResult['MODE'] != 'close')
                 $obj['Doc_1']['DATE'] = date("d.m.Y H:i:s");
                 break;
             } else {
-                sleep(30);
+                sleep(2);
             }
             $i++;
         }

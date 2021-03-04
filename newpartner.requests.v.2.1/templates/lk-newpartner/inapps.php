@@ -2,6 +2,7 @@
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
 {
     die();
+    // скрипт обновления заявок -bitrix\templates\lk-newpartner\js\invoice_custom.js
 }
 ?>
     <script>
@@ -27,6 +28,12 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
             }
         }
 
+        function ChangeAgentInapps()
+        {
+            var ag = $("select#agent").val();
+            location.href = '<?=$arParams['LINK'];?>index.php?ChangeAgentInapps=Y&agent='+ag;
+        }
+
     </script>
 <div class="container">
     <div class="row">
@@ -37,11 +44,14 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
 </div>
    <?php if($arResult['OPEN']):?>
     <div class="container-fluid">
+        <div class="row">
+
+        </div>
        <div class="row">
         <div class="col-md-3">
             <div class="btn-group" role="group">
-                <a href="" class="btn btn-warning" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="Обновить список">
-                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                <a href="" class="btn btn-warning" data-toggle="tooltip" data-placement="bottom" title=""
+                   data-original-title="Обновить список"> <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
                 </a>
             </div>
         </div>
@@ -52,12 +62,13 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                    {
                        ?>
                        <div class="form-group">
-                           <select name="agent" size="1" class="form-control selectpicker" id="agent" onChange="ChangeAgent();"  data-live-search="true" data-width="auto">
+                           <select name="agent" size="1" class="form-control selectpicker" id="agent" onChange="ChangeAgentInapps();"
+                                   data-live-search="true" data-width="auto">
                                <option value="0"></option>
                                <?
                                foreach ($arResult['LIST_OF_AGENTS'] as $k => $v)
                                {
-                                   $s = ($arResult['CURRENT_AGENT'] == $k) ? ' selected' : '';
+                                   $s = ($_SESSION['CURRENT_AGENT'] == $k) ? ' selected' : '';
                                    ?>
                                    <option value="<?=$k;?>"<?=$s;?>><?=$v;?></option>
                                    <?
@@ -395,9 +406,9 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                                     <? endforeach;?>
                                     <?else:?>
                                          <tr>
-                                             <td width="30%">нет данных</td>
-                                             <td width="35%">нет данных</td>
-                                             <td width="35%">нет данных</td>
+                                             <td width="30%"><?=$res['PROPERTY_1061']?></td>
+                                             <td width="35%"><?=$res['PROPERTY_1062'];?></td>
+                                             <td width="35%"><?=$res['PROPERTY_1062'];?></td>
                                          </tr>
                                     <?endif;?>
                                     </tbody>
@@ -431,6 +442,12 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
             <th data-field="column10" data-sortable="true" data-switchable="true">Телефон Отправителя</th>
             <th data-field="column11" data-sortable="true" data-switchable="true">Город Отправителя</th>
             <th data-field="column12" data-sortable="true" data-switchable="false">Адрес Отправителя</th>
+
+            <th data-field="column12" data-sortable="true" data-switchable="false">Мест</th>
+            <th data-field="column12" data-sortable="true" data-switchable="false">Вес</th>
+            <th data-field="column12" data-sortable="true" data-switchable="false">Объемный<br>вес</th>
+            <th data-field="column12" data-sortable="true" data-switchable="false">Специальные<br>инструкции</th>
+
             <th data-field="column13" data-sortable="true" data-switchable="true">Получатель</th>
             <th data-field="column14" data-sortable="true" data-switchable="true">ФИО Получателя</th>
             <th data-field="column15" data-sortable="true" data-switchable="false">Компания Получателя</th>
@@ -440,8 +457,23 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
         </tr>
         </thead>
         <tbody>
-        <? foreach($arResult['AGENT_DATA'] as $res):?>
-            <tr id = "<?=$res['ID'];?>">
+        <? foreach($arResult['AGENT_DATA'] as $res):
+            $color_class = '';
+            if($res['PROPERTY_1062'] === "Доставлено"){
+                $color_class = 'supersuccess';
+            }
+            elseif($res['PROPERTY_1062'] === "Назначена агенту"){
+                $color_class = 'success';
+            }
+            elseif(($res['PROPERTY_1062'] === "Исключительная ситуация!") ||
+                ($res['PROPERTY_1062'] === "Отмена заявки") ){
+                $color_class = 'danger';
+            }
+            else{
+                $color_class = 'warning';
+            }
+            ?>
+            <tr id = "<?=$res['ID'];?>" class="<?=$color_class;?>">
                 <td id="NAME_<?=$res['ID'];?>"><?=$res['NAME']?></td>
                 <td id="PROPERTY_1023_<?=$res['ID'];?>"><?=$res['PROPERTY_1023']?></td>
                 <td id="PROPERTY_1061_<?=$res['ID'];?>"><?=$res['PROPERTY_1061']?></td>
@@ -470,6 +502,12 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                 <td id="PROPERTY_1028_<?=$res['ID'];?>"><?=$res['PROPERTY_1028']?></td>
                 <td id="PROPERTY_1032_<?=$res['ID'];?>"><?=$res['PROPERTY_1032']?></td>
                 <td id="PROPERTY_1033_<?=$res['ID'];?>"><?=$res['PROPERTY_1033']?></td>
+
+                <td id="PROPERTY_1036_<?=$res['ID'];?>"><?=$res['PROPERTY_1070']?></td>
+                <td id="PROPERTY_1037_<?=$res['ID'];?>"><?=$res['PROPERTY_1068']?></td>
+                <td id="PROPERTY_1038_<?=$res['ID'];?>"><?=$res['PROPERTY_1069']?></td>
+                <td id="PROPERTY_1039_<?=$res['ID'];?>"><?=$res['PROPERTY_1067']?></td>
+
                 <td id="PROPERTY_1036_<?=$res['ID'];?>"><?=$res['PROPERTY_1036']?></td>
                 <td id="PROPERTY_1037_<?=$res['ID'];?>"><?=$res['PROPERTY_1037']?></td>
                 <td id="PROPERTY_1038_<?=$res['ID'];?>"><?=$res['PROPERTY_1038']?></td>
@@ -482,10 +520,8 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
     </table>
     <div style="display:flex; flex-direction: row; justify-content: flex-start; " class="row">
         <div class="pagination">
-            <?php echo $pagen;
-            ?>
+            <?php echo $pagen; ?>
         </div>
     </div>
-
 <?endif;
 

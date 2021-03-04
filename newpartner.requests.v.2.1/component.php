@@ -204,11 +204,12 @@ if (is_array($_SESSION['WARNINGS']))
 
 if ($mode === 'inapps')
 {
+
     $arResult['INAPPS_TO_DATE'] = date('d.m.Y');
     $prevdate = strtotime('-1 month');
     $arResult['INAPPS_FROM_DATE'] = date('d.m.Y',$prevdate);
-    $arResult['INAPPS_FROM_DATE_FOR_1C'] = date('Y-m-d',$prevdate);
-    $arResult['INAPPS_TO_DATE_FOR_1C'] = date('Y-m-d');
+   /* $arResult['INAPPS_FROM_DATE_FOR_1C'] = date('Y-m-d',$prevdate);
+    $arResult['INAPPS_TO_DATE_FOR_1C'] = date('Y-m-d');*/
 
     if ($_GET['ChangePeriodInapps'] === 'Y')
     {
@@ -246,7 +247,49 @@ if ($mode === 'inapps')
 
         }
     }
+    $arResult['LIST_OF_AGENTS'] = false;
 
+    if ($arResult['ADMIN_AGENT'])
+    {
+        if ($arParams["TYPE"] == 53)
+        {
+            $arResult['LIST_OF_AGENTS'] = AvailableAgents(false, $agent_id);
+        }
+        if(isset($_SESSION['CURRENT_AGENT_ID'])){
+            $agent_id =  $_SESSION['CURRENT_AGENT_ID'];
+        }
+       // dump( $arResult['LIST_OF_AGENTS']);
+        if ($_GET['ChangeAgentInapps'] === 'Y')
+        {
+            if (isset($arResult['LIST_OF_AGENTS'][$_GET['agent']]))
+            {
+                $_SESSION['CURRENT_AGENT_ID'] = $agent_id = $_GET['agent'];
+                $_SESSION['CURRENT_AGENT'] = $_GET['agent'];
+                $arResult['CURRENT_AGENT'] = $_GET['agent'];
+
+                $db_props = CIBlockElement::GetProperty(40,$arResult['CURRENT_AGENT'], ["sort" => "asc"],
+                    ["CODE"=>"INN"]);
+                if($ar_props = $db_props->Fetch())
+                {
+                    $arResult['CURRENT_INN'] = $ar_props["VALUE"];
+                }
+                else
+                {
+                    $arResult['CURRENT_INN'] = false;
+                }
+                $_SESSION['CURRENT_INN'] = $arResult['CURRENT_INN'];
+            }
+            elseif ((int)$_GET['agent'] == 0)
+            {
+                unset($_SESSION['CURRENT_AGENT']);
+                unset($_SESSION['CURRENT_INN']);
+                $arResult['CURRENT_AGENT'] = false;
+                $arResult['CURRENT_INN'] = false;
+
+            }
+        }
+    }
+    //dump($arResult['CURRENT_INN']);
 
     if (!empty($_SESSION['INAPPS_TO_DATE']))
     {
@@ -281,7 +324,6 @@ if ($mode === 'inapps')
                 $arrEvents[$key]['Date'] = $date;
             }
             $arResult['AGENT_DATA'][$i]['EVENTS_ARR'] = $arrEvents;
-
 
         }
         $i++;
