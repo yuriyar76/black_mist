@@ -428,32 +428,32 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
         <thead>
         <tr>
             <th data-field="column1" data-sortable="true" data-switchable="false">Заявка</th>
-            <th data-field="column2" data-sortable="true" data-switchable="true">Накладная</th>
+            <th data-field="column2" data-sortable="true" data-switchable="false">Накладная</th>
             <th data-field="column3" data-sortable="true" data-switchable="true">Дата</th>
-            <th data-field="column4" data-sortable="true" data-switchable="true">Выполнить</th>
+            <th data-field="column4" data-sortable="true" data-switchable="false">Выполнить</th>
             <th data-field="column5" data-sortable="true" data-switchable="true">Статус</th>
-            <th data-field="column6" data-sortable="false" data-switchable="true">
+            <th data-field="column6" data-sortable="false" data-switchable="false">
             <span class="glyphicon glyphicon-zoom-in" aria-hidden="true" data-toggle="tooltip"
                   data-placement="right" title="" data-original-title="Просмотр накладной"></span>
             </th>
             <th data-field="column7" data-sortable="true" data-switchable="true">Отправитель</th>
-            <th data-field="column8" data-sortable="true" data-switchable="false">ФИО Отправителя</th>
+            <th data-field="column8" data-sortable="true" data-switchable="true">ФИО Отправителя</th>
             <th data-field="column9" data-sortable="true" data-switchable="true">Компания Отправителя</th>
             <th data-field="column10" data-sortable="true" data-switchable="true">Телефон Отправителя</th>
             <th data-field="column11" data-sortable="true" data-switchable="true">Город Отправителя</th>
-            <th data-field="column12" data-sortable="true" data-switchable="false">Адрес Отправителя</th>
+            <th data-field="column12" data-sortable="true" data-switchable="true">Адрес Отправителя</th>
 
-            <th data-field="column12" data-sortable="true" data-switchable="false">Мест</th>
-            <th data-field="column12" data-sortable="true" data-switchable="false">Вес</th>
-            <th data-field="column12" data-sortable="true" data-switchable="false">Объемный<br>вес</th>
-            <th data-field="column12" data-sortable="true" data-switchable="false">Специальные<br>инструкции</th>
+            <th data-field="column13" data-sortable="true" data-switchable="true">Мест</th>
+            <th data-field="column14" data-sortable="true" data-switchable="true">Вес</th>
+            <th data-field="column15" data-sortable="true" data-switchable="true">Об.вес</th>
+            <th data-field="column16" data-sortable="true" data-switchable="true">Специальные инструкции</th>
 
-            <th data-field="column13" data-sortable="true" data-switchable="true">Получатель</th>
-            <th data-field="column14" data-sortable="true" data-switchable="true">ФИО Получателя</th>
-            <th data-field="column15" data-sortable="true" data-switchable="false">Компания Получателя</th>
-            <th data-field="column16" data-sortable="true" data-switchable="true">Телефон Получателя</th>
-            <th data-field="column17" data-sortable="true" data-switchable="true">Город Получателя</th>
-            <th data-field="column18" data-sortable="true" data-switchable="true">Адрес Получателя</th>
+            <th data-field="column17" data-sortable="true" data-switchable="true">Получатель</th>
+            <th data-field="column18" data-sortable="true" data-switchable="true">ФИО Получателя</th>
+            <th data-field="column19" data-sortable="true" data-switchable="true">Компания Получателя</th>
+            <th data-field="column20" data-sortable="true" data-switchable="true">Телефон Получателя</th>
+            <th data-field="column21" data-sortable="true" data-switchable="true">Город Получателя</th>
+            <th data-field="column22" data-sortable="true" data-switchable="true">Адрес Получателя</th>
         </tr>
         </thead>
         <tbody>

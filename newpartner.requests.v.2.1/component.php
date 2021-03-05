@@ -220,7 +220,7 @@ if ($mode === 'inapps')
             $currentdate = strtotime(date('Y-m-d'));
             $timePostDateTo = strtotime($arPostDateTo['year'].'-'.str_pad($arPostDateTo['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($arPostDateTo['day'],2,'0',STR_PAD_LEFT));
             $timePostDateFrom = strtotime($arPostDateFrom['year'].'-'.str_pad($arPostDateFrom['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($arPostDateFrom['day'],2,'0',STR_PAD_LEFT));
-            if ($timePostDateFrom > $timePostDateTo)
+           /* if ($timePostDateFrom > $timePostDateTo)
             {
                 $vremVar = $timePostDateTo;
                 $timePostDateTo = $timePostDateFrom;
@@ -229,7 +229,7 @@ if ($mode === 'inapps')
             }
             if ($timePostDateTo > $currentdate)
             {
-                $timePostDateTo = $currentdate;
+               // $timePostDateTo = $currentdate;
             }
             if ($timePostDateFrom > $timePostDateTo)
             {
@@ -239,7 +239,7 @@ if ($mode === 'inapps')
             if (($timeFromToRazn/86400) > 90)
             {
                 $timePostDateFrom = strtotime('-3 month',$timePostDateTo);
-            }
+            }*/
             $arResult['INAPPS_FROM_DATE'] = date('d.m.Y',$timePostDateFrom);
             $_SESSION['INAPPS_FROM_DATE'] = date('d.m.Y',$timePostDateFrom);
             $arResult['INAPPS_TO_DATE'] = date('d.m.Y',$timePostDateTo);
@@ -302,15 +302,15 @@ if ($mode === 'inapps')
     $arFilter = [
         "IBLOCK_ID" => 117,
          "ACTIVE" => "Y",
-         ">=DATE_CREATE" => $arResult['INAPPS_FROM_DATE'].' 00:00:00',
-         "<=DATE_CREATE" => $arResult['INAPPS_TO_DATE'].' 23:59:59',
+         ">=PROPERTY_RECIPIENTDATAAPP_VALUE" => ConvertDateTime($arResult['INAPPS_FROM_DATE'], "YYYY-MM-DD") . " 00:00:00",
+         "<=PROPERTY_RECIPIENTDATAAPP_VALUE" => ConvertDateTime($arResult['INAPPS_TO_DATE'], "YYYY-MM-DD") . ' 23:59:59',
          "=PROPERTY_CREATOR" => $agent_id,
     ];
 
     $arSelect = [
-        "ID","NAME", "ACTIVE", "IBLOCK_ID", "PROPERTY_*"
+        "ID","NAME",  "ACTIVE", "IBLOCK_ID", "PROPERTY_*"
     ];
-    $res = CIBlockElement::GetList(['ID'=>'DESC'], $arFilter, false, ["nPageSize" => 20, "bShowAll" => true], $arSelect);
+    $res = CIBlockElement::GetList(['ID'=>'DESC'], $arFilter, false, ["nPageSize" => 30, "bShowAll" => true], $arSelect);
     $res->NavStart(0);
     $i = 0;
     while ($ob = $res->GetNextElement()) {
@@ -324,21 +324,19 @@ if ($mode === 'inapps')
                 $arrEvents[$key]['Date'] = $date;
             }
             $arResult['AGENT_DATA'][$i]['EVENTS_ARR'] = $arrEvents;
-
         }
         $i++;
     }
-    $res->nPageWindow = 5;
+    $res->nPageWindow = 10;
     $arResult['AGENT_DATA_OBJ']['obj'] = $res->GetPageNavStringEx(
         $navComponentObject,
         "Заявки",
         'pagination'
     );
     //$arResult['AGENT_DATA_OBJ']['obj'] = $res;
-
 }
 
-if ($mode == 'request_pdf')
+if ($mode === 'request_pdf')
 {
 	$arResult['REQUEST'] = false;
 	$id_reqv = (int)$_GET['id'];
