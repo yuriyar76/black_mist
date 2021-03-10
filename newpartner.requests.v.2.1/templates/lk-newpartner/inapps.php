@@ -503,10 +503,10 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
                 <td id="PROPERTY_1032_<?=$res['ID'];?>"><?=$res['PROPERTY_1032']?></td>
                 <td id="PROPERTY_1033_<?=$res['ID'];?>"><?=$res['PROPERTY_1033']?></td>
 
-                <td id="PROPERTY_1036_<?=$res['ID'];?>"><?=$res['PROPERTY_1070']?></td>
-                <td id="PROPERTY_1037_<?=$res['ID'];?>"><?=$res['PROPERTY_1068']?></td>
-                <td id="PROPERTY_1038_<?=$res['ID'];?>"><?=$res['PROPERTY_1069']?></td>
-                <td id="PROPERTY_1039_<?=$res['ID'];?>"><?=$res['PROPERTY_1067']?></td>
+                <td id="PROPERTY_1070_<?=$res['ID'];?>"><?=$res['PROPERTY_1070']?></td>
+                <td id="PROPERTY_1068_<?=$res['ID'];?>"><?=$res['PROPERTY_1068']?></td>
+                <td id="PROPERTY_1069_<?=$res['ID'];?>"><?=$res['PROPERTY_1069']?></td>
+                <td id="PROPERTY_1067_<?=$res['ID'];?>"><?=$res['PROPERTY_1067']?></td>
 
                 <td id="PROPERTY_1036_<?=$res['ID'];?>"><?=$res['PROPERTY_1036']?></td>
                 <td id="PROPERTY_1037_<?=$res['ID'];?>"><?=$res['PROPERTY_1037']?></td>

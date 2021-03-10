@@ -204,7 +204,6 @@ if (is_array($_SESSION['WARNINGS']))
 
 if ($mode === 'inapps')
 {
-
     $arResult['INAPPS_TO_DATE'] = date('d.m.Y');
     $prevdate = strtotime('-1 month');
     $arResult['INAPPS_FROM_DATE'] = date('d.m.Y',$prevdate);
@@ -220,7 +219,8 @@ if ($mode === 'inapps')
             $currentdate = strtotime(date('Y-m-d'));
             $timePostDateTo = strtotime($arPostDateTo['year'].'-'.str_pad($arPostDateTo['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($arPostDateTo['day'],2,'0',STR_PAD_LEFT));
             $timePostDateFrom = strtotime($arPostDateFrom['year'].'-'.str_pad($arPostDateFrom['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($arPostDateFrom['day'],2,'0',STR_PAD_LEFT));
-           /* if ($timePostDateFrom > $timePostDateTo)
+
+          /*  if ($timePostDateFrom > $timePostDateTo)
             {
                 $vremVar = $timePostDateTo;
                 $timePostDateTo = $timePostDateFrom;
@@ -229,7 +229,7 @@ if ($mode === 'inapps')
             }
             if ($timePostDateTo > $currentdate)
             {
-               // $timePostDateTo = $currentdate;
+                $timePostDateTo = $currentdate;
             }
             if ($timePostDateFrom > $timePostDateTo)
             {
@@ -240,10 +240,11 @@ if ($mode === 'inapps')
             {
                 $timePostDateFrom = strtotime('-3 month',$timePostDateTo);
             }*/
-            $arResult['INAPPS_FROM_DATE'] = date('d.m.Y',$timePostDateFrom);
-            $_SESSION['INAPPS_FROM_DATE'] = date('d.m.Y',$timePostDateFrom);
-            $arResult['INAPPS_TO_DATE'] = date('d.m.Y',$timePostDateTo);
-            $_SESSION['INAPPS_TO_DATE'] = date('d.m.Y',$timePostDateTo);
+
+            $arResult['INAPPS_FROM_DATE'] = trim($_GET['datefrom']);
+            $_SESSION['INAPPS_FROM_DATE'] = trim($_GET['datefrom']);
+            $arResult['INAPPS_TO_DATE'] = trim($_GET['dateto']);
+            $_SESSION['INAPPS_TO_DATE'] = trim($_GET['dateto']);
 
         }
     }
@@ -299,18 +300,25 @@ if ($mode === 'inapps')
     {
         $arResult['INAPPS_FROM_DATE'] = $_SESSION['INAPPS_FROM_DATE'];
     }
+    $current_N = date("Y-m-d", strtotime($arResult['INAPPS_TO_DATE'] . "1 day"));
     $arFilter = [
         "IBLOCK_ID" => 117,
          "ACTIVE" => "Y",
-         ">=PROPERTY_RECIPIENTDATAAPP_VALUE" => ConvertDateTime($arResult['INAPPS_FROM_DATE'], "YYYY-MM-DD") . " 00:00:00",
-         "<=PROPERTY_RECIPIENTDATAAPP_VALUE" => ConvertDateTime($arResult['INAPPS_TO_DATE'], "YYYY-MM-DD") . ' 23:59:59',
+        [
+            "LOGIC" => "AND",
+            ">=PROPERTY_RECIPIENTDATAAPP" => ConvertDateTime($arResult['INAPPS_FROM_DATE'],"YYYY-MM-DD"),
+            "<=PROPERTY_RECIPIENTDATAAPP" => $current_N,
+        ],
+
          "=PROPERTY_CREATOR" => $agent_id,
     ];
+
+
 
     $arSelect = [
         "ID","NAME",  "ACTIVE", "IBLOCK_ID", "PROPERTY_*"
     ];
-    $res = CIBlockElement::GetList(['ID'=>'DESC'], $arFilter, false, ["nPageSize" => 30, "bShowAll" => true], $arSelect);
+    $res = CIBlockElement::GetList(['PROPERTY_RECIPIENTDATAAPP'=>'DESC'], $arFilter, false, ["nPageSize" => 30, "bShowAll" => true], $arSelect);
     $res->NavStart(0);
     $i = 0;
     while ($ob = $res->GetNextElement()) {
@@ -342,7 +350,7 @@ if ($mode === 'request_pdf')
 	$id_reqv = (int)$_GET['id'];
 	if ($id_reqv > 0)
 	{	
-		$filter = array("IBLOCK_ID" => 82, "ID" => $id_reqv, "PROPERTY_CREATOR" => $agent_id);
+		$filter = ["IBLOCK_ID" => 82, "ID" => $id_reqv, "PROPERTY_CREATOR" => $agent_id];
 		if ($arResult['ADMIN_AGENT'])
 		{
 			unset($filter["PROPERTY_CREATOR"]);
@@ -2465,23 +2473,24 @@ if ($mode === '1c')
                     $upd = true;
                 }
                 if(!( $inn_uk && $inn_agent && $number_uid) ){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2362'=>['ERROR'=>'Нет  данных']]);
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2476'=>['ERROR'=>'Нет  данных', '$inn_uk'=>$inn_uk ,
+                        '$inn_agent'=>$inn_agent, '$number_uid'=>$number_uid ]]);
                     exit();
                 }
                 $id_uk = GetIDAgentByINN($inn_uk, 51);
                 $arrC = GetIDAgentByINN($inn_agent, 53, false, true);
                 $creator = (int)$arrC[0]['ID'];
                 $client = soap_include($id_uk);
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2369'=>['uid'=>$number_uid, 'uk'=>$inn_uk,
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2484'=>['uid'=>$number_uid, 'uk'=>$inn_uk,
                     'agent'=>$inn_agent, 'update' => $upd, 'post'=> $arRes]]);
 
 
                 if(!$creator){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2374'=> ['Error' => 'Агент не найден', 'number_uid'=>$number_uid]] );
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2489'=> ['Error' => 'Агент не найден', 'number_uid'=>$number_uid]] );
                     exit();
                 }
 
-               // AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2378'=>['client'=>$client, 'id_uk' => $id_uk]]);
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2492'=>['client'=>$client, 'id_uk' => $id_uk]]);
                 if(!$client) exit();
                 $arParamsJson = [
                     'UID' => $number_uid
@@ -2489,10 +2498,10 @@ if ($mode === '1c')
                 $request = $client->GetAgentsPickup($arParamsJson);
                 $result = $request->return;
                 $result = arFromUtfToWin(json_decode($result, true));
-               // AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2386'=>['result'=>$result]]);
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2501'=>['result'=>$result]]);
 
                 if(!empty($result['Error'])){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2389'=> ['Error' => $result['Error']]] );
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2504'=> ['Error' => $result['Error']]] );
                     exit();
                 }
                 if(!$upd){
@@ -2501,7 +2510,7 @@ if ($mode === '1c')
                     $rec_id = setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent, $id_rec);
                 }
 
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2398'=> ['id' => $rec_id]] );
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2513'=> ['id' => $rec_id]] );
                 exit();
             }
 
@@ -2714,11 +2723,11 @@ if ($mode === 'inapps_update'){
     if($id_uk){
         $client = soap_include($id_uk);
     }else{
-        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2568'=>['Error'=>'Нет УК']]);
+        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2725'=>['Error'=>'Нет УК']]);
         exit();
     }
     if(!$client) {
-        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2572'=>['Error'=>'Нет соединения с 1с']]);
+        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2729'=>['Error'=>'Нет соединения с 1с']]);
         exit();
     }
     $arParamsJson = [
@@ -2730,7 +2739,7 @@ if ($mode === 'inapps_update'){
     $arrC = GetIDAgentByINN($inn_agent, 53, false, true);
     $creator = $arrC[0]['ID'];
     if(!$creator){
-        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2583'=> ['Error' => 'Агент не найден',
+        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2741'=> ['Error' => 'Агент не найден',
             'number_uid'=>$number_uid]] );
         exit();
     }
@@ -2749,7 +2758,7 @@ if ($mode === 'inapps_update'){
             $rec['PROPERTY_1059'] = $rec['~PROPERTY_1059'];
         }
         if (!empty($rec)){
-            //AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2601'=>['result'=>$rec]]);
+            AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2760'=>['result'=>$rec]]);
             $jsonArr = json_encode(convArrayToUTF($rec));
             echo $jsonArr;
             exit();
