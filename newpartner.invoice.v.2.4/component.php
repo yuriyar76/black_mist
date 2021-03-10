@@ -1632,6 +1632,30 @@ if ($arResult['MODE'] != 'close')
                         $a['PROPERTY_STATE_ENUM_ID'] = 279;
                         break;
                 }
+                switch ($d['Delivery_Type'])
+                {
+                    case '—тандарт':
+                        $a['delivery_t'] = 'с';
+                        break;
+                    case 'Ёкспресс':
+                        $a['delivery_t'] = 'э';
+                        break;
+                    case 'Ёкспресс2':
+                        $a['delivery_t'] = '2';
+                        break;
+                    case 'Ёкспресс4':
+                        $a['delivery_t'] = '4';
+                        break;
+                    case '—клад-—клад':
+                        $a['delivery_t'] = 'д';
+                        break;
+                    case 'Ёконом':
+                        $a['delivery_t']= 'м';
+                        break;
+                    case 'Ёкспресс8':
+                        $a['delivery_t'] = '8';
+                        break;
+                }
                 $ind_nakl++;
                // AddToLogs('ObjDocs', ['component-1644'=> $a, 'N' =>  $ind_nak]);
                 $arResult['ARCHIVE'][] = $a;

@@ -206,13 +206,14 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
             divTable.addEventListener('click', function(e){
                 let el = e.target;
                 let idEl = el.id;
+                let t_dev = el.getAttribute('data-typedev');
                 idEl = idEl.replace(/\s+/g, '');
                 if(idEl.match(/tarif_no_.+/g))
                 {
                     const number = idEl.replace(/tarif_no_/,'');
 
                     //console.log(idEl, number);
-                    ajaxGetSum.get(`/api/GetSum.php?numberNo=Y&curClient=${curClient}&numberInvoice=${number}`, onGetResponse);
+                    ajaxGetSum.get(`/api/GetSum.php?numberNo=Y&curClient=${curClient}&numberInvoice=${number}&typeDev=${t_dev}`, onGetResponse);
                     function onGetResponse(error,res){
                         const elSumm = document.querySelector(`#${idEl}`);
                         const elSummContainer = elSumm.parentElement;
@@ -227,7 +228,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
                             elSummContainer.insertAdjacentHTML('afterbegin', `<span>${mess_err}</span>`);
                             document.cookie = `tarif_no_${number}=${mess_err}`;
                         }
-                        console.log(res, idEl, summ);
+                        console.log(res, idEl, summ, t_dev);
                     }
                 }
             });
@@ -295,19 +296,21 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
             };
         }
         const ajaxGetSum = customHttp();
+
         function getTarifFrom1C(){
             const divTable = document.querySelector('.fixed-table-container');
             const curClient = document.querySelector('#current_client').textContent;
             divTable.addEventListener('click', function(e){
                 let el = e.target;
                 let idEl = el.id;
+                let t_dev = el.getAttribute('data-typedev');
                 idEl = idEl.replace(/\s+/g, '');
                 if(idEl.match(/tarif_.+/g))
                 {
                     const number = idEl.replace(/tarif_/,'');
 
                     //console.log(idEl, number);
-                    ajaxGetSum.get(`/api/GetSum.php?number=Y&curClient=${curClient}&numberInvoice=${number}`, onGetResponse);
+                    ajaxGetSum.get(`/api/GetSum.php?number=Y&curClient=${curClient}&numberInvoice=${number}&typeDev=${t_dev}`, onGetResponse);
                     function onGetResponse(error,res){
                         const elSumm = document.querySelector(`#${idEl}`);
                         const elSummContainer = elSumm.parentElement;
@@ -322,7 +325,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
                             elSummContainer.insertAdjacentHTML('afterbegin', `<span>${mess_err}</span>`);
                             document.cookie = `tarif_${number}=${mess_err}`;
                         }
-                        console.log(res, idEl, summ);
+                        console.log(res, idEl, summ, t_dev);
                     }
                 }
             });
@@ -1432,7 +1435,8 @@ if($USER->isAdmin()){
                                               <span><?=iconv('utf-8', 'windows-1251',$_COOKIE['tarif_'.$id_from_name]);?></span>
                                         <?php else:?>
                                         <span style="cursor: pointer;" id = "tarif_<?=$id_from_name?>" class="glyphicon glyphicon-repeat"
-                                         aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Запрос цены">
+                                         aria-hidden="true" data-toggle="tooltip" data-placement="left" title="Запрос цены"
+                                         data-typedev="<?=$r['delivery_t'];?>">
                                         </span>
                                         <?php endif;?>
                                     <?php endif;?>

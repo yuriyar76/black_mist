@@ -280,11 +280,11 @@
 	}
 </script>
 
-<!--<div class="row">
+<div class="row">
 		<div class="col-md-12">
-            <h3><?/*=$arResult['TITLE'];*/?></h3>
+            <h3><?=$arResult['TITLE'];?></h3>
         </div>
-</div>-->
+</div>
 <?
 
  // echo "<!-- 11111111111111111111 <pre>";
@@ -315,10 +315,6 @@ if ($arResult['OPEN'])
 {
 	if ($arResult['INVOICE'])
 	{
-	    if($arResult['CURRENT_CLIENT'] == 9528186){
-            //dump($arResult['INVOICE']);
-        }
-
 	?>
 	<form action="" method="post" name="curform" class="form-vertical">
 		<input type="hidden" name="rand" value="<?=rand(100000,999999);?>">
@@ -327,211 +323,162 @@ if ($arResult['OPEN'])
         <input type="hidden" name="number" value="<?=$arResult['INVOICE']['NAME'];?>">
         <input type="hidden" name="save_ctrl" value="Сохранить">
         <div class="row">
-            <div class="col-md-6">
-                <h3><?=$arResult['TITLE'];?></h3>
-                <?php
-                // Вывод центра затрат для Абсолют Страхование  || $arResult['CURRENT_CLIENT'] == 56103010 || тестовый $arResult['CURRENT_CLIENT'] == 9528186
-                if ($arResult['CURRENT_CLIENT'] == 56103010 ):
-                    $arSelect = [
-                        "ID", "NAME"
-                    ];
-                    $resArr = GetInfoArr(false, false, 115, $arSelect, [], false);
-                    ?>
-                    <div class="form-group  <?=$arResult['ERR_FIELDS']['CENTER_EXPENSES']?>">
-                        <label for="center_expenses" class="control-label">Центр затрат</label>
-                        <select style = "width:50%" class="form-control" name="CENTER_EXPENSES" id="center_expenses" required>
-                            <option value="<?=$arResult['INVOICE']['PROPERTY_CENTER_EXPENSES_VALUE'];?>">
-                                <?=$arResult['INVOICE']['PROPERTY_CENTER_EXPENSES_NAME']?></option>
-                            <?php foreach($resArr as $value):?>
-                                <option value="<?=$value['ID']?>"><?=$value['NAME']?></option>
-                            <?php endforeach;?>
-                        </select>
-                    </div>
-                <?php endif;?>
-            </div>
-            <div class="col-md-5 col-md-offset-1">
-                <div class="form-group <?=strlen($arResult['ERR_FIELDS']['NUMBER']) ? $arResult['ERR_FIELDS']['NUMBER'] : 'has-success';?>">
-                    <table width="100%">
-                        <tr>
-                            <td>
-                                <div class="input-group">
-                                    <span class="input-group-addon" id="number">Номер накладной</span>
-                                    <input type="text" class="form-control" name="NUMBER" value="<?=$_POST['NUMBER'];?>" id="NUMBER" aria-describedby="number"> <br/><br/>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                &nbsp;
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-
-                                <?php if($arResult['CURRENT_CLIENT'] == 41478141 || $arResult['CURRENT_CLIENT'] == 9528186):?>
-                                    <div class="form-group <?=$arResult['ERR_FIELDS']['INNER_NUMBER'];?>">
-                                        <div class="input-group">
-                                            <span class="input-group-addon" id="number">Внутренний номер накладной</span>
-                                            <input type="text" class="form-control" name="InternalNumber"
-                                                   value="" id="InternalNumber" aria-describedby="number">
-                                        </div>
-                                    </div>
-                                <?endif;?>
-                            </td>
-                        </tr>
-                    </table>
-                    <span id="helpBlock" class="help-block"><i><?=GetMessage("HELP_TEXT");?></i></span>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <h4>Отправитель</h4>
-                <div class="edit2 form-group <?=$arResult['ERR_FIELDS']['COMPANY_SENDER'];?>">
-                    <label class="control-label">Компания</label>
-                    <input type="text" class="form-control" name="COMPANY_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_COMPANY_SENDER_VALUE'];?>" id="COMPANY_SENDER">
-                </div>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['NAME_SENDER'];?>">
-                    <label class="control-label">Фамилия</label>
-                    <input type="text" class="form-control" name="NAME_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_NAME_SENDER_VALUE'];?>" id="NAME_SENDER">
-                </div>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['PHONE_SENDER'];?>">
-                    <label class="control-label">Телефон</label>
-                    <input type="text" class="form-control" name="PHONE_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_PHONE_SENDER_VALUE'];?>" id="PHONE_SENDER">
-                </div>
+        	 <div class="col-md-3">
+             	<h4>Отправитель</h4>
+				<div class="edit2 form-group <?=$arResult['ERR_FIELDS']['COMPANY_SENDER'];?>">
+					<label class="control-label">Компания</label>
+					<input type="text" class="form-control" name="COMPANY_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_COMPANY_SENDER_VALUE'];?>" id="COMPANY_SENDER">
+				</div>
+				<div class="form-group <?=$arResult['ERR_FIELDS']['NAME_SENDER'];?>">
+					<label class="control-label">Фамилия</label>
+					<input type="text" class="form-control" name="NAME_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_NAME_SENDER_VALUE'];?>" id="NAME_SENDER">
+				</div>
+				<div class="form-group <?=$arResult['ERR_FIELDS']['PHONE_SENDER'];?>">
+					<label class="control-label">Телефон</label>
+					<input type="text" class="form-control" name="PHONE_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_PHONE_SENDER_VALUE'];?>" id="PHONE_SENDER">
+				</div>
                 <div class="form-group <?=$arResult['ERR_FIELDS']['CITY_SENDER'];?>">
                     <label class="control-label">Город</label>
                     <input type="text" class="form-control autocity" name="CITY_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_CITY_SENDER'];?>" id="autocity_sender">
                 </div>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['INDEX_SENDER'];?>">
+				<div class="form-group <?=$arResult['ERR_FIELDS']['INDEX_SENDER'];?>">
                     <label class="control-label">Индекс</label>
                     <input type="text" class="form-control" name="INDEX_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_INDEX_SENDER_VALUE'];?>" id="INDEX_SENDER">
                 </div>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['ADRESS_SENDER'];?>">
+				<div class="form-group <?=$arResult['ERR_FIELDS']['ADRESS_SENDER'];?>">
                     <label class="control-label">Адрес</label>
                     <textarea class="form-control" name="ADRESS_SENDER" id="ADRESS_SENDER"><?=$arResult['INVOICE']['PROPERTY_ADRESS_SENDER_VALUE']['TEXT'];?></textarea>
                 </div>
-            </div>
-            <div class="col-md-3 col-md-offset-1">
-                <h4>Получатель</h4>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['COMPANY_RECIPIENT'];?>">
-                    <label class="control-label">Компания</label>
-                    <input type="text" class="form-control" name="COMPANY_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_COMPANY_RECIPIENT_VALUE'];?>" id="company">
-                </div>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['NAME_RECIPIENT'];?>">
-                    <label class="control-label">Фамилия</label>
-                    <input type="text" class="form-control" name="NAME_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_NAME_RECIPIENT_VALUE'];?>" id="name">
-                </div>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['PHONE_RECIPIENT'];?>">
-                    <label class="control-label">Телефон</label>
-                    <input type="text" class="form-control" name="PHONE_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_PHONE_RECIPIENT_VALUE'];?>" id="phone">
-                </div>
+             </div>
+             <div class="col-md-3 col-md-offset-1">
+             	<h4>Получатель</h4>
+				<div class="form-group <?=$arResult['ERR_FIELDS']['COMPANY_RECIPIENT'];?>">
+					<label class="control-label">Компания</label>
+					<input type="text" class="form-control" name="COMPANY_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_COMPANY_RECIPIENT_VALUE'];?>" id="company">
+				</div>
+				<div class="form-group <?=$arResult['ERR_FIELDS']['NAME_RECIPIENT'];?>">
+					<label class="control-label">Фамилия</label>
+					<input type="text" class="form-control" name="NAME_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_NAME_RECIPIENT_VALUE'];?>" id="name">
+				</div>
+				<div class="form-group <?=$arResult['ERR_FIELDS']['PHONE_RECIPIENT'];?>">
+					<label class="control-label">Телефон</label>
+					<input type="text" class="form-control" name="PHONE_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_PHONE_RECIPIENT_VALUE'];?>" id="phone">
+				</div>
                 <div class="form-group <?=$arResult['ERR_FIELDS']['CITY_RECIPIENT'];?>">
                     <label class="control-label">Город</label>
                     <input type="text" class="form-control autocity" name="CITY_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_CITY_RECIPIENT'];?>" id="autocity_recipient">
                 </div>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['INDEX_RECIPIENT'];?>">
+				<div class="form-group <?=$arResult['ERR_FIELDS']['INDEX_RECIPIENT'];?>">
                     <label class="control-label">Индекс</label>
                     <input type="text" class="form-control" name="INDEX_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_INDEX_RECIPIENT_VALUE'];?>" id="index">
                 </div>
-                <div class="form-group <?=$arResult['ERR_FIELDS']['ADRESS_RECIPIENT'];?>">
+				<div class="form-group <?=$arResult['ERR_FIELDS']['ADRESS_RECIPIENT'];?>">
                     <label class="control-label">Адрес</label>
                     <textarea class="form-control" name="ADRESS_RECIPIENT" id="adress"><?=$arResult['INVOICE']['PROPERTY_ADRESS_RECIPIENT_VALUE']['TEXT'];?></textarea>
                 </div>
-            </div>
-            <div class="col-md-4 col-md-offset-1">
+             </div>
+             <div class="col-md-4 col-md-offset-1">
                 <div class="row">
-                    <div class="col-md-6">
-                        <h4>Условия доставки</h4>
-                        <div class="form-group <?=$arResult['ERR_FIELDS']['TYPE_DELIVERY'];?>">
+                	<div class="col-md-6">
+                    	<h4>Условия доставки</h4>
+                    
+                    
+						<div class="form-group <?=$arResult['ERR_FIELDS']['TYPE_DELIVERY'];?>">
                             <label class="control-label">Тип доставки</label>
                             <div class="radio">
+                              <label>
+                                <input name="TYPE_DELIVERY" value="243" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 243) ? 'checked=""' : '';?>>
+                                Экспресс
+                              </label>
+                            </div>
+                            <div class="radio">
+                              <label>
+                                <input name="TYPE_DELIVERY" value="244" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 244) ? 'checked=""' : '';?>>
+                                Стандарт
+                              </label>
+                            </div>
+                            <div class="radio">
+                              <label>
+                                <input name="TYPE_DELIVERY" value="245" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 245) ? 'checked=""' : '';?>>
+                                Эконом
+                              </label>
+                            </div>
+                            <div class="radio">
                                 <label>
-                                    <input name="TYPE_DELIVERY" value="243" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 243) ? 'checked=""' : '';?>>
+                                    <input name="TYPE_DELIVERY" value="243" type="radio"
+                                        <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 243) ? 'checked=""' : '';?>>
                                     Экспресс
                                 </label>
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input name="TYPE_DELIVERY" value="244" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 244) ? 'checked=""' : '';?>>
-                                    Стандарт
+                                    <input name="TYPE_DELIVERY" value="346" type="radio"
+                                        <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 346) ? 'checked=""' : '';?>>
+                                    Экспресс 4
                                 </label>
                             </div>
                             <div class="radio">
-                                <label>
-                                    <input name="TYPE_DELIVERY" value="245" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 245) ? 'checked=""' : '';?>>
-                                    Эконом
-                                </label>
-                            </div>
-                            <div class="radio">
-                                <label>
-                                    <input name="TYPE_DELIVERY" value="338" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 338) ? 'checked=""' : '';?>>
-                                    Экспресс 8
-                                </label>
+                              <label>
+                                <input name="TYPE_DELIVERY" value="338" type="radio"
+                                    <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 338) ? 'checked=""' : '';?>>
+                                Экспресс 8
+                              </label>
                             </div>
                             <? if (intval($arResult['CURRENT_CLIENT_INFO']['PROPERTY_AVAILABLE_WH_WH_VALUE']) == 1) :?>
-                                <div class="radio">
-                                    <label>
-                                        <input name="TYPE_DELIVERY" value="308" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 308) ? 'checked=""' : '';?>>
-                                        Склад-Склад
-                                    </label>
-                                </div>
+                            <div class="radio">
+                              <label>
+                                <input name="TYPE_DELIVERY" value="308" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_DELIVERY_ENUM_ID'] == 308) ? 'checked=""' : '';?>>
+                                Склад-Склад
+                              </label>
+                            </div>
                             <? endif; ?>
 
                             <a href="http://newpartner.ru/about/detail.php?ID=37544975" target="_blank">Подробнее об экспресс-доставке &rarr;</a>
                         </div>
-                        <?php
-                        // вывод на печать функции С возвратом для всех кроме сухого
-                        if ($arResult['CURRENT_CLIENT'] != 41478141 && !$arResult['INVOICE']['PROPERTY_NUMBER_WITH_RETURN_VALUE']):?>
-                            <div class="checkbox">
-                                <label class="control-label btn-default btn " style="padding-left: 30px;">
-                                    <input type="checkbox"  name="WITH_RETURN"  <?=($arResult['INVOICE']['PROPERTY_WITH_RETURN_VALUE']) ? ' checked' : '';?>
-                                    >С возвратом</label>
-                            </div>
-                        <?php endif;?>
-                        <div class="form-group <?=$arResult['ERR_FIELDS']['TYPE_PACK'];?>">
+                            
+						<div class="form-group <?=$arResult['ERR_FIELDS']['TYPE_PACK'];?>">
                             <label class="control-label">Тип отправления</label>
                             <div class="radio">
-                                <label>
-                                    <input name="TYPE_PACK" value="246" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PACK_ENUM_ID'] == 246) ? 'checked=""' : '';?> onChange="ChangeTypePack('Документы','Не документы');">
-                                    Документы
-                                </label>
+                              <label>
+                                <input name="TYPE_PACK" value="246" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PACK_ENUM_ID'] == 246) ? 'checked=""' : '';?> onChange="ChangeTypePack('Документы','Не документы');">
+                                Документы
+                              </label>
                             </div>
                             <div class="radio">
-                                <label>
-                                    <input name="TYPE_PACK" value="247" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PACK_ENUM_ID'] == 247) ? 'checked=""' : '';?> onChange="ChangeTypePack('Не документы','Документы');">
-                                    Не документы
-                                </label>
+                              <label>
+                                <input name="TYPE_PACK" value="247" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PACK_ENUM_ID'] == 247) ? 'checked=""' : '';?> onChange="ChangeTypePack('Не документы','Документы');">
+                                Не документы
+                              </label>
                             </div>
                         </div>
-
-                        <div class="form-group <?=$arResult['ERR_FIELDS']['WHO_DELIVERY'];?>">
-                            <label class="control-label">Доставить</label>
+                        
+						<div class="form-group <?=$arResult['ERR_FIELDS']['WHO_DELIVERY'];?>">
+                        	<label class="control-label">Доставить</label>
                             <div class="radio">
-                                <label>
-                                    <input name="WHO_DELIVERY" value="248" type="radio" <?=($arResult['INVOICE']['PROPERTY_WHO_DELIVERY_ENUM_ID'] == 248) ? 'checked=""' : '';?>>
-                                    По адресу
-                                </label>
+                              <label>
+                                <input name="WHO_DELIVERY" value="248" type="radio" <?=($arResult['INVOICE']['PROPERTY_WHO_DELIVERY_ENUM_ID'] == 248) ? 'checked=""' : '';?>>
+                                По адресу
+                              </label>
                             </div>
                             <div class="radio">
-                                <label>
-                                    <input name="WHO_DELIVERY" value="249" type="radio" <?=($arResult['INVOICE']['PROPERTY_WHO_DELIVERY_ENUM_ID'] == 249) ? 'checked=""' : '';?>>
-                                    До востребования
-                                </label>
+                              <label>
+                                <input name="WHO_DELIVERY" value="249" type="radio" <?=($arResult['INVOICE']['PROPERTY_WHO_DELIVERY_ENUM_ID'] == 249) ? 'checked=""' : '';?>>
+                                До востребования
+                              </label>
                             </div>
                             <div class="radio">
-                                <label>
-                                    <input name="WHO_DELIVERY" value="250" type="radio" <?=($arResult['INVOICE']['PROPERTY_WHO_DELIVERY_ENUM_ID'] == 250) ? 'checked=""' : '';?>>
-                                    Лично в руки
-                                </label>
+                              <label>
+                                <input name="WHO_DELIVERY" value="250" type="radio" <?=($arResult['INVOICE']['PROPERTY_WHO_DELIVERY_ENUM_ID'] == 250) ? 'checked=""' : '';?>>
+                                Лично в руки
+                              </label>
                             </div>
                         </div>
-                        <div class="form-group <?=$arResult['ERR_FIELDS']['IN_DATE_DELIVERY'];?>">
+						<div class="form-group <?=$arResult['ERR_FIELDS']['IN_DATE_DELIVERY'];?>">
                             <label class="control-label">Доставить в дату</label>
                             <div class="row">
-                                <div class="col-md-10">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control maskdate" placeholder="ДД.ММ.ГГГГ" value="<?=$arResult['INVOICE']['PROPERTY_IN_DATE_DELIVERY_VALUE'];?>" name="IN_DATE_DELIVERY">
+                            	<div class="col-md-10">
+                                	<div class="input-group">
+                                		<input type="text" class="form-control maskdate" placeholder="ДД.ММ.ГГГГ" value="<?=$arResult['INVOICE']['PROPERTY_IN_DATE_DELIVERY_VALUE'];?>" name="IN_DATE_DELIVERY">    
                                         <div class="input-group-addon">
                                             <?
                                             $APPLICATION->IncludeComponent(
@@ -554,123 +501,123 @@ if ($arResult['OPEN'])
                                     </div>
                                 </div>
                             </div>
-
+                            
 
                         </div>
-                        <div class="form-group <?=$arResult['ERR_FIELDS']['IN_TIME_DELIVERY'];?>">
-                            <div class="row">
-                                <div class="col-md-10">
+						<div class="form-group <?=$arResult['ERR_FIELDS']['IN_TIME_DELIVERY'];?>">
+							<div class="row">
+                            	<div class="col-md-10">
                                     <label class="control-label">Доставить до часа</label>
                                     <input type="text" class="form-control masktime" name="IN_TIME_DELIVERY" value="<?=$arResult['INVOICE']['PROPERTY_IN_TIME_DELIVERY_VALUE'];?>" placeholder="ЧЧ:ММ">
                                 </div>
                             </div>
                         </div>
-
+                         
                     </div>
-                    <div class="col-md-6">
-                        <h4>Условия оплаты</h4>
-                        <div class="form-group <?=$arResult['ERR_FIELDS']['PAYMENT'];?>">
-                            <label class="control-label">Оплата</label>
+					<div class="col-md-6">
+                    	<h4>Условия оплаты</h4>
+						<div class="form-group <?=$arResult['ERR_FIELDS']['PAYMENT'];?>">
+                        	<label class="control-label">Оплата</label>
                             <div class="radio">
-                                <label>
-                                    <input name="PAYMENT" value="255" type="radio" <?=($arResult['INVOICE']['PROPERTY_PAYMENT_ENUM_ID'] == 255) ? 'checked=""' : '';?>>
-                                    Наличными
-                                </label>
+                              <label>
+                                <input name="PAYMENT" value="255" type="radio" <?=($arResult['INVOICE']['PROPERTY_PAYMENT_ENUM_ID'] == 255) ? 'checked=""' : '';?>>
+                                Наличными
+                              </label>
                             </div>
                             <div class="radio">
-                                <label>
-                                    <input name="PAYMENT" value="256" type="radio" <?=($arResult['INVOICE']['PROPERTY_PAYMENT_ENUM_ID'] == 256) ? 'checked=""' : '';?>>
-                                    По счету
-                                </label>
+                              <label>
+                                <input name="PAYMENT" value="256" type="radio" <?=($arResult['INVOICE']['PROPERTY_PAYMENT_ENUM_ID'] == 256) ? 'checked=""' : '';?>>
+                                По счету
+                              </label>
                             </div>
                         </div>
-
-                        <div class="form-group <?=$arResult['ERR_FIELDS']['TYPE_PAYS'];?>">
+                    
+						<div class="form-group <?=$arResult['ERR_FIELDS']['TYPE_PAYS'];?>">
                             <label class="control-label">Оплачивает</label>
                             <div class="radio">
-                                <label>
-                                    <input name="TYPE_PAYS" value="251" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PAYS_ENUM_ID'] == 251) ? 'checked=""' : '';?>>
-                                    Отправитель
-                                </label>
+                              <label>
+                                <input name="TYPE_PAYS" value="251" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PAYS_ENUM_ID'] == 251) ? 'checked=""' : '';?>>
+                                Отправитель
+                              </label>
                             </div>
                             <div class="radio">
-                                <label>
-                                    <input name="TYPE_PAYS" value="252" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PAYS_ENUM_ID'] == 252) ? 'checked=""' : '';?> id="type_pays_252">
-                                    Получатель
-                                </label>
+                              <label>
+                                <input name="TYPE_PAYS" value="252" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PAYS_ENUM_ID'] == 252) ? 'checked=""' : '';?> id="type_pays_252">
+                                Получатель
+                              </label>
                             </div>
                             <div class="radio<?=($arResult['INVOICE']['PROPERTY_PAYMENT_ENUM_ID'] == 256) ? '' : ' hidden';?>" id="type_pays_253_block">
-                                <label>
-                                    <input name="TYPE_PAYS" value="253" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PAYS_ENUM_ID'] == 253) ? 'checked=""' : '';?>>
-                                    Другой
-                                </label>
+                              <label>
+                                <input name="TYPE_PAYS" value="253" type="radio" <?=($arResult['INVOICE']['PROPERTY_TYPE_PAYS_ENUM_ID'] == 253) ? 'checked=""' : '';?>>
+                                Другой
+                              </label>
                             </div>
                         </div>
                         <div class="form-group <?=$arResult['ERR_FIELDS']['WHOSE_ORDER'];?> <?=(($arResult['INVOICE']['PROPERTY_PAYMENT_ENUM_ID'] == 256) && (($arResult['INVOICE']['PROPERTY_TYPE_PAYS_ENUM_ID'] == 252) || ($arResult['INVOICE']['PROPERTY_TYPE_PAYS_ENUM_ID'] == 253))) ? '' : ' hidden';?>" id="whose_order_block">
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <? if ((count($arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT']) > 0) && (is_array($arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT']))) : ?>
-                                        <select class="form-control" name="WHOSE_ORDER">
-                                            <? if (count($arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT']) > 1) : ?>
-                                                <option value="0"></option>
-                                            <? endif;?>
-                                            <? foreach ($arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT'] as $k => $v) : ?>
-                                                <option value="<?=$k;?>" <?=($arResult['INVOICE']['PROPERTY_WHOSE_ORDER_VALUE'] == $k) ? 'selected' : '';?>><?=$v;?></option>
-                                            <? endforeach;?>
-                                        </select>
-                                    <? else : ?>
-                                        <input type="text" class="form-control" name="PAYS" value="<?=$arResult['INVOICE']['PROPERTY_PAYS_VALUE'];?>">
-                                    <? endif;?>
+							<div class="row">
+                            	<div class="col-md-10">
+									<? if ((count($arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT']) > 0) && (is_array($arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT']))) : ?>
+									<select class="form-control" name="WHOSE_ORDER">
+										<? if (count($arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT']) > 1) : ?>
+										<option value="0"></option>
+										<? endif;?>
+										<? foreach ($arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT'] as $k => $v) : ?>
+											<option value="<?=$k;?>" <?=($arResult['INVOICE']['PROPERTY_WHOSE_ORDER_VALUE'] == $k) ? 'selected' : '';?>><?=$v;?></option>
+										<? endforeach;?>
+									</select>
+									<? else : ?>
+									<input type="text" class="form-control" name="PAYS" value="<?=$arResult['INVOICE']['PROPERTY_PAYS_VALUE'];?>">
+									<? endif;?>
                                 </div>
                             </div>
-                        </div>
+						</div>
 
-
+                        
 
                         <div class="form-group <?=$arResult['ERR_FIELDS']['FOR_PAYMENT'];?>">
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <label class="control-label">К оплате</label>
+							<div class="row">
+                            	<div class="col-md-10">
+                        			<label class="control-label">К оплате</label>
                                     <div class="input-group">
-                                        <input type="text" class="form-control" name="FOR_PAYMENT" value="<?=$arResult['INVOICE']['PROPERTY_FOR_PAYMENT_VALUE'];?>" placeholder="0,00" aria-describedby="basic-addon-2" id="payment-value">
-                                        <span class="input-group-addon" id="basic-addon-2">руб.</span>
+                            			<input type="text" class="form-control" name="FOR_PAYMENT" value="<?=$arResult['INVOICE']['PROPERTY_FOR_PAYMENT_VALUE'];?>" placeholder="0,00" aria-describedby="basic-addon-2" id="payment-value">
+                                    	<span class="input-group-addon" id="basic-addon-2">руб.</span>
                                     </div>
-                                </div>
+                            	</div>
                             </div>
                         </div>
                         <div class="form-group <?=$arResult['ERR_FIELDS']['PAYMENT_COD'];?>">
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <label class="control-label">Сумма наложенного платежа</label>
+							<div class="row">
+                            	<div class="col-md-10">
+                        			<label class="control-label">Сумма наложенного платежа</label>
                                     <div class="input-group">
-                                        <input type="text" class="form-control" name="PAYMENT_COD" value="<?=$arResult['INVOICE']['PROPERTY_PAYMENT_COD_VALUE'];?>" placeholder="0,00" aria-describedby="basic-addon-3" id="payment-cod-value">
-                                        <span class="input-group-addon" id="basic-addon-3">руб.</span>
+                            			<input type="text" class="form-control" name="PAYMENT_COD" value="<?=$arResult['INVOICE']['PROPERTY_PAYMENT_COD_VALUE'];?>" placeholder="0,00" aria-describedby="basic-addon-3" id="payment-cod-value">
+                                    	<span class="input-group-addon" id="basic-addon-3">руб.</span>
                                     </div>
-                                </div>
+                            	</div>
                             </div>
-                        </div>
-                        <div class="form-group <?=$arResult['ERR_FIELDS']['COST'];?>">
-                            <div class="row">
-                                <div class="col-md-10">
-                                    <label class="control-label">Объявленная стоимость</label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" name="COST" value="<?=$arResult['INVOICE']['PROPERTY_COST_VALUE'];?>" placeholder="0,00" aria-describedby="basic-addon-1" id="cost-value">
+                        </div> 
+						<div class="form-group <?=$arResult['ERR_FIELDS']['COST'];?>">
+							<div class="row">
+                            	<div class="col-md-10">
+                        			<label class="control-label">Объявленная стоимость</label>
+                           			<div class="input-group">
+                            			<input type="text" class="form-control" name="COST" value="<?=$arResult['INVOICE']['PROPERTY_COST_VALUE'];?>" placeholder="0,00" aria-describedby="basic-addon-1" id="cost-value">
                                         <span class="input-group-addon" id="basic-addon-1">руб.</span>
                                     </div>
-                                </div>
+                            	</div>
                             </div>
                         </div>
-
-                        <div class="form-group">
+                        
+						<div class="form-group">
                             <label class="control-label">
                                 <span class="glyphicon glyphicon-remove" aria-hidden="true" style="color:#b94a48;" id="cost-marker"></span> Заявка на страхование
                             </label>
                         </div>
-
+                        
                     </div>
                 </div>
-
-            </div>
+                
+             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
