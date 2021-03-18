@@ -204,7 +204,8 @@ if (is_array($_SESSION['WARNINGS']))
 
 if ($mode === 'inapps')
 {
-    $arResult['INAPPS_TO_DATE'] = date('d.m.Y');
+    $todate = strtotime('+15 days');
+    $arResult['INAPPS_TO_DATE'] = date('d.m.Y', $todate);
     $prevdate = strtotime('-1 month');
     $arResult['INAPPS_FROM_DATE'] = date('d.m.Y',$prevdate);
    /* $arResult['INAPPS_FROM_DATE_FOR_1C'] = date('Y-m-d',$prevdate);
@@ -2448,21 +2449,26 @@ if ($mode === '1c')
             $obj = json_decode($json_string, true);
             foreach ($obj as $k => $v)
             {
-                $k_tr = iconv('utf-8', 'windows-1251', $k);
+
                 $v_tr = iconv('utf-8', 'windows-1251', $v);
-                $arRes[$k_tr] = $v_tr;
+                $arRes[$k] = $v_tr;
             }
 
             // запись заявок на агента
             if ($_POST['type'] === 'pickup' || $_POST['type'] === 'updatepickup'){
+                AddToLogs('1c_pickup_post', ['newpartner.requests.v2.1-2459'=>['post' => $_POST, ' $arRes' =>  $arRes]]);
                 $upd = false;
                 $inn_uk = (int)$arRes['creatorinn'];
                 $number_uid = htmlspecialcharsEx(trim($arRes['uid']));
-                $inn_agent = $arRes['inn'];
-                if(! $inn_agent ){
+                $inn_agent = false;
+                if($arRes['inn']){
+                    $inn_agent = $arRes['inn'];
+                }
+
+                if(!$inn_agent){
                     $arFilter = ["IBLOCK_ID" => 117, "ACTIVE" => "Y",  "PROPERTY_1056" => $number_uid];
                     $arSelect = [
-                        "ID","NAME", "ACTIVE", "IBLOCK_ID", 'PROPERTY_1076'
+                        "ID", 'IBLOCK_ID', 'PROPERTY_1076'
                     ];
                     $resUid = CIBlockElement::GetList([], $arFilter, false,false, $arSelect);
                     while ($ob = $resUid->GetNextElement()) {
@@ -2470,7 +2476,12 @@ if ($mode === '1c')
                     }
                     $inn_agent = $uid['PROPERTY_1076_VALUE'];
                     $id_rec = $uid['ID'];
-                    $upd = true;
+                    if($id_rec){
+                        $upd = true;
+                    }
+
+                    AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2480'=>['UPDATE'=> ['$id_rec' => $id_rec,
+                       '$inn_agent' => $inn_agent, '$number_uid' => $number_uid ]]]);
                 }
                 if(!( $inn_uk && $inn_agent && $number_uid) ){
                     AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2476'=>['ERROR'=>'Нет  данных', '$inn_uk'=>$inn_uk ,
@@ -2481,16 +2492,16 @@ if ($mode === '1c')
                 $arrC = GetIDAgentByINN($inn_agent, 53, false, true);
                 $creator = (int)$arrC[0]['ID'];
                 $client = soap_include($id_uk);
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2484'=>['uid'=>$number_uid, 'uk'=>$inn_uk,
+                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2495'=>['uid'=>$number_uid, 'uk'=>$inn_uk,
                     'agent'=>$inn_agent, 'update' => $upd, 'post'=> $arRes]]);
 
 
                 if(!$creator){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2489'=> ['Error' => 'Агент не найден', 'number_uid'=>$number_uid]] );
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2500'=> ['Error' => 'Агент не найден', 'number_uid'=>$number_uid]] );
                     exit();
                 }
 
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2492'=>['client'=>$client, 'id_uk' => $id_uk]]);
+               // AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2492'=>['client'=>$client, 'id_uk' => $id_uk]]);
                 if(!$client) exit();
                 $arParamsJson = [
                     'UID' => $number_uid
@@ -2498,10 +2509,10 @@ if ($mode === '1c')
                 $request = $client->GetAgentsPickup($arParamsJson);
                 $result = $request->return;
                 $result = arFromUtfToWin(json_decode($result, true));
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2501'=>['result'=>$result]]);
+                //AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2501'=>['result'=>$result]]);
 
                 if(!empty($result['Error'])){
-                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2504'=> ['Error' => $result['Error']]] );
+                    AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2515'=> ['Error' => $result['Error']]] );
                     exit();
                 }
                 if(!$upd){
@@ -2510,7 +2521,7 @@ if ($mode === '1c')
                     $rec_id = setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent, $id_rec);
                 }
 
-                AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2513'=> ['id' => $rec_id]] );
+                //AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2524'=> ['id' => $rec_id]] );
                 exit();
             }
 
@@ -2714,7 +2725,7 @@ if ($mode === 'inapps_update'){
     [2] => 2197189
     [3] => postclub76  id обмена
    */
-
+    AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2725'=>['$arRes' => $arRes]]);
     $id_rec = $arr_id_rec[1];
     $number_uid =  $arRes[1];
     $id_uk = $arRes[2];
@@ -2723,11 +2734,11 @@ if ($mode === 'inapps_update'){
     if($id_uk){
         $client = soap_include($id_uk);
     }else{
-        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2725'=>['Error'=>'Нет УК']]);
+        AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2725'=>['Error'=>'Нет УК']]);
         exit();
     }
     if(!$client) {
-        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2729'=>['Error'=>'Нет соединения с 1с']]);
+        AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2729'=>['Error'=>'Нет соединения с 1с']]);
         exit();
     }
     $arParamsJson = [
@@ -2737,9 +2748,10 @@ if ($mode === 'inapps_update'){
     $result = $request->return;
     $result = arFromUtfToWin(json_decode($result, true));
     $arrC = GetIDAgentByINN($inn_agent, 53, false, true);
+    AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2748'=>['$result' => $result]]);
     $creator = $arrC[0]['ID'];
     if(!$creator){
-        AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2741'=> ['Error' => 'Агент не найден',
+        AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2750'=> ['Error' => 'Агент не найден',
             'number_uid'=>$number_uid]] );
         exit();
     }
@@ -2758,7 +2770,7 @@ if ($mode === 'inapps_update'){
             $rec['PROPERTY_1059'] = $rec['~PROPERTY_1059'];
         }
         if (!empty($rec)){
-            AddToLogs('1c_pickup', ['newpartner.requests.v2.1-2760'=>['result'=>$rec]]);
+            AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2769'=>['result'=>$rec]]);
             $jsonArr = json_encode(convArrayToUTF($rec));
             echo $jsonArr;
             exit();

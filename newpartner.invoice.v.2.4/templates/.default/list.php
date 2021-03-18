@@ -10,13 +10,10 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) {
 
         }
 
- /* для отчета Абсолют страхование */
-if($arResult['CURRENT_CLIENT'] == 56103010 ){
+ /* для отчета Абсолют страхование и росгазефикация*/
+if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 62537553){
     $arraymerg = array_merge($arResult['REQUESTS'], $arResult['ARCHIVE']);
 
-   if ($USER->isAdmin()){
-        //dump($arraymerg);
-    }
     $newarr = [];
     foreach ($arraymerg as $key => $value){
         if($value['state_text'] == 'Доставлено'){
@@ -60,7 +57,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
     $arrayreportjson = json_encode($new_report_utf);
     $newarrutf = convArrayToUTF($newarr);
     $arraymergutfjson = json_encode($newarrutf);
-    //AddToLogs('report_as', ['newreport'=>$arraymerg ]);
+    //AddToLogs('report_abs', ['newreport'=>$arraymerg ]);
 }
 
 //var_dump($arResult['IndividualPrice']);
@@ -69,10 +66,10 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
 
     <?php
 
-    if($arResult['CURRENT_CLIENT'] == 56103010 ):?>
+    if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 62537553 ):?>
 
     $(document).ready(function() {
-        // вывод формы отчета абсолют страхование
+        // вывод формы отчета абсолют страхование и Росгазификация
         $('#report_as').on('click', function(){
             jsonStrPhp = <?=$arraymergutfjson?>;
             jsonStr = JSON.stringify(jsonStrPhp);
@@ -406,8 +403,16 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
     if( !$_SESSION['СontractEndDate'] && $arResult['CURRENT_CLIENT'] != 56389270):?>
     $(document).ready(function(){
         $('.maskdate').mask('99.99.9999');
-        $('.bootstrap-table .fixed-table-toolbar').append('<div class="pull-left"><a href="/services/" class="btn btn-success">' +
-            '<span class="glyphicon glyphicon-bell" aria-hidden="true"></span> Вызвать курьера</a></div>');
+        $('.bootstrap-table .fixed-table-toolbar').append('<div class="pull-left">' +
+            '<a href="/services/" style="margin-right:10px" class="btn btn-success">' +
+            '<span class="glyphicon glyphicon-bell" aria-hidden="true"></span> Вызвать курьера</a>' +
+            <?if($arResult['CURRENT_CLIENT'] == 9528186):?>
+            '<div id="call_courier_ids" class="btn btn-warning" data-toggle="tooltip" data-placement="right" ' +
+            'title="" data-original-title="Отметьте в чекбоксах накладные, по которым нужно вызвать курьера">' +
+            '<span class="glyphicon glyphicon-bell" aria-hidden="true" ></span> Массовый вызов курьера</div>' +
+            <?endif;?>
+            '</div>');
+         /*Отметьте в чекбоксах накладные, по которым нужно вызвать курьера.*/
 
     });
     <?php endif;?>
@@ -415,12 +420,43 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
         $(window).resize(function () {
             $('#tableId').bootstrapTable('resetView');
         });
-    });
-
-    $(function () {
         $('[data-toggle="tooltip"]').tooltip();
         $('.masktime').mask('99:99');
+
+        /*  массовый вызов курьера */
+        $('#call_courier_ids').on('click', function () {
+               obj = {};
+            $('.a1 input:checkbox:checked').each(function(k,v){
+               obj[k] = $(v).val();
+            });
+            if(obj[0]){
+                $('#data_json').val(JSON.stringify(obj));
+                $('#myCallCurier_ids').modal('show');
+                console.log(obj);
+
+            }
+        });
+
+       $('form[name=form_callcourierdate_ids]').submit(function (e) {
+           e.preventDefault();
+           let data = this;
+           let fields = $(data).serializeArray();
+           $.ajax({
+               type: "POST",
+               dataType: "json",
+               url: "/api/groupsCallCourier.php",
+               data: fields,
+               success: function(data){
+                   console.log(data);
+                }
+           });
+
+       })
+
+
     });
+
+
 
     function setChecked(obj,name)
     {
@@ -555,6 +591,84 @@ if($arResult['CURRENT_CLIENT'] == 56103010 ){
         display: block;
     }
 </style>
+
+<!-- Modal вызов курьера -->
+<div class="modal fade" id="myCallCurier_ids" tabindex="-1" role="dialog"
+     aria-labelledby="myCallCurier_ids">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" >Массовый вызов курьера</h4>
+            </div>
+            <div class="modal-body">
+                <form name="form_callcourierdate_ids" method="post">
+                    <div style="display: flex; flex-direction: row; align-items: center;
+                                                justify-content: space-between; width: 100%">
+                        <div class="form-group">
+                            <label  for="list-from-date_ids">
+                                Вызвать на дату <small style="color:darkred">*обязательное поле</small></label>
+                            <div class="input-group" id="input-group-list-from-date_ids">
+                                <input  type="hidden" name="data_json" id="data_json" value="" >
+                                <input  type="hidden" name="current_client"  value="<?=$arResult['CURRENT_CLIENT']?>" >
+                                <input  type="text" class="form-control maskdate"
+                                        name="callcourierdate_ids" placeholder="ДД.ММ.ГГГГ"
+                                        id="list-from-date_ids">
+                                <span style="padding: 6px 12px!important;" class="input-group-addon">
+                                    <?php
+                                    $APPLICATION->IncludeComponent(
+                                        "bitrix:main.calendar",
+                                        ".default",
+                                        [
+                                            "SHOW_INPUT" => "N",
+                                            "FORM_NAME" => "form_callcourierdate_ids",
+                                            "INPUT_NAME" => "callcourierdate_ids",
+                                            "INPUT_NAME_FINISH" => "",
+                                            "INPUT_VALUE" => "",
+                                            "INPUT_VALUE_FINISH" => false,
+                                            "SHOW_TIME" => "N",
+                                            "HIDE_TIMEBAR" => "Y",
+                                            "INPUT_ADDITIONAL_ATTR" => ''
+                                        ],
+                                        false
+                                    );
+                                    ?>
+                            </span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+
+                            <label   for="callcourtime_from_ids">Время от:</label>
+                            <input   style="width: 100px;" type="text" class="form-control masktime"
+                                    id="callcourtime_from_ids" name="callcourtime_from_ids"
+                                    placeholder="ЧЧ:ММ" >
+                        </div>
+                        <div class="form-group">
+                            <label  for="callcourtime_to_ids">до:</label>
+                            <input  style="width: 100px;" type="text" class="form-control masktime"
+                                    id="callcourtime_to_ids" name="callcourtime_to_ids"
+                                    placeholder="ЧЧ:ММ">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  for="callcourcomment_ids">Комментарий курьеру:</label>
+                        <input  id="callcourcomment_ids" class="form-control"
+                                name="callcourcomment_ids" >
+                    </div>
+                    <div class="modal-footer">
+                        <div id="call_courier_form_mess_ids"></div>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                        <button type="submit"  id="call_courier_form_ids"
+                                class="btn btn-primary" >Вызвать</button>
+                        <!--  form="call_courier_form" type="submit"-->
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
 <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" id="modal-for-alert" aria-hidden="true">
     <div class="modal-dialog modal-sm">
         <div style="background-color: #ffffff;" class="modal-header">
@@ -625,10 +739,8 @@ if ($arResult['OPEN'])
             <?php if ($arResult['CURRENT_CLIENT'] > 0):?>
                 <div style="display:flex; flex-direction: row; justify-content: start; margin-left: 5px;" class="btn-group">
                     <?php if ((count($arResult['REQUESTS']) > 0) ||  (count($arResult['ARCHIVE']) > 0)) :?>
-                    <form style="display: flex; flex-direction: row;" action="<?=$arParams['LINK'];?>index.php?mode=list_xls&pdf=Y" method="post" name="xlsform"
-                          target="_blank">
-                        <input type="hidden" name="DATA"
-                               value="">
+                    <form style="display: flex; flex-direction: row;" action="<?=$arParams['LINK'];?>index.php?mode=list_xls&pdf=Y" method="post"
+                          name="xlsform"  target="_blank">  <input type="hidden" name="DATA"  value="">
                         <?php endif;?>
                         <?php if( !$_SESSION['СontractEndDate']):?>
                             <div class="btn-group" role="group">
@@ -663,22 +775,23 @@ if ($arResult['OPEN'])
                     </form>
                 <?php endif;?>
                     <?php
-                    // отчет для Абсолют страхование (56103010)
-                   if(!$_SESSION['СontractEndDate'] &&  $arResult['CURRENT_CLIENT'] == 56103010):?>
+                    // отчет для Абсолют страхование (56103010) и АО «Росгазификация» (62537553)
+                   if(!$_SESSION['СontractEndDate'] &&  ($arResult['CURRENT_CLIENT'] == 56103010 ||
+                           $arResult['CURRENT_CLIENT'] == 62537553)):?>
                       <div class="btn-group" role="group">
                          <button id = "report_as"  class="btn btn-default" data-toggle="tooltip"
                                  data-placement="bottom" title="Скачать отчет">
                                <i style="font-weight: 600;" class="far fa-file-excel"></i>
                          </button>
                       </div>
-
+                     <?if ($arResult['CURRENT_CLIENT'] == 56103010 ):?>
                        <div class="btn-group" role="group">
                            <button id = "report_from_1c"  class="btn btn-default" data-toggle="tooltip"
                                    data-placement="bottom" title="Скачать отчет из 1с">
                                <i style="font-weight: 600;" class="far fa-file-excel"></i>
                            </button>
                        </div>
-
+                   <?php endif;?>
                     <?php endif; ?>
                     <?php
                     // отчет для Вымпелкома и Абсолюта выводит накладные С Возвратом
