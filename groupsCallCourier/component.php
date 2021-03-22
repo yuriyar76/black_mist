@@ -8,15 +8,19 @@ use Bitrix\Main\Localization\Loc;
 
 try {
     $arResult = new GroupsCallCourier($_POST);
-    $arResult->currentClient()->
-               soapLink();
-    }
-    catch(Exception $e){
+    $arResult->currentClient()
+        ->soapLink()
+        ->invoiceList()
+        ->prepareListFor1c()
+        ->setDocsClient()
+        ->sendPost();
+}
+catch(Exception $e){
+    dump($e->getMessage());
+}
 
-    }
 
-
-    dump($arResult);
+dump($arResult);
 
 
 
@@ -71,8 +75,8 @@ try {
     [idClient:GroupsCallCourier:private] => 9528186
     [arrClient] => Array
         (
-            [NAME] => Тестовый клиент
-            [~NAME] => Тестовый клиент
+            [NAME] => ???????? ??????
+            [~NAME] => ???????? ??????
             [ID] => 9528186
             [~ID] => 9528186
             [TIMESTAMP_X] => 26.10.2020 11:18:56
@@ -115,10 +119,10 @@ try {
             [~DETAIL_TEXT] =>
             [DETAIL_TEXT_TYPE] => text
             [~DETAIL_TEXT_TYPE] => text
-            [SEARCHABLE_CONTENT] => ТЕСТОВЫЙ КЛИЕНТ
+            [SEARCHABLE_CONTENT] => ???????? ??????
 
 
-            [~SEARCHABLE_CONTENT] => ТЕСТОВЫЙ КЛИЕНТ
+            [~SEARCHABLE_CONTENT] => ???????? ??????
 
 
             [WF_STATUS_ID] => 1
@@ -155,12 +159,12 @@ try {
             [~EXTERNAL_ID] => 9528186
             [TMP_ID] => 0
             [~TMP_ID] => 0
-            [USER_NAME] => (webprog) Юрий Щербаков
-            [~USER_NAME] => (webprog) Юрий Щербаков
+            [USER_NAME] => (webprog) ???? ????????
+            [~USER_NAME] => (webprog) ???? ????????
             [LOCKED_USER_NAME] =>
             [~LOCKED_USER_NAME] =>
-            [CREATED_USER_NAME] => (black_mist) Дарья Смирнова
-            [~CREATED_USER_NAME] => (black_mist) Дарья Смирнова
+            [CREATED_USER_NAME] => (black_mist) ????? ????????
+            [~CREATED_USER_NAME] => (black_mist) ????? ????????
             [LANG_DIR] => /
             [~LANG_DIR] => /
             [LID] => s5
@@ -169,8 +173,8 @@ try {
             [~IBLOCK_TYPE_ID] => delivery
             [IBLOCK_CODE] => delivery_companies
             [~IBLOCK_CODE] => delivery_companies
-            [IBLOCK_NAME] => Компании
-            [~IBLOCK_NAME] => Компании
+            [IBLOCK_NAME] => ????????
+            [~IBLOCK_NAME] => ????????
             [IBLOCK_EXTERNAL_ID] =>
             [~IBLOCK_EXTERNAL_ID] =>
             [DETAIL_PAGE_URL] =>
@@ -190,7 +194,7 @@ try {
                             [ID] => 304
                             [TIMESTAMP_X] => 2014-02-05 11:27:29
                             [IBLOCK_ID] => 40
-                            [NAME] => Внутренний ID
+                            [NAME] => ?????????? ID
                             [ACTIVE] => Y
                             [SORT] => 5
                             [CODE] => ID_IN
@@ -221,7 +225,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 133
                             [~DESCRIPTION] =>
-                            [~NAME] => Внутренний ID
+                            [~NAME] => ?????????? ID
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -230,7 +234,7 @@ try {
                             [ID] => 211
                             [TIMESTAMP_X] => 2014-02-05 11:27:29
                             [IBLOCK_ID] => 40
-                            [NAME] => Тип
+                            [NAME] => ???
                             [ACTIVE] => Y
                             [SORT] => 10
                             [CODE] => TYPE
@@ -254,15 +258,15 @@ try {
                             [USER_TYPE_SETTINGS] =>
                             [HINT] =>
                             [PROPERTY_VALUE_ID] => 9528186:211
-                            [VALUE] => Клиент
+                            [VALUE] => ??????
                             [DESCRIPTION] =>
-                            [VALUE_ENUM] => Клиент
+                            [VALUE_ENUM] => ??????
                             [VALUE_XML_ID] => 0fd61d6ce065906663cd55326c64b060
                             [VALUE_SORT] => 500
                             [VALUE_ENUM_ID] => 242
-                            [~VALUE] => Клиент
+                            [~VALUE] => ??????
                             [~DESCRIPTION] =>
-                            [~NAME] => Тип
+                            [~NAME] => ???
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -271,7 +275,7 @@ try {
                             [ID] => 624
                             [TIMESTAMP_X] => 2015-03-05 16:15:39
                             [IBLOCK_ID] => 40
-                            [NAME] => Фирменное наименование
+                            [NAME] => ????????? ????????????
                             [ACTIVE] => Y
                             [SORT] => 15
                             [CODE] => BRAND_NAME
@@ -302,7 +306,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Фирменное наименование
+                            [~NAME] => ????????? ????????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -311,7 +315,7 @@ try {
                             [ID] => 290
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Адрес сайта
+                            [NAME] => ????? ?????
                             [ACTIVE] => Y
                             [SORT] => 20
                             [CODE] => CITE
@@ -342,7 +346,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Адрес сайта
+                            [~NAME] => ????? ?????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -351,7 +355,7 @@ try {
                             [ID] => 187
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Город
+                            [NAME] => ?????
                             [ACTIVE] => Y
                             [SORT] => 30
                             [CODE] => CITY
@@ -382,7 +386,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 9435
                             [~DESCRIPTION] =>
-                            [~NAME] => Город
+                            [~NAME] => ?????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -391,7 +395,7 @@ try {
                             [ID] => 379
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Контактное лицо
+                            [NAME] => ?????????? ????
                             [ACTIVE] => Y
                             [SORT] => 40
                             [CODE] => RESPONSIBLE_PERSON
@@ -422,7 +426,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Контактное лицо
+                            [~NAME] => ?????????? ????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -471,7 +475,7 @@ try {
                             [ID] => 265
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Номер телефона
+                            [NAME] => ????? ????????
                             [ACTIVE] => Y
                             [SORT] => 60
                             [CODE] => PHONES
@@ -502,7 +506,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 88001234578
                             [~DESCRIPTION] =>
-                            [~NAME] => Номер телефона
+                            [~NAME] => ????? ????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -511,7 +515,7 @@ try {
                             [ID] => 329
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Юридическое наименование
+                            [NAME] => ??????????? ????????????
                             [ACTIVE] => Y
                             [SORT] => 70
                             [CODE] => LEGAL_NAME
@@ -542,7 +546,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Юридическое наименование
+                            [~NAME] => ??????????? ????????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -551,7 +555,7 @@ try {
                             [ID] => 749
                             [TIMESTAMP_X] => 2017-12-05 13:51:33
                             [IBLOCK_ID] => 40
-                            [NAME] => Юридическое наименование НДС
+                            [NAME] => ??????????? ???????????? ???
                             [ACTIVE] => Y
                             [SORT] => 71
                             [CODE] => LEGAL_NAME_NDS
@@ -582,7 +586,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Юридическое наименование НДС
+                            [~NAME] => ??????????? ???????????? ???
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -591,7 +595,7 @@ try {
                             [ID] => 378
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Юридическое наименование полностью
+                            [NAME] => ??????????? ???????????? ?????????
                             [ACTIVE] => Y
                             [SORT] => 80
                             [CODE] => LEGAL_NAME_FULL
@@ -622,7 +626,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Юридическое наименование полностью
+                            [~NAME] => ??????????? ???????????? ?????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -631,7 +635,7 @@ try {
                             [ID] => 750
                             [TIMESTAMP_X] => 2017-12-05 13:51:33
                             [IBLOCK_ID] => 40
-                            [NAME] => Юридическое наименование полностью НДС
+                            [NAME] => ??????????? ???????????? ????????? ???
                             [ACTIVE] => Y
                             [SORT] => 81
                             [CODE] => LEGAL_NAME_FULL_NDS
@@ -662,7 +666,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Юридическое наименование полностью НДС
+                            [~NAME] => ??????????? ???????????? ????????? ???
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -671,7 +675,7 @@ try {
                             [ID] => 472
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Форма собственности
+                            [NAME] => ????? ?????????????
                             [ACTIVE] => Y
                             [SORT] => 90
                             [CODE] => OWNERSHIP
@@ -695,15 +699,15 @@ try {
                             [USER_TYPE_SETTINGS] =>
                             [HINT] =>
                             [PROPERTY_VALUE_ID] => 9528186:472
-                            [VALUE] => ООО / ОАО / ЗАО / ОДО
+                            [VALUE] => ??? / ??? / ??? / ???
                             [DESCRIPTION] =>
-                            [VALUE_ENUM] => ООО / ОАО / ЗАО / ОДО
+                            [VALUE_ENUM] => ??? / ??? / ??? / ???
                             [VALUE_XML_ID] => b7d776668fdc7055e37b8cc56e310d58
                             [VALUE_SORT] => 300
                             [VALUE_ENUM_ID] => 197
-                            [~VALUE] => ООО / ОАО / ЗАО / ОДО
+                            [~VALUE] => ??? / ??? / ??? / ???
                             [~DESCRIPTION] =>
-                            [~NAME] => Форма собственности
+                            [~NAME] => ????? ?????????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -712,7 +716,7 @@ try {
                             [ID] => 836
                             [TIMESTAMP_X] => 2020-02-26 16:47:44
                             [IBLOCK_ID] => 40
-                            [NAME] => Форма собственности (при регистрации)
+                            [NAME] => ????? ????????????? (??? ???????????)
                             [ACTIVE] => Y
                             [SORT] => 95
                             [CODE] => OWNERSHIP_REG
@@ -736,15 +740,15 @@ try {
                             [USER_TYPE_SETTINGS] =>
                             [HINT] =>
                             [PROPERTY_VALUE_ID] => 9528186:836
-                            [VALUE] => Юридическое лицо / Индивидуальный предприниматель
+                            [VALUE] => ??????????? ???? / ?????????????? ???????????????
                             [DESCRIPTION] =>
-                            [VALUE_ENUM] => Юридическое лицо / Индивидуальный предприниматель
+                            [VALUE_ENUM] => ??????????? ???? / ?????????????? ???????????????
                             [VALUE_XML_ID] => f5b7a870fe6a3e28dbe6e56a0d560a2a
                             [VALUE_SORT] => 500
                             [VALUE_ENUM_ID] => 380
-                            [~VALUE] => Юридическое лицо / Индивидуальный предприниматель
+                            [~VALUE] => ??????????? ???? / ?????????????? ???????????????
                             [~DESCRIPTION] =>
-                            [~NAME] => Форма собственности (при регистрации)
+                            [~NAME] => ????? ????????????? (??? ???????????)
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -753,7 +757,7 @@ try {
                             [ID] => 338
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Действует на основании
+                            [NAME] => ????????? ?? ?????????
                             [ACTIVE] => Y
                             [SORT] => 100
                             [CODE] => ACTING
@@ -784,7 +788,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Действует на основании
+                            [~NAME] => ????????? ?? ?????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -793,7 +797,7 @@ try {
                             [ID] => 751
                             [TIMESTAMP_X] => 2017-12-05 13:51:33
                             [IBLOCK_ID] => 40
-                            [NAME] => Действует на основании НДС
+                            [NAME] => ????????? ?? ????????? ???
                             [ACTIVE] => Y
                             [SORT] => 101
                             [CODE] => ACTING_NDS
@@ -824,7 +828,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Действует на основании НДС
+                            [~NAME] => ????????? ?? ????????? ???
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -833,7 +837,7 @@ try {
                             [ID] => 471
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Действует в лице
+                            [NAME] => ????????? ? ????
                             [ACTIVE] => Y
                             [SORT] => 110
                             [CODE] => RESPONSIBLE_PERSON_IN
@@ -864,7 +868,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Действует в лице
+                            [~NAME] => ????????? ? ????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -873,7 +877,7 @@ try {
                             [ID] => 752
                             [TIMESTAMP_X] => 2017-12-05 13:51:33
                             [IBLOCK_ID] => 40
-                            [NAME] => Действует в лице НДС
+                            [NAME] => ????????? ? ???? ???
                             [ACTIVE] => Y
                             [SORT] => 111
                             [CODE] => RESPONSIBLE_PERSON_IN_NDS
@@ -904,7 +908,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Действует в лице НДС
+                            [~NAME] => ????????? ? ???? ???
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -913,7 +917,7 @@ try {
                             [ID] => 328
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Реквизиты договора
+                            [NAME] => ????????? ????????
                             [ACTIVE] => Y
                             [SORT] => 120
                             [CODE] => CONTRACT
@@ -944,7 +948,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Реквизиты договора
+                            [~NAME] => ????????? ????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -953,7 +957,7 @@ try {
                             [ID] => 466
                             [TIMESTAMP_X] => 2014-02-05 11:20:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Тип договора
+                            [NAME] => ??? ????????
                             [ACTIVE] => Y
                             [SORT] => 130
                             [CODE] => CONTRACT_TYPE
@@ -985,7 +989,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Тип договора
+                            [~NAME] => ??? ????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -994,7 +998,7 @@ try {
                             [ID] => 473
                             [TIMESTAMP_X] => 2014-02-05 11:23:10
                             [IBLOCK_ID] => 40
-                            [NAME] => Отчет подписывает
+                            [NAME] => ????? ???????????
                             [ACTIVE] => Y
                             [SORT] => 140
                             [CODE] => REPORT_SIGNS
@@ -1025,7 +1029,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Отчет подписывает
+                            [~NAME] => ????? ???????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1034,7 +1038,7 @@ try {
                             [ID] => 753
                             [TIMESTAMP_X] => 2017-12-05 13:51:34
                             [IBLOCK_ID] => 40
-                            [NAME] => Отчет подписывает НДС
+                            [NAME] => ????? ??????????? ???
                             [ACTIVE] => Y
                             [SORT] => 141
                             [CODE] => REPORT_SIGNS_NDS
@@ -1065,7 +1069,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Отчет подписывает НДС
+                            [~NAME] => ????? ??????????? ???
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1074,7 +1078,7 @@ try {
                             [ID] => 491
                             [TIMESTAMP_X] => 2014-06-02 12:40:28
                             [IBLOCK_ID] => 40
-                            [NAME] => Тип интернет-магазина
+                            [NAME] => ??? ????????-????????
                             [ACTIVE] => Y
                             [SORT] => 145
                             [CODE] => TYPE_IM
@@ -1106,7 +1110,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Тип интернет-магазина
+                            [~NAME] => ??? ????????-????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1115,7 +1119,7 @@ try {
                             [ID] => 227
                             [TIMESTAMP_X] => 2014-02-05 11:23:50
                             [IBLOCK_ID] => 40
-                            [NAME] => Процент 1
+                            [NAME] => ??????? 1
                             [ACTIVE] => Y
                             [SORT] => 150
                             [CODE] => PERCENT
@@ -1146,7 +1150,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Процент 1
+                            [~NAME] => ??????? 1
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1155,7 +1159,7 @@ try {
                             [ID] => 308
                             [TIMESTAMP_X] => 2014-02-05 11:23:50
                             [IBLOCK_ID] => 40
-                            [NAME] => Процент 2
+                            [NAME] => ??????? 2
                             [ACTIVE] => Y
                             [SORT] => 160
                             [CODE] => PERCENT_2
@@ -1186,7 +1190,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Процент 2
+                            [~NAME] => ??????? 2
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1195,7 +1199,7 @@ try {
                             [ID] => 314
                             [TIMESTAMP_X] => 2014-02-05 11:23:50
                             [IBLOCK_ID] => 40
-                            [NAME] => Процент 3
+                            [NAME] => ??????? 3
                             [ACTIVE] => Y
                             [SORT] => 170
                             [CODE] => PERCENT_3
@@ -1226,7 +1230,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Процент 3
+                            [~NAME] => ??????? 3
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1235,7 +1239,7 @@ try {
                             [ID] => 251
                             [TIMESTAMP_X] => 2014-02-05 11:23:50
                             [IBLOCK_ID] => 40
-                            [NAME] => Прайс-лист
+                            [NAME] => ?????-????
                             [ACTIVE] => Y
                             [SORT] => 180
                             [CODE] => PRICE
@@ -1266,7 +1270,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Прайс-лист
+                            [~NAME] => ?????-????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1275,7 +1279,7 @@ try {
                             [ID] => 372
                             [TIMESTAMP_X] => 2014-02-05 11:23:50
                             [IBLOCK_ID] => 40
-                            [NAME] => Прайс-лист 2
+                            [NAME] => ?????-???? 2
                             [ACTIVE] => Y
                             [SORT] => 190
                             [CODE] => PRICE_2
@@ -1306,7 +1310,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Прайс-лист 2
+                            [~NAME] => ?????-???? 2
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1315,7 +1319,7 @@ try {
                             [ID] => 403
                             [TIMESTAMP_X] => 2014-02-05 11:23:50
                             [IBLOCK_ID] => 40
-                            [NAME] => Прайс-лист на забор
+                            [NAME] => ?????-???? ?? ?????
                             [ACTIVE] => Y
                             [SORT] => 200
                             [CODE] => PRICE_3
@@ -1346,7 +1350,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Прайс-лист на забор
+                            [~NAME] => ?????-???? ?? ?????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1355,7 +1359,7 @@ try {
                             [ID] => 374
                             [TIMESTAMP_X] => 2014-02-05 11:23:50
                             [IBLOCK_ID] => 40
-                            [NAME] => Стоимость формирования заказа
+                            [NAME] => ????????? ???????????? ??????
                             [ACTIVE] => Y
                             [SORT] => 210
                             [CODE] => COST_ORDERING
@@ -1386,7 +1390,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Стоимость формирования заказа
+                            [~NAME] => ????????? ???????????? ??????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1395,7 +1399,7 @@ try {
                             [ID] => 502
                             [TIMESTAMP_X] => 2014-08-04 11:00:13
                             [IBLOCK_ID] => 40
-                            [NAME] => Тариф TopDelivery
+                            [NAME] => ????? TopDelivery
                             [ACTIVE] => Y
                             [SORT] => 215
                             [CODE] => TARIFF_TD
@@ -1427,7 +1431,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Тариф TopDelivery
+                            [~NAME] => ????? TopDelivery
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1436,7 +1440,7 @@ try {
                             [ID] => 747
                             [TIMESTAMP_X] => 2017-12-04 13:40:31
                             [IBLOCK_ID] => 40
-                            [NAME] => Выделять в отчете НДС
+                            [NAME] => ???????? ? ?????? ???
                             [ACTIVE] => Y
                             [SORT] => 216
                             [CODE] => SELECTION_VAT_REPORT
@@ -1461,8 +1465,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -1476,7 +1480,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 0
                             [~DESCRIPTION] =>
-                            [~NAME] => Выделять в отчете НДС
+                            [~NAME] => ???????? ? ?????? ???
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -1485,7 +1489,7 @@ try {
                             [ID] => 748
                             [TIMESTAMP_X] => 2017-12-04 13:36:45
                             [IBLOCK_ID] => 40
-                            [NAME] => Вычитать сумму услуг из наложенного платежа
+                            [NAME] => ???????? ????? ????? ?? ??????????? ???????
                             [ACTIVE] => Y
                             [SORT] => 217
                             [CODE] => SUBTRACT_AMOUNT_COD
@@ -1510,8 +1514,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -1525,7 +1529,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 0
                             [~DESCRIPTION] =>
-                            [~NAME] => Вычитать сумму услуг из наложенного платежа
+                            [~NAME] => ???????? ????? ????? ?? ??????????? ???????
                             [~DEFAULT_VALUE] => 1
                         )
 
@@ -1534,7 +1538,7 @@ try {
                             [ID] => 190
                             [TIMESTAMP_X] => 2018-06-14 16:41:21
                             [IBLOCK_ID] => 40
-                            [NAME] => Юридический адрес
+                            [NAME] => ??????????? ?????
                             [ACTIVE] => Y
                             [SORT] => 220
                             [CODE] => ADRESS
@@ -1558,14 +1562,14 @@ try {
                             [USER_TYPE_SETTINGS] =>
                             [HINT] =>
                             [PROPERTY_VALUE_ID] => 9528186:190
-                            [VALUE] => Тестовый адрес
+                            [VALUE] => ???????? ?????
                             [DESCRIPTION] =>
                             [VALUE_ENUM] =>
                             [VALUE_XML_ID] =>
                             [VALUE_SORT] =>
-                            [~VALUE] => Тестовый адрес
+                            [~VALUE] => ???????? ?????
                             [~DESCRIPTION] =>
-                            [~NAME] => Юридический адрес
+                            [~NAME] => ??????????? ?????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1574,7 +1578,7 @@ try {
                             [ID] => 625
                             [TIMESTAMP_X] => 2018-06-14 16:41:21
                             [IBLOCK_ID] => 40
-                            [NAME] => Фактический адрес
+                            [NAME] => ??????????? ?????
                             [ACTIVE] => Y
                             [SORT] => 225
                             [CODE] => ADRESS_FACT
@@ -1605,7 +1609,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Фактический адрес
+                            [~NAME] => ??????????? ?????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1614,7 +1618,7 @@ try {
                             [ID] => 237
                             [TIMESTAMP_X] => 2017-06-07 15:18:05
                             [IBLOCK_ID] => 40
-                            [NAME] => ID обмена (ИНН)
+                            [NAME] => ID ?????? (???)
                             [ACTIVE] => Y
                             [SORT] => 230
                             [CODE] => INN
@@ -1645,7 +1649,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 34327677
                             [~DESCRIPTION] =>
-                            [~NAME] => ID обмена (ИНН)
+                            [~NAME] => ID ?????? (???)
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1654,7 +1658,7 @@ try {
                             [ID] => 729
                             [TIMESTAMP_X] => 2019-01-10 10:56:42
                             [IBLOCK_ID] => 40
-                            [NAME] => ИНН
+                            [NAME] => ???
                             [ACTIVE] => Y
                             [SORT] => 235
                             [CODE] => INN_REAL
@@ -1685,7 +1689,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 7700770077
                             [~DESCRIPTION] =>
-                            [~NAME] => ИНН
+                            [~NAME] => ???
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1694,7 +1698,7 @@ try {
                             [ID] => 219
                             [TIMESTAMP_X] => 2014-02-05 11:25:20
                             [IBLOCK_ID] => 40
-                            [NAME] => Счет
+                            [NAME] => ????
                             [ACTIVE] => Y
                             [SORT] => 240
                             [CODE] => ACCOUNT
@@ -1725,7 +1729,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Счет
+                            [~NAME] => ????
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -1734,7 +1738,7 @@ try {
                             [ID] => 774
                             [TIMESTAMP_X] => 2019-08-08 12:28:35
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть-показать Доставить До
+                            [NAME] => ??????-???????? ????????? ??
                             [ACTIVE] => Y
                             [SORT] => 500
                             [CODE] => SHOW_DELIVERY_BEFORE_DATE
@@ -1759,8 +1763,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -1774,7 +1778,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 0
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть-показать Доставить До
+                            [~NAME] => ??????-???????? ????????? ??
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -1783,7 +1787,7 @@ try {
                             [ID] => 188
                             [TIMESTAMP_X] => 2013-12-06 10:10:35
                             [IBLOCK_ID] => 40
-                            [NAME] => Города
+                            [NAME] => ??????
                             [ACTIVE] => Y
                             [SORT] => 810
                             [CODE] => CITIES
@@ -1814,7 +1818,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Города
+                            [~NAME] => ??????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1823,7 +1827,7 @@ try {
                             [ID] => 494
                             [TIMESTAMP_X] => 2014-06-23 16:56:45
                             [IBLOCK_ID] => 40
-                            [NAME] => Области
+                            [NAME] => ???????
                             [ACTIVE] => Y
                             [SORT] => 811
                             [CODE] => REGION
@@ -1854,7 +1858,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Области
+                            [~NAME] => ???????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1863,7 +1867,7 @@ try {
                             [ID] => 330
                             [TIMESTAMP_X] => 2014-02-05 11:28:00
                             [IBLOCK_ID] => 40
-                            [NAME] => ПВЗ
+                            [NAME] => ???
                             [ACTIVE] => Y
                             [SORT] => 820
                             [CODE] => PVZ
@@ -1894,7 +1898,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => ПВЗ
+                            [~NAME] => ???
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1903,7 +1907,7 @@ try {
                             [ID] => 773
                             [TIMESTAMP_X] => 2019-08-08 10:31:40
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть-показать внутренний номер
+                            [NAME] => ??????-???????? ?????????? ?????
                             [ACTIVE] => Y
                             [SORT] => 900
                             [CODE] => SHOW_HIDDEN_INNER_NUMBER
@@ -1928,8 +1932,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -1943,7 +1947,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 1
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть-показать внутренний номер
+                            [~NAME] => ??????-???????? ?????????? ?????
                             [~DEFAULT_VALUE] => 1
                         )
 
@@ -1952,7 +1956,7 @@ try {
                             [ID] => 474
                             [TIMESTAMP_X] => 2014-02-05 11:28:00
                             [IBLOCK_ID] => 40
-                            [NAME] => Настройки
+                            [NAME] => ?????????
                             [ACTIVE] => Y
                             [SORT] => 910
                             [CODE] => SETTINGS
@@ -1983,7 +1987,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Настройки
+                            [~NAME] => ?????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -1992,7 +1996,7 @@ try {
                             [ID] => 186
                             [TIMESTAMP_X] => 2014-02-05 11:21:22
                             [IBLOCK_ID] => 40
-                            [NAME] => Пользователи
+                            [NAME] => ????????????
                             [ACTIVE] => Y
                             [SORT] => 1000
                             [CODE] => USER
@@ -2043,7 +2047,7 @@ try {
                                     [0] =>
                                 )
 
-                            [~NAME] => Пользователи
+                            [~NAME] => ????????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2052,7 +2056,7 @@ try {
                             [ID] => 258
                             [TIMESTAMP_X] => 2015-03-18 10:14:55
                             [IBLOCK_ID] => 40
-                            [NAME] => Почтовые настройки
+                            [NAME] => ???????? ?????????
                             [ACTIVE] => Y
                             [SORT] => 1005
                             [CODE] => MAIL_SETTINGS
@@ -2084,7 +2088,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Почтовые настройки
+                            [~NAME] => ???????? ?????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2093,7 +2097,7 @@ try {
                             [ID] => 467
                             [TIMESTAMP_X] => 2014-02-05 11:27:29
                             [IBLOCK_ID] => 40
-                            [NAME] => Управляющая компания
+                            [NAME] => ??????????? ????????
                             [ACTIVE] => Y
                             [SORT] => 1010
                             [CODE] => UK
@@ -2124,7 +2128,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 2197189
                             [~DESCRIPTION] =>
-                            [~NAME] => Управляющая компания
+                            [~NAME] => ??????????? ????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2133,7 +2137,7 @@ try {
                             [ID] => 252
                             [TIMESTAMP_X] => 2014-04-28 12:26:31
                             [IBLOCK_ID] => 40
-                            [NAME] => Демо-доступ
+                            [NAME] => ????-??????
                             [ACTIVE] => Y
                             [SORT] => 1020
                             [CODE] => DEMO
@@ -2165,7 +2169,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Демо-доступ
+                            [~NAME] => ????-??????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2174,7 +2178,7 @@ try {
                             [ID] => 310
                             [TIMESTAMP_X] => 2014-02-05 11:27:29
                             [IBLOCK_ID] => 40
-                            [NAME] => По умолчанию: город доставки
+                            [NAME] => ?? ?????????: ????? ????????
                             [ACTIVE] => Y
                             [SORT] => 1030
                             [CODE] => DEFAULT_CITY
@@ -2205,7 +2209,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => По умолчанию: город доставки
+                            [~NAME] => ?? ?????????: ????? ????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2214,7 +2218,7 @@ try {
                             [ID] => 311
                             [TIMESTAMP_X] => 2014-02-05 11:27:29
                             [IBLOCK_ID] => 40
-                            [NAME] => По умолчанию: способ доставки
+                            [NAME] => ?? ?????????: ?????? ????????
                             [ACTIVE] => Y
                             [SORT] => 1040
                             [CODE] => DEFAULT_DELIVERY
@@ -2246,7 +2250,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => По умолчанию: способ доставки
+                            [~NAME] => ?? ?????????: ?????? ????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2255,7 +2259,7 @@ try {
                             [ID] => 312
                             [TIMESTAMP_X] => 2014-02-05 11:27:29
                             [IBLOCK_ID] => 40
-                            [NAME] => По умолчанию: кассовое обслуживание
+                            [NAME] => ?? ?????????: ???????? ????????????
                             [ACTIVE] => Y
                             [SORT] => 1050
                             [CODE] => DEFAULT_CASH
@@ -2287,7 +2291,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => По умолчанию: кассовое обслуживание
+                            [~NAME] => ?? ?????????: ???????? ????????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2296,7 +2300,7 @@ try {
                             [ID] => 303
                             [TIMESTAMP_X] => 2014-02-05 11:27:29
                             [IBLOCK_ID] => 40
-                            [NAME] => Папка товаров
+                            [NAME] => ????? ???????
                             [ACTIVE] => Y
                             [SORT] => 1060
                             [CODE] => FOLDER
@@ -2327,7 +2331,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Папка товаров
+                            [~NAME] => ????? ???????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2336,7 +2340,7 @@ try {
                             [ID] => 359
                             [TIMESTAMP_X] => 2014-02-05 11:27:29
                             [IBLOCK_ID] => 40
-                            [NAME] => Префикс артикула товаров
+                            [NAME] => ??????? ???????? ???????
                             [ACTIVE] => Y
                             [SORT] => 1070
                             [CODE] => PREFIX
@@ -2367,7 +2371,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Префикс артикула товаров
+                            [~NAME] => ??????? ???????? ???????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2376,7 +2380,7 @@ try {
                             [ID] => 377
                             [TIMESTAMP_X] => 2019-01-18 09:45:48
                             [IBLOCK_ID] => 40
-                            [NAME] => Префикс
+                            [NAME] => ???????
                             [ACTIVE] => Y
                             [SORT] => 1080
                             [CODE] => PREFIX_REPORTS
@@ -2407,7 +2411,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Префикс
+                            [~NAME] => ???????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2416,7 +2420,7 @@ try {
                             [ID] => 477
                             [TIMESTAMP_X] => 2014-02-26 10:23:40
                             [IBLOCK_ID] => 40
-                            [NAME] => Количество элементов на странице
+                            [NAME] => ?????????? ????????? ?? ????????
                             [ACTIVE] => Y
                             [SORT] => 1200
                             [CODE] => ON_PAGE
@@ -2448,7 +2452,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Количество элементов на странице
+                            [~NAME] => ?????????? ????????? ?? ????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2457,7 +2461,7 @@ try {
                             [ID] => 492
                             [TIMESTAMP_X] => 2014-06-02 16:33:42
                             [IBLOCK_ID] => 40
-                            [NAME] => Условия работы ИМ
+                            [NAME] => ??????? ?????? ??
                             [ACTIVE] => Y
                             [SORT] => 1300
                             [CODE] => CONDITIONS
@@ -2489,7 +2493,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Условия работы ИМ
+                            [~NAME] => ??????? ?????? ??
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2498,7 +2502,7 @@ try {
                             [ID] => 496
                             [TIMESTAMP_X] => 2014-06-26 11:30:51
                             [IBLOCK_ID] => 40
-                            [NAME] => Ключ авторизации
+                            [NAME] => ???? ???????????
                             [ACTIVE] => Y
                             [SORT] => 1400
                             [CODE] => UKEY
@@ -2529,7 +2533,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Ключ авторизации
+                            [~NAME] => ???? ???????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2538,7 +2542,7 @@ try {
                             [ID] => 543
                             [TIMESTAMP_X] => 2014-10-14 12:52:41
                             [IBLOCK_ID] => 40
-                            [NAME] => Код контрагента 1с
+                            [NAME] => ??? ??????????? 1?
                             [ACTIVE] => Y
                             [SORT] => 1500
                             [CODE] => CODE_1C
@@ -2569,7 +2573,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Код контрагента 1с
+                            [~NAME] => ??? ??????????? 1?
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2578,7 +2582,7 @@ try {
                             [ID] => 610
                             [TIMESTAMP_X] => 2014-12-29 12:29:47
                             [IBLOCK_ID] => 40
-                            [NAME] => Участник региональной сети
+                            [NAME] => ???????? ???????????? ????
                             [ACTIVE] => Y
                             [SORT] => 1550
                             [CODE] => BRANCH
@@ -2603,8 +2607,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -2618,7 +2622,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 0
                             [~DESCRIPTION] =>
-                            [~NAME] => Участник региональной сети
+                            [~NAME] => ???????? ???????????? ????
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -2627,7 +2631,7 @@ try {
                             [ID] => 670
                             [TIMESTAMP_X] => 2015-06-19 16:34:10
                             [IBLOCK_ID] => 40
-                            [NAME] => Тип агента
+                            [NAME] => ??? ??????
                             [ACTIVE] => Y
                             [SORT] => 1555
                             [CODE] => TYPE_AGENT
@@ -2659,7 +2663,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Тип агента
+                            [~NAME] => ??? ??????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2668,7 +2672,7 @@ try {
                             [ID] => 635
                             [TIMESTAMP_X] => 2015-03-31 14:49:53
                             [IBLOCK_ID] => 40
-                            [NAME] => Клиент доступен для агентов
+                            [NAME] => ?????? ???????? ??? ???????
                             [ACTIVE] => Y
                             [SORT] => 1600
                             [CODE] => AVAILABLE_FOR_AGENT
@@ -2693,8 +2697,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -2708,7 +2712,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 0
                             [~DESCRIPTION] =>
-                            [~NAME] => Клиент доступен для агентов
+                            [~NAME] => ?????? ???????? ??? ???????
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -2717,7 +2721,7 @@ try {
                             [ID] => 714
                             [TIMESTAMP_X] => 2017-08-29 12:53:26
                             [IBLOCK_ID] => 40
-                            [NAME] => Обслуживается агентом
+                            [NAME] => ????????????? ???????
                             [ACTIVE] => Y
                             [SORT] => 1620
                             [CODE] => BY_AGENT
@@ -2748,7 +2752,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Обслуживается агентом
+                            [~NAME] => ????????????? ???????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2757,7 +2761,7 @@ try {
                             [ID] => 671
                             [TIMESTAMP_X] => 2015-07-03 12:13:00
                             [IBLOCK_ID] => 40
-                            [NAME] => ИМ отправляет посредством
+                            [NAME] => ?? ?????????? ???????????
                             [ACTIVE] => Y
                             [SORT] => 1650
                             [CODE] => IM_BY
@@ -2789,7 +2793,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => ИМ отправляет посредством
+                            [~NAME] => ?? ?????????? ???????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2798,7 +2802,7 @@ try {
                             [ID] => 678
                             [TIMESTAMP_X] => 2015-10-21 10:54:54
                             [IBLOCK_ID] => 40
-                            [NAME] => Дата последней заявки агента
+                            [NAME] => ???? ????????? ?????? ??????
                             [ACTIVE] => Y
                             [SORT] => 1700
                             [CODE] => LAST_DATE_AGENT
@@ -2829,7 +2833,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Дата последней заявки агента
+                            [~NAME] => ???? ????????? ?????? ??????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2838,7 +2842,7 @@ try {
                             [ID] => 681
                             [TIMESTAMP_X] => 2016-01-18 13:21:23
                             [IBLOCK_ID] => 40
-                            [NAME] => Коэффициент объемного веса
+                            [NAME] => ??????????? ????????? ????
                             [ACTIVE] => Y
                             [SORT] => 1750
                             [CODE] => COEFFICIENT_VW
@@ -2869,7 +2873,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 5000
                             [~DESCRIPTION] =>
-                            [~NAME] => Коэффициент объемного веса
+                            [~NAME] => ??????????? ????????? ????
                             [~DEFAULT_VALUE] => 6000
                         )
 
@@ -2878,7 +2882,7 @@ try {
                             [ID] => 684
                             [TIMESTAMP_X] => 2016-04-19 17:10:40
                             [IBLOCK_ID] => 40
-                            [NAME] => Дополнительные адреса
+                            [NAME] => ?????????????? ??????
                             [ACTIVE] => Y
                             [SORT] => 1800
                             [CODE] => ADDITIONAL_ADDRESSES
@@ -2909,7 +2913,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Дополнительные адреса
+                            [~NAME] => ?????????????? ??????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2918,7 +2922,7 @@ try {
                             [ID] => 696
                             [TIMESTAMP_X] => 2016-12-06 19:07:35
                             [IBLOCK_ID] => 40
-                            [NAME] => Тип работы филиалов
+                            [NAME] => ??? ?????? ????????
                             [ACTIVE] => Y
                             [SORT] => 1850
                             [CODE] => TYPE_WORK_BRANCHES
@@ -2950,7 +2954,7 @@ try {
                             [VALUE_ENUM_ID] =>
                             [~VALUE] =>
                             [~DESCRIPTION] =>
-                            [~NAME] => Тип работы филиалов
+                            [~NAME] => ??? ?????? ????????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -2959,7 +2963,7 @@ try {
                             [ID] => 697
                             [TIMESTAMP_X] => 2016-12-06 19:36:11
                             [IBLOCK_ID] => 40
-                            [NAME] => Отображать лимиты
+                            [NAME] => ?????????? ??????
                             [ACTIVE] => Y
                             [SORT] => 1900
                             [CODE] => SHOW_LIMITS
@@ -2984,8 +2988,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -2999,7 +3003,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 0
                             [~DESCRIPTION] =>
-                            [~NAME] => Отображать лимиты
+                            [~NAME] => ?????????? ??????
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -3008,7 +3012,7 @@ try {
                             [ID] => 719
                             [TIMESTAMP_X] => 2017-04-19 10:12:20
                             [IBLOCK_ID] => 40
-                            [NAME] => Тип лица
+                            [NAME] => ??? ????
                             [ACTIVE] => Y
                             [SORT] => 1920
                             [CODE] => TYPE_FACE
@@ -3032,15 +3036,15 @@ try {
                             [USER_TYPE_SETTINGS] =>
                             [HINT] =>
                             [PROPERTY_VALUE_ID] => 9528186:719
-                            [VALUE] => Юридическое
+                            [VALUE] => ???????????
                             [DESCRIPTION] =>
-                            [VALUE_ENUM] => Юридическое
+                            [VALUE_ENUM] => ???????????
                             [VALUE_XML_ID] => 6162d34019753377f1b4d1fb05953e9a
                             [VALUE_SORT] => 10
                             [VALUE_ENUM_ID] => 310
-                            [~VALUE] => Юридическое
+                            [~VALUE] => ???????????
                             [~DESCRIPTION] =>
-                            [~NAME] => Тип лица
+                            [~NAME] => ??? ????
                             [~DEFAULT_VALUE] =>
                         )
 
@@ -3049,7 +3053,7 @@ try {
                             [ID] => 730
                             [TIMESTAMP_X] => 2017-06-28 12:41:59
                             [IBLOCK_ID] => 40
-                            [NAME] => Настройки пользователей ЛК
+                            [NAME] => ????????? ????????????? ??
                             [ACTIVE] => Y
                             [SORT] => 1930
                             [CODE] => ACCOUNT_LK_SETTINGS
@@ -3099,7 +3103,7 @@ try {
                                 )
 
                             [~DESCRIPTION] =>
-                            [~NAME] => Настройки пользователей ЛК
+                            [~NAME] => ????????? ????????????? ??
                             [~DEFAULT_VALUE] => Array
                                 (
                                     [TEXT] =>
@@ -3113,7 +3117,7 @@ try {
                             [ID] => 746
                             [TIMESTAMP_X] => 2017-11-24 13:46:10
                             [IBLOCK_ID] => 40
-                            [NAME] => Доступен Склад-Склад
+                            [NAME] => ???????? ?????-?????
                             [ACTIVE] => Y
                             [SORT] => 1940
                             [CODE] => AVAILABLE_WH_WH
@@ -3138,8 +3142,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -3153,7 +3157,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 1
                             [~DESCRIPTION] =>
-                            [~NAME] => Доступен Склад-Склад
+                            [~NAME] => ???????? ?????-?????
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -3162,7 +3166,7 @@ try {
                             [ID] => 762
                             [TIMESTAMP_X] => 2019-04-16 21:58:43
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть вызов курьера
+                            [NAME] => ?????? ????? ???????
                             [ACTIVE] => Y
                             [SORT] => 1945
                             [CODE] => AVAILABLE_CALL_COURIER
@@ -3187,8 +3191,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -3202,7 +3206,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 1
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть вызов курьера
+                            [~NAME] => ?????? ????? ???????
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -3211,7 +3215,7 @@ try {
                             [ID] => 765
                             [TIMESTAMP_X] => 2019-07-29 10:54:28
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть-показать Экспресс 2
+                            [NAME] => ??????-???????? ???????? 2
                             [ACTIVE] => Y
                             [SORT] => 1950
                             [CODE] => AVAILABLE_EXPRESS2
@@ -3236,8 +3240,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -3251,7 +3255,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 0
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть-показать Экспресс 2
+                            [~NAME] => ??????-???????? ???????? 2
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -3260,7 +3264,7 @@ try {
                             [ID] => 766
                             [TIMESTAMP_X] => 2019-07-29 10:54:28
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть-показать Экспресс 4
+                            [NAME] => ??????-???????? ???????? 4
                             [ACTIVE] => Y
                             [SORT] => 1955
                             [CODE] => AVAILABLE_EXPRESS4
@@ -3285,8 +3289,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -3300,7 +3304,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 0
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть-показать Экспресс 4
+                            [~NAME] => ??????-???????? ???????? 4
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -3309,7 +3313,7 @@ try {
                             [ID] => 767
                             [TIMESTAMP_X] => 2019-07-29 10:54:28
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть-показать Экспресс 8
+                            [NAME] => ??????-???????? ???????? 8
                             [ACTIVE] => Y
                             [SORT] => 1960
                             [CODE] => AVAILABLE_EXPRESS8
@@ -3334,8 +3338,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -3349,7 +3353,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 1
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть-показать Экспресс 8
+                            [~NAME] => ??????-???????? ???????? 8
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -3358,7 +3362,7 @@ try {
                             [ID] => 770
                             [TIMESTAMP_X] => 2019-07-29 10:55:53
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть-показать Экспресс
+                            [NAME] => ??????-???????? ????????
                             [ACTIVE] => Y
                             [SORT] => 1963
                             [CODE] => AVAILABLE_EXPRESS
@@ -3383,8 +3387,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -3398,7 +3402,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 1
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть-показать Экспресс
+                            [~NAME] => ??????-???????? ????????
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -3407,7 +3411,7 @@ try {
                             [ID] => 768
                             [TIMESTAMP_X] => 2019-07-29 10:54:28
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть-показать Стандарт
+                            [NAME] => ??????-???????? ????????
                             [ACTIVE] => Y
                             [SORT] => 1965
                             [CODE] => AVAILABLE_STANDART
@@ -3432,8 +3436,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -3447,7 +3451,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 1
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть-показать Стандарт
+                            [~NAME] => ??????-???????? ????????
                             [~DEFAULT_VALUE] => 0
                         )
 
@@ -3456,7 +3460,7 @@ try {
                             [ID] => 769
                             [TIMESTAMP_X] => 2019-07-29 10:54:28
                             [IBLOCK_ID] => 40
-                            [NAME] => Скрыть-показать Эконом
+                            [NAME] => ??????-???????? ??????
                             [ACTIVE] => Y
                             [SORT] => 1970
                             [CODE] => AVAILABLE_ECONOME
@@ -3481,8 +3485,8 @@ try {
                                 (
                                     [VIEW] => Array
                                         (
-                                            [0] => Нет
-                                            [1] => Да
+                                            [0] => ???
+                                            [1] => ??
                                         )
 
                                 )
@@ -3496,7 +3500,7 @@ try {
                             [VALUE_SORT] =>
                             [~VALUE] => 1
                             [~DESCRIPTION] =>
-                            [~NAME] => Скрыть-показать Эконом
+                            [~NAME] => ??????-???????? ??????
                             [~DEFAULT_VALUE] => 0
                         )
 

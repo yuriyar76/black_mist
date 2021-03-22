@@ -25,11 +25,178 @@ abstract class NPAllFunc
      * @return mixed
      */
     static function convArrayToUTF(&$obj) {
-     array_walk_recursive($obj, function(&$item){
-       $item = iconv('windows-1251', 'utf-8', htmlspecialchars($item));
-     });
+        foreach ($obj as &$item) {
+            if (is_array($item)) {
+                self::convArrayToUTF($item);
+            } else {
+                $item = iconv('windows-1251', 'utf-8', htmlspecialchars($item));
+            }
+        }
         return $obj;
     }
+
+    /**
+     * @param $obj
+     * @return array
+     */
+    static function convArrToUTF($obj) {
+        $arRes = [];
+        foreach ($obj as $k => $v)
+        {
+            $k_tr = iconv('windows-1251', 'utf-8', $k);
+            if (is_array($v))
+            {
+                foreach ($v as $kk => $vv)
+                {
+                    $kk_tr = iconv('windows-1251', 'utf-8', $kk);
+                    if (is_array($vv))
+                    {
+                        foreach ($vv as $kkk => $vvv)
+                        {
+                            $kkk_tr = iconv('windows-1251', 'utf-8', $kkk);
+                            if (is_array($vvv))
+                            {
+                                foreach ($vvv as $kkkk => $vvvv)
+                                {
+                                    $kkkk_tr = iconv('windows-1251', 'utf-8', $kkkk);
+                                    if (is_array($vvvv))
+                                    {
+                                        foreach ($vvvv as $kkkkk => $vvvvv)
+                                        {
+                                            $kkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkk);
+                                            if (is_array($vvvvv))
+                                            {
+                                                foreach ($vvvvv as $kkkkkk => $vvvvvv)
+                                                {
+                                                    $kkkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkkk);
+                                                    if (is_array($vvvvvv))
+                                                    {
+                                                        foreach ($vvvvvv as $kkkkkkk => $vvvvvvv)
+                                                        {
+                                                            $kkkkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkkkk);
+                                                            $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr][$kkkkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvvvv);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvvv);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvv);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr] = iconv('windows-1251', 'utf-8', $vvvv);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $arRes[$k_tr][$kk_tr][$kkk_tr] = iconv('windows-1251', 'utf-8', $vvv);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $arRes[$k_tr][$kk_tr] = iconv('windows-1251', 'utf-8', $vv);
+                    }
+                }
+            }
+            else
+            {
+                $arRes[$k_tr] = iconv('windows-1251', 'utf-8', $v);
+            }
+        }
+        return $arRes;
+    }
+
+    /**
+     * @param $obj
+     * @return array
+     */
+    static function arrUtfToWin($obj)
+    {
+        $arRes = [];
+        foreach ($obj as $k => $v)
+        {
+            $k_tr = iconv('utf-8', 'windows-1251', $k);
+            if (is_array($v))
+            {
+                foreach ($v as $kk => $vv)
+                {
+                    $kk_tr = iconv('utf-8', 'windows-1251', $kk);
+                    if (is_array($vv))
+                    {
+                        foreach ($vv as $kkk => $vvv)
+                        {
+                            $kkk_tr = iconv('utf-8', 'windows-1251', $kkk);
+                            if (is_array($vvv))
+                            {
+                                foreach ($vvv as $kkkk => $vvvv)
+                                {
+                                    $kkkk_tr = iconv('utf-8', 'windows-1251', $kkkk);
+                                    if (is_array($vvvv))
+                                    {
+                                        foreach ($vvvv as $kkkkk => $vvvvv)
+                                        {
+                                            $kkkkk_tr = iconv('utf-8', 'windows-1251', $kkkkk);
+                                            if (is_array($vvvvv))
+                                            {
+                                                foreach ($vvvvv as $kkkkkk => $vvvvvv)
+                                                {
+                                                    $kkkkkk_tr = iconv('utf-8', 'windows-1251', $kkkkkk);
+                                                    if (is_array($vvvvvv))
+                                                    {
+                                                        foreach ($vvvvvv as $kkkkkkk => $vvvvvvv)
+                                                        {
+                                                            $kkkkkkk_tr = iconv('utf-8', 'windows-1251', $kkkkkkk);
+                                                            $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr][$kkkkkkk_tr] = iconv('utf-8', 'windows-1251', $vvvvvvv);
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr] = iconv('utf-8', 'windows-1251', $vvvvvv);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr] = iconv('utf-8', 'windows-1251', $vvvvv);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr] = iconv('utf-8', 'windows-1251', $vvvv);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $arRes[$k_tr][$kk_tr][$kkk_tr] = iconv('utf-8', 'windows-1251', $vvv);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        $arRes[$k_tr][$kk_tr] = iconv('utf-8', 'windows-1251', $vv);
+                    }
+                }
+            }
+            else
+            {
+                $arRes[$k_tr] = iconv('utf-8', 'windows-1251', $v);
+            }
+        }
+        return $arRes;
+    }
+
+
     /**
      * @param string $folder
      * @param array $params
@@ -251,8 +418,8 @@ abstract class NPAllFunc
     static public function soap_inc()
     {
         $id_uk = 2378056;
-        $res = CIBlockElement::GetList(array(), array("IBLOCK_ID" => 47, "ID" => $id_uk),
-            false, false, array("PROPERTY_683", "PROPERTY_704", "PROPERTY_705", "PROPERTY_706"));
+        $res = CIBlockElement::GetList([], ["IBLOCK_ID" => 47, "ID" => $id_uk],
+            false, false, ["PROPERTY_683", "PROPERTY_704", "PROPERTY_705", "PROPERTY_706"]);
         if ($ob = $res->GetNextElement()) {
             $arFields = $ob->GetFields();
             $currentip = $arFields['PROPERTY_683_VALUE'];
@@ -263,13 +430,13 @@ abstract class NPAllFunc
                 (trim($pass1c) !== '')) {
                 $url = "http://" . $currentip . $currentlink;
                 $curl = curl_init();
-                curl_setopt_array($curl, array(
+                curl_setopt_array($curl, [
                     CURLOPT_URL => $url,
                     CURLOPT_HEADER => true,
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_NOBODY => true,
                     CURLOPT_TIMEOUT => 10
-                ));
+                ]);
                 $header = explode("\n", curl_exec($curl));
                 curl_close($curl);
                 if (trim($header[0]) !== ''){
@@ -429,6 +596,101 @@ abstract class NPAllFunc
             $rate = false;
         }
         return $rate;
+    }
+
+    /**
+     * @param $text
+     * @return string|string[]
+     */
+    public static function NewQuotes($text)
+    {
+        //return $text;
+        $text = self::deleteTabs($text);
+        $count_qw = substr_count($text,'"');
+        $count_zam_qw = 0;
+        if ($count_qw > 0)
+        {
+            $text = htmlspecialcharsEx(trim($text));
+        }
+        //$text = htmlspecialchars(trim($text));
+        $count = substr_count($text,'&quot;');
+        if ($count > 0)
+        {
+            for ($i=0; $i < $count; $i++)
+            {
+                $mod = ($i % 2);
+                $pos = strpos($text, '&quot;');
+                if ($mod == 0)
+                {
+                    $text = substr_replace($text, '«', $pos, 6);
+                    $count_zam_qw++;
+                    //$text = substr_replace($text, '&laquo;', $pos, 6);
+                }
+                else
+                {
+                    $text = substr_replace($text, '»', $pos, 6);
+                    $count_zam_qw++;
+                    //$text = substr_replace($text, '&raquo;', $pos, 6);
+                }
+            }
+        }
+
+        //замена''
+        $count = substr_count($text,"''");
+        if ($count > 0)
+        {
+            for ($i=0; $i < $count; $i++)
+            {
+                $mod = ($i % 2);
+                $pos = strpos($text, "''");
+                if ($mod == 0)
+                {
+                    $text = substr_replace($text, '«', $pos, 2);
+                    $count_zam_qw++;
+                }
+                else
+                {
+                    $text = substr_replace($text, '»', $pos, 2);
+                    $count_zam_qw++;
+                }
+            }
+        }
+        //замена''
+
+        //замена'
+        $count = substr_count($text,"'");
+        if ($count > 0)
+        {
+            for ($i=0; $i < $count; $i++)
+            {
+                $pos = strpos($text, "'");
+                $text = substr_replace($text, '`', $pos, 1);
+                $count_zam_qw++;
+            }
+        }
+        //замена'
+        //нечетное кол-во кавычек, необходимо поменять местами
+        if ($count_zam_qw%2 != 0)
+        {
+            $pos_q1 = strrpos($text, "«");
+            $pos_q2 = strrpos($text, "»");
+            $text = substr_replace($text, '»', $pos_q1, 1);
+            $text = substr_replace($text, '«', $pos_q2, 1);
+        }
+        //нечетное кол-во кавычек, необходимо поменять местами
+        return $text;
+
+    }
+
+    /**
+     * @param $b1
+     * @return string
+     */
+    protected static function deleteTabs($b1)
+    {
+        $b1 = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '    '], '', $b1);
+        $b1 = trim($b1);
+        return $b1;
     }
 
 }
