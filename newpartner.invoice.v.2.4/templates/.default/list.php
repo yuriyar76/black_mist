@@ -406,7 +406,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
         $('.bootstrap-table .fixed-table-toolbar').append('<div class="pull-left">' +
             '<a href="/services/" style="margin-right:10px" class="btn btn-success">' +
             '<span class="glyphicon glyphicon-bell" aria-hidden="true"></span> Вызвать курьера</a>' +
-            <?if($arResult['CURRENT_CLIENT'] == 9528186):?>
+            <?if($arResult['CURRENT_CLIENT'] != 41478141):?>
             '<div id="call_courier_ids" class="btn btn-warning" data-toggle="tooltip" data-placement="right" ' +
             'title="" data-original-title="Отметьте в чекбоксах накладные, по которым нужно вызвать курьера">' +
             '<span class="glyphicon glyphicon-bell" aria-hidden="true" ></span> Массовый вызов курьера</div>' +
@@ -425,10 +425,10 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
 
         /*  массовый вызов курьера */
         $('#call_courier_ids').on('click', function () {
-               obj = {};
-            $('.a1 input:checkbox:checked').each(function(k,v){
-               obj[k] = $(v).val();
-            });
+               var obj = {};
+             $('.a1 input:checkbox:checked').each(function(k,v){
+               obj[k] =  $(v).val();
+              });
             if(obj[0]){
                 $('#data_json').val(JSON.stringify(obj));
                 $('#myCallCurier_ids').modal('show');
@@ -447,7 +447,25 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
                url: "/api/groupsCallCourier.php",
                data: fields,
                success: function(data){
-                   console.log(data);
+
+                   if(data.error){
+                       alert(data.error);
+                   }
+                   if(data.current == 1){
+                       let modal = $('#myCallCurier_ids');
+                       $.each(data.ids , function (index, value){
+                           var el =  $(`span[data-target = #myCallCurier_${value}]`);
+                           var check = $(`.a1 input[type=chexkbox]`);
+                           check.prop('checked', false);
+                           el.attr('style', 'color: #56363534; font-size: 14px; cursor: default');
+                           $(`span[data-target = #myCallCurier_${value}] span.glyphicon.glyphicon-bell`).
+                           attr('data-original-title', 'Курьер вызван');
+                           el.removeAttr('data-toggle');
+                           el.removeAttr('data-target');
+
+                       });
+                       modal.modal('hide');
+                   }
                 }
            });
 
@@ -1031,15 +1049,15 @@ if ($arResult['OPEN'])
                      if($arResult['IndividualPrice'] && $arResult['CURRENT_CLIENT'] != 41478141):
                         // почему то у Сухого нет в 1с признака Инд. прайс
                         ?>
-                        <th>
-                            <?=GetMessage('SUMM_DEV');?>
-                        </th>
+                      <th>
+                          <?=GetMessage('SUMM_DEV');?>
+                      </th>
                     <?php endif?>
                     <?php if($arResult['CURRENT_CLIENT'] != 41478141):?>
-                        <th>
-                        <span  class="glyphicon glyphicon-bell" style="color: #555555; font-size: 14px; ">
+                      <th>
+                         <span  class="glyphicon glyphicon-bell" style="color: #555555; font-size: 14px; ">
                         </span>
-                        </th>
+                      </th>
                     <?php endif;?>
                     <th width="20" data-field="column15" data-switchable="false" data-sortable="false"></th>
 
@@ -1755,7 +1773,7 @@ if($USER->isAdmin()){
         {?>
             <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="modal_inv1c_<?=$r['NAME'];?>" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
+                    <div class="modal-content mmm">
                     </div>
                 </div>
             </div>
