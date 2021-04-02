@@ -9335,26 +9335,28 @@ function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agen
             $events = json_encode(convArrayToUTF($result['Treking']));
             $arResult['APP_FOR_AGENT']['EVENTS'] = $events;
             $arResult['APP_FOR_AGENT']['EVENTS_ARR'] = $result['Treking'];
-
         }else{
             $arResult['APP_FOR_AGENT']['EVENT_LAST'] = 'Назначена агенту';
             $arResult['APP_FOR_AGENT']['EVENT_LAST_DATE'] = date('d.m.Y');
         }
 
         if (!empty($result['Dimensions'])){
-
             $arResult['APP_FOR_AGENT']['weight'] = $weight   = $result['Dimensions']['_1']['Weight'];
             $arResult['APP_FOR_AGENT']['weightV'] =  $weightV = $result['Dimensions']['_1']['WeightV'];
             $arResult['APP_FOR_AGENT']['places'] =  $places =  $result['Dimensions']['_1']['Places'];
             $arResult['APP_FOR_AGENT']['info'] = $info = $result['Dimensions']['_1']['Info'];
-
         }
 
 
         foreach($result['Doc'] as $key=>$val){
             $value = strip_tags(trim($val));
-            if($key === 'НомерНакладной')  {$arResult['APP_FOR_AGENT']['NumberInvoice'] = $value; continue;}  // [NumDoc] => 90-3287296
             if($key === 'НомерЗаявки')  {$arResult['APP_FOR_AGENT']['NumberApp'] = $value; continue;}  //  [НомерЗаявки] => 2416-00104
+            if($key === 'ПометкаУдаления') {
+                if($value === 'Y'){
+                    $arResult['APP_FOR_AGENT']['Numdel'] = $value; break;
+                }
+            }
+            if($key === 'НомерНакладной')  {$arResult['APP_FOR_AGENT']['NumberInvoice'] = $value; continue;}  // [NumDoc] => 90-3287296
             if($key === 'ВыборОтправителя')  {$arResult['APP_FOR_AGENT']['Sender'] = $value; continue;}  // [ВыборОтправителя] => ФГУП «Калужское» ФСИН России
             if($key === 'ФамилияОтправителя')  {$arResult['APP_FOR_AGENT']['SenderName'] = $value; continue;}  //  [ФамилияОтправителя] => Товзуркаев Амирхан Лечиевич
             if($key === 'КомпанияОтправителя')  {$arResult['APP_FOR_AGENT']['SenderCompany'] = $value; continue;}  // [КомпанияОтправителя] => ФГУП «Калужское» ФСИН России
@@ -9390,6 +9392,11 @@ function setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agen
             if($key === 'СпециальныеУсловия')  {$arResult['APP_FOR_AGENT']['SpecU'] = $value; continue;}   //  [СуммаКОплате] => 0
             if($key === 'ОписаниеОтправления')  {$arResult['APP_FOR_AGENT']['Desc_items'] = $value; continue;}   //  [СуммаКОплате] => 0
             if($key === 'ПризнакДокументы')  {$arResult['APP_FOR_AGENT']['DocP'] = $value; continue;}   //  [СуммаКОплате] => 0
+        }
+        if($arResult['APP_FOR_AGENT']['Numdel'] === 'Y'){
+            $el = new CIBlockElement;
+            $el->Update($uid['ID'], ['ACTIVE' => "N"]);
+            return ["ID"=>$uid['ID'], "del"=>'Y'];
         }
         $arResult['APP_FOR_AGENT']['INN_Agent'] = $inn_agent;
         $arResult['APP_FOR_AGENT']['Id_uk'] = $id_uk;

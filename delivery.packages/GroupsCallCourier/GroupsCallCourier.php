@@ -1,30 +1,25 @@
 <?php
-require_once __DIR__ . '/../NPAllFunc.php';
+require_once __DIR__ . '/../MakeData.php';
+
 
 /**
  * Class GroupsCallCourier
  */
-class GroupsCallCourier
+class GroupsCallCourier extends MakeData
 {
-    public $content = [];
-    private $idClient = 0;
     public $arrClient = [];
-    public $uCompId = 0;
-    public $uCompSettingsId = 0;
-    public $uCSettings = [];
-    public $client;
     public $invoiceList;
     public $invoiceListFor1c = [];
     public $mbDetect;
     public $arListForCall = [];
     public $arJsCall = [];
     public $arJsCallDoc = [];
-    public $errors = [];
     public $numbers = [];
     public $respSetDocs;
     public $current = false;
     public $apps = [];
-
+    protected $instructions;
+    protected $dataCall = [];
 
     /**
      * GroupsCallCourier constructor.
@@ -32,149 +27,13 @@ class GroupsCallCourier
      */
     public function __construct(array $data)
    {
-         CModule::IncludeModule("iblock");
-         $this->setData($data);
-         $this->idClient = $this->content['current_client'];
+         parent::__construct($data);
+
    }
 
     /**
-     * @param array $data
      * @return $this
      */
-    private function setData(array $data)
-    {
-        $content = [];
-        foreach($data as $key=>$value){
-            if($key === 'data_json'){
-                $content['ids'] = json_decode($value, true);
-                if(is_array($content['ids'])){
-                    foreach($content['ids'] as $k=>$val){
-                        $val = htmlspecialchars(strip_tags(trim($val)));
-                        $content['ids'][$k] = iconv('utf-8', 'windows-1251', $val);
-                    }
-                }
-            }else{
-                $content[$key] =  iconv('utf-8', 'windows-1251',htmlspecialchars(strip_tags(trim($value))));
-            }
-         }
-        $this->content = $content;
-        return $this;
-    }
-
-
-
-    /**
-     * @return $this
-     * @throws Exception
-     */
-    public function currentClient()
-    {
-        $arrClient = NPAllFunc::GetInfoArr(false, $this->idClient, 40, [
-            'ID',
-            "NAME",
-            "ACTIVE",
-            "PROPERTY_INN",
-            "PROPERTY_INN_REAL",
-            "PROPERTY_UK",
-            "PROPERTY_TYPE"
-        ]);
-
-        if(empty($arrClient['PROPERTY_UK_VALUE'])){
-            $this->errors['err_uk'] = 'Нет УК, Клиент не определен';
-            throw new Exception('Нет УК, Клиент не определен');
-         }
-
-            $this->arrClient = $arrClient;
-            $this->uCompId = $this->arrClient['PROPERTY_UK_VALUE'];
-            $arrUK = NPAllFunc::GetInfoArr(false, $this->uCompId, 40, [
-            'ID',
-            "NAME",
-            "ACTIVE",
-            "PROPERTY_INN",
-            "PROPERTY_INN_REAL",
-            "PROPERTY_SETTINGS.ID"
-        ]);
-        $this->uCompSettingsId = $arrUK['PROPERTY_SETTINGS_ID'];
-
-        $arrUKSettings = NPAllFunc::GetInfoArr(false,  $this->uCompSettingsId, 47, [
-            'ID',
-            "NAME",
-            "ACTIVE",
-            "PROPERTY_683",
-            "PROPERTY_761",
-            "PROPERTY_704",
-            "PROPERTY_705",
-            "PROPERTY_706",
-            "PROPERTY_709",
-
-        ]);
-        if(!$arrUKSettings['PROPERTY_683_VALUE'] && !$arrUKSettings['PROPERTY_704_VALUE'] &&
-           !$arrUKSettings['PROPERTY_705_VALUE'] && !$arrUKSettings['PROPERTY_706_VALUE']){
-            $this->errors['err_settings'] = 'Нет настроек УК, соединение с 1с невозможно';
-            throw new Exception('Нет настроек УК, соединение с 1с невозможно');
-         }
-        $this->uCSettings['ipaddr1c'] =  $arrUKSettings['PROPERTY_683_VALUE'];
-        $this->uCSettings['port1c'] =  $arrUKSettings['PROPERTY_761_VALUE'];
-        $this->uCSettings['url1c'] =  $arrUKSettings['PROPERTY_704_VALUE'];
-        $this->uCSettings['login1c'] =  $arrUKSettings['PROPERTY_705_VALUE'];
-        $this->uCSettings['pass1c'] =  $arrUKSettings['PROPERTY_706_VALUE'];
-        $this->uCSettings['email'] =  $arrUKSettings['PROPERTY_709_VALUE'];
-
-        return $this;
-
-    }
-
-    /**
-     * @return $this
-     * @throws SoapFault
-     */
-    public function soapLink(){
-            $currentip = $this->uCSettings['ipaddr1c'];
-            $currentport = $this->uCSettings['port1c'];
-            $currentlink = $this->uCSettings['url1c'];
-            $login1c = $this->uCSettings['login1c'];
-            $pass1c =  $this->uCSettings['pass1c'];
-
-            // здесь продолжить
-            if (!$currentip && !$currentlink && !$login1c && !$pass1c){
-                $this->errors['err_link'] = 'Нет соединения с 1с';
-                throw new Exception('Нет соединения с 1с');
-            }
-
-                if ($currentport > 0) {
-                    $url = "http://".$currentip.':'.$currentport.$currentlink;
-                }
-                else {
-                    $url = "http://".$currentip.$currentlink;
-                }
-                $curl = curl_init();
-                curl_setopt_array($curl, [
-                    CURLOPT_URL => $url,
-                    CURLOPT_HEADER => true,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_NOBODY => true,
-                    CURLOPT_TIMEOUT => 10
-                ]);
-                $header = explode("\n", curl_exec($curl));
-                curl_close($curl);
-                if (!strlen(trim($header[0]))){
-                    $this->errors['err_curl'] = 'Проблемы с curl';
-                    throw new Exception('Проблемы с curl');
-                }
-                if (strlen(trim($header[0])))
-                {
-                    if ($currentport > 0) {
-                        $client = new SoapClient($url, ['login' => $login1c, 'password' => $pass1c, 'proxy_host' => $currentip, 'proxy_port' => $currentport, 'exceptions' => false]);
-                    }
-                    else {
-                        $client = new SoapClient($url, ['login' => $login1c, 'password' => $pass1c,'exceptions' => false]);
-                    }
-                     $this->client = $client;
-                }
-                return $this;
-
-    }
-
     public function invoiceList()
     {
         $arrList = NPAllFunc::GetInfoArr(false,  false, 83,
@@ -196,9 +55,16 @@ class GroupsCallCourier
         return $this;
     }
 
+    /**
+     * @return $this
+     * @throws Exception
+     */
     public function prepareListFor1c()
     {
        foreach($this->invoiceList as $key => $invoice) {
+           if( empty($this->invoiceList[$key]['PROPERTY_569'])){
+               $this->invoiceList[$key]['PROPERTY_569'] = 0;
+           }
            if($invoice['PROPERTY_CALLING_COURIER_VALUE'] === "Y") {
                foreach($this->content['ids'] as $k=>$id){
                    if($id === $invoice['ID']){
@@ -298,8 +164,16 @@ class GroupsCallCourier
            $TYPE = (int)$invoice['PROPERTY_558'];
            $PAYMENT_AMOUNT = '0';
            $PAYMENT = 0;
+           if($this->content['callcourcomment_ids'])
            $INSTRUCTIONS = $invoice['PROPERTY_570']['TEXT'] . ' ' .
-               $this->content['callcourcomment_ids'];
+               $this->content['callcourcomment_ids'] . ' ' .
+               'ВЫЗОВ КУРЬЕРА: ' . 'с ' . $DATE_TAKE_FROM . ' по ' . $DATE_TAKE_TO;
+           $DESCRIPTION = $invoice['PROPERTY_1082']['TEXT'];
+
+           if(empty($this->content['callcourcomment_ids']))
+               $INSTRUCTIONS = $invoice['PROPERTY_570']['TEXT'] . ' ' .
+               'ВЫЗОВ КУРЬЕРА: ' . 'с ' . $DATE_TAKE_FROM . ' по ' . $DATE_TAKE_TO;
+           $this->instructions = $INSTRUCTIONS;
            $PLACES = (int)$invoice['PROPERTY_567'];
            $WEIGHT = (float)$invoice['PROPERTY_568'];
            $SIZE_1 = 0;
@@ -310,7 +184,8 @@ class GroupsCallCourier
            $DocNumber = $invoice['NAME'];
            $TRANSPORT_TYPE = $invoice['PROPERTY_861'];
            $ISOFFICE = $invoice['PROPERTY_988'];
-           $CENTER_EXPENSES = $invoice['PROPERTY_981'];
+
+
 
            $arListFor1c[$key] = [
                "ID" => $ID,
@@ -339,6 +214,7 @@ class GroupsCallCourier
                "PAYMENT_AMOUNT" => $PAYMENT_AMOUNT,
                "PAYMENT" => $PAYMENT,
                "INSTRUCTIONS" => $INSTRUCTIONS,
+               'DESCRIPTION' => $DESCRIPTION,
                "PLACES" => $PLACES,
                "WEIGHT" => $WEIGHT,
                "SIZE_1" => $SIZE_1,
@@ -372,6 +248,7 @@ class GroupsCallCourier
                'DATE_TAKE_TO' => $DATE_TAKE_TO,
                'INSTRUCTIONS' => $INSTRUCTIONS,
                "TRANSPORT_TYPE" => $TRANSPORT_TYPE,
+               'DESCRIPTION' => $DESCRIPTION,
 
            ];
            $this->arListForCall[] = $arListForCall[$key];
@@ -385,6 +262,10 @@ class GroupsCallCourier
            return $this;
     }
 
+    /**
+     * @param $str
+     * @return string
+     */
     protected function frmDate1c($str)
     {
         if($str==='from'){
@@ -400,28 +281,63 @@ class GroupsCallCourier
         return $return;
     }
 
+    /**
+     * @return $this
+     * @throws Exception
+     */
     public function  setCallCourier()
     {
-        $arJson =  $this->arListForCall;
-        $arJson = NPAllFunc::convArrToUTF($arJson);
-        $arJS = [];
-        $arJS['ListOfDocs'] = json_encode($arJson);
-        $this->arJsCall = $arJS;
-        $result = $this->client->SetCallingTheCourier($arJS);
-        $mResult = $result->return;
-        $obj = json_decode($mResult, true);
-        $arRes = NPAllFunc::arrUtfToWin($obj);
-        if ($arRes[0]['status'] !== 'true')
-        {
-            $state_id = 321;
-            $state_descr = 'Отклонена';
-            $this->errors['errCallMess']  = ['state_id' => $state_id, 'message'=>'Функция SetCallingTheCourier ' . $state_descr];
-            throw new Exception("Статус - $state_id, $state_descr");
+        $arrR = [];
+        foreach ($this->invoiceList as $invoice){
+            $arHistory = [['date' => date('d.m.Y H:i:s'), 'status' => 315,
+                'status_descr' => 'Оформлена', 'comment' => '']];
+            $arHistoryUTF = NPAllFunc::convArrToUTF($arHistory);
+            $id_in = GetMaxIDIN(87, 7);
+            $el = new CIBlockElement;
+            $arLoadProductArray = [
+                "IBLOCK_SECTION_ID" => false,
+                "IBLOCK_ID" => 87,
+                "PROPERTY_VALUES" => [
+                    611 => $id_in,
+                    612 => $this->arrClient['ID'],
+                    664 => '',  // филиал
+                    613 => [
+                        date('d.m.Y', (strtotime($this->content['callcourierdate_ids']))) . ' ' .
+                        $this->content['callcourtime_from_ids'] . ':00',
+                        date('d.m.Y', (strtotime($this->content['callcourierdate_ids']))) . ' ' .
+                        $this->content['callcourtime_to_ids'] . ':00'
+                    ],
+                    614 => $invoice['PROPERTY_549'],
+                    615 => $invoice['PROPERTY_551']['TEXT'],
+                    616 => $invoice['PROPERTY_546'],
+                    617 => $invoice['PROPERTY_547'],
+                    618 => $invoice['PROPERTY_568'],
+                    619 => $invoice['PROPERTY_569'],
+                    620 => $this->content['callcourcomment_ids'],
+                    712 => '', // email, на который ушла заявка
+                    726 => 315,
+                    727 => json_encode($arHistoryUTF),
+                    771 => $invoice['NAME'],
+                    862 => 0
+                ],
+                "NAME" => 'Вызов курьера № ' . $id_in,
+                "ACTIVE" => "Y"
+            ];
+            $arrR[] = $arLoadProductArray;
+            $z_id = $el->Add($arLoadProductArray);
+            if($z_id){
+                $this->dataCall[] = ['id' => $z_id, 'number' => $id_in];
+            }else{
+                $this->dataCall[] = ['arr' => $arrR , 'error' => 'Ошибка записи вызова курьера в базу по накл. ' . $invoice['NAME']];
+            }
         }
         return $this;
-
     }
 
+    /**
+     * @return $this
+     * @throws Exception
+     */
     public function setDocsClient()
     {
         $arJson =  $this->invoiceListFor1c;
@@ -451,6 +367,10 @@ class GroupsCallCourier
         return $this;
     }
 
+    /**
+     * @return $this
+     * @throws Exception
+     */
     public function checkInvBase()
     {
         if(empty($this->content['ids'])){
@@ -465,6 +385,7 @@ class GroupsCallCourier
                     984 => $this->content['callcourierdate_ids'],
                     985 => $this->content['callcourtime_from_ids'],
                     986 => $this->content['callcourtime_to_ids'],
+                    570 => ['VALUE' =>['TYPE' => 'text', 'TEXT' => $this->instructions]],
                     977 => 'Y'
                 ]);
         }
@@ -472,6 +393,9 @@ class GroupsCallCourier
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function sendPost()
     {
 

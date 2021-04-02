@@ -57,7 +57,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
     $arrayreportjson = json_encode($new_report_utf);
     $newarrutf = convArrayToUTF($newarr);
     $arraymergutfjson = json_encode($newarrutf);
-    //AddToLogs('report_abs', ['newreport'=>$arraymerg ]);
+    //AddToLogs('report_abs', ['newreport'=>$arraymergutfjson ]);
 }
 
 //var_dump($arResult['IndividualPrice']);
@@ -74,7 +74,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
             jsonStrPhp = <?=$arraymergutfjson?>;
             jsonStr = JSON.stringify(jsonStrPhp);
             $.ajax({
-                url: "/api/GetSum.php?report_as=Y",
+                url: "/api/reports.php?report_as=Y",
                 type: "post",
                 data: {'numbersphp': jsonStr},
                 dataType: "json",
@@ -431,9 +431,11 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
               });
             if(obj[0]){
                 $('#data_json').val(JSON.stringify(obj));
+                let err_bl = $('#myCallCurier_ids .alert.alert-danger');
+                err_bl.attr('style', 'display:none');
+                err_bl.text('');
                 $('#myCallCurier_ids').modal('show');
                 console.log(obj);
-
             }
         });
 
@@ -447,15 +449,17 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
                url: "/api/groupsCallCourier.php",
                data: fields,
                success: function(data){
-
+                   let err_bl = $('#myCallCurier_ids .alert.alert-danger');
                    if(data.error){
-                       alert(data.error);
+                       err_bl.attr('style', 'display:block');
+                       err_bl.text(data.error);
+                      /* alert(data.error);*/
                    }
                    if(data.current == 1){
                        let modal = $('#myCallCurier_ids');
                        $.each(data.ids , function (index, value){
                            var el =  $(`span[data-target = #myCallCurier_${value}]`);
-                           var check = $(`.a1 input[type=chexkbox]`);
+                           var check = $(`.a1 input[type=checkbox]`);
                            check.prop('checked', false);
                            el.attr('style', 'color: #56363534; font-size: 14px; cursor: default');
                            $(`span[data-target = #myCallCurier_${value}] span.glyphicon.glyphicon-bell`).
@@ -619,16 +623,18 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
                 <h4 class="modal-title" >Массовый вызов курьера</h4>
             </div>
             <div class="modal-body">
+                <div style="display:none;" class="alert alert-danger" role="alert"></div>
                 <form name="form_callcourierdate_ids" method="post">
                     <div style="display: flex; flex-direction: row; align-items: center;
                                                 justify-content: space-between; width: 100%">
+
                         <div class="form-group">
                             <label  for="list-from-date_ids">
                                 Вызвать на дату <small style="color:darkred">*обязательное поле</small></label>
                             <div class="input-group" id="input-group-list-from-date_ids">
                                 <input  type="hidden" name="data_json" id="data_json" value="" >
                                 <input  type="hidden" name="current_client"  value="<?=$arResult['CURRENT_CLIENT']?>" >
-                                <input  type="text" class="form-control maskdate"
+                                <input  type="text" class="form-control maskdate" required
                                         name="callcourierdate_ids" placeholder="ДД.ММ.ГГГГ"
                                         id="list-from-date_ids">
                                 <span style="padding: 6px 12px!important;" class="input-group-addon">
@@ -836,9 +842,7 @@ if ($arResult['OPEN'])
         <div class="client-filterform col-md-9 text-right">
             <form action="" method="get" name="filterform" class="form-inline">
                 <?php
-                if ($arResult['LIST_OF_CLIENTS'])
-                {
-                    ?>
+                if ($arResult['LIST_OF_CLIENTS']):?>
                     <div class="form-group">
                         <select name="client" size="1" class="form-control selectpicker" id="client" onChange="ChangeClient();" data-live-search="true" data-width="auto">
                             <option value="0"></option>
@@ -853,9 +857,9 @@ if ($arResult['OPEN'])
                             ?>
                         </select>
                     </div>
-                    <?php
-                }
-                if ($arResult['USER_IN_BRANCH'])
+                <?php endif;?>
+
+               <?php if ($arResult['USER_IN_BRANCH'])
                 {
                     ?>
                     <div class="form-group">

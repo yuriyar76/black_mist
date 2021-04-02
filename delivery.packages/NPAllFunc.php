@@ -35,10 +35,6 @@ abstract class NPAllFunc
         return $obj;
     }
 
-    /**
-     * @param $obj
-     * @return array
-     */
     static function convArrToUTF($obj) {
         $arRes = [];
         foreach ($obj as $k => $v)
@@ -115,10 +111,6 @@ abstract class NPAllFunc
         return $arRes;
     }
 
-    /**
-     * @param $obj
-     * @return array
-     */
     static function arrUtfToWin($obj)
     {
         $arRes = [];
@@ -229,14 +221,16 @@ abstract class NPAllFunc
         $mainfolder .= '/'.date('m');
         if (!file_exists($mainfolder))
         {
-            mkdir($mainfolder);
+            if (!mkdir($mainfolder) && !is_dir($mainfolder)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $mainfolder));
+            }
         }
         $mainfolder .= '/log.txt';
         $file = fopen($mainfolder,'a');
         global $USER;
         $user = "[".$USER->GetID()."] (".$USER->GetLogin().") ".$USER->GetFullName();
         fwrite($file,date('d.m.Y H:i:s').' '.$user."\n");
-        $params_str = array();
+        $params_str = [];
         foreach ($params as $k => $v)
         {
             $params_str[] = $k.': '.$v;
@@ -440,13 +434,13 @@ abstract class NPAllFunc
                 $header = explode("\n", curl_exec($curl));
                 curl_close($curl);
                 if (trim($header[0]) !== ''){
-                    $clientw = new SoapClient($url, array("login" => $login1c, "password" => $pass1c,
-                        "exceptions" => false));
+                    $clientw = new SoapClient($url, ["login" => $login1c, "password" => $pass1c,
+                        "exceptions" => false]);
                     return $clientw;
-                }else{
+                }
 
                     return "Нет соединения";
-                }
+
             }
         }
 
@@ -598,10 +592,6 @@ abstract class NPAllFunc
         return $rate;
     }
 
-    /**
-     * @param $text
-     * @return string|string[]
-     */
     public static function NewQuotes($text)
     {
         //return $text;
@@ -682,15 +672,82 @@ abstract class NPAllFunc
 
     }
 
-    /**
-     * @param $b1
-     * @return string
-     */
     protected static function deleteTabs($b1)
     {
         $b1 = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '    '], '', $b1);
         $b1 = trim($b1);
         return $b1;
+    }
+
+    static public function soapLink($idUk)
+    {
+        $arrUK = self::GetInfoArr(false, $idUk, 40, [
+            'ID',
+            "NAME",
+            "ACTIVE",
+            "PROPERTY_INN",
+            "PROPERTY_INN_REAL",
+            "PROPERTY_SETTINGS.ID"
+        ]);
+        $uCompSettingsId = $arrUK['PROPERTY_SETTINGS_ID'];
+        $arrUKSettings = self::GetInfoArr(false,  $uCompSettingsId, 47, [
+            'ID',
+            "NAME",
+            "ACTIVE",
+            "PROPERTY_683",
+            "PROPERTY_761",
+            "PROPERTY_704",
+            "PROPERTY_705",
+            "PROPERTY_706",
+            "PROPERTY_709",
+
+        ]);
+        if(!$arrUKSettings['PROPERTY_683_VALUE'] && !$arrUKSettings['PROPERTY_704_VALUE'] &&
+            !$arrUKSettings['PROPERTY_705_VALUE'] && !$arrUKSettings['PROPERTY_706_VALUE']){
+            throw new Exception('Нет настроек УК, соединение с 1с невозможно');
+        }
+        $currentip =  $arrUKSettings['PROPERTY_683_VALUE'];
+        $currentport =  $arrUKSettings['PROPERTY_761_VALUE'];
+        $currentlink =  $arrUKSettings['PROPERTY_704_VALUE'];
+        $login1c =  $arrUKSettings['PROPERTY_705_VALUE'];
+        $pass1c =   $arrUKSettings['PROPERTY_706_VALUE'];
+        $email =  $arrUKSettings['PROPERTY_709_VALUE'];
+        if (!$currentip && !$currentlink && !$login1c && !$pass1c){
+
+            throw new Exception('Нет соединения с 1с');
+        }
+
+        if ($currentport > 0) {
+            $url = "http://".$currentip.':'.$currentport.$currentlink;
+        }
+        else {
+            $url = "http://".$currentip.$currentlink;
+        }
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_HEADER => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_NOBODY => true,
+            CURLOPT_TIMEOUT => 10
+        ]);
+        $header = explode("\n", curl_exec($curl));
+        curl_close($curl);
+        if (!strlen(trim($header[0]))){
+
+            throw new Exception('Проблемы с curl');
+        }
+        if (strlen(trim($header[0])))
+        {
+            if ($currentport > 0) {
+                $client = new SoapClient($url, ['login' => $login1c, 'password' => $pass1c, 'proxy_host' => $currentip, 'proxy_port' => $currentport, 'exceptions' => false]);
+            }
+            else {
+                $client = new SoapClient($url, ['login' => $login1c, 'password' => $pass1c,'exceptions' => false]);
+            }
+
+        }
+        return $client;
     }
 
 }

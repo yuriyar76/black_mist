@@ -7,22 +7,26 @@ require_once ($_SERVER['DOCUMENT_ROOT']."/bitrix/components/black_mist/delivery.
 
 $arrIds = [];
 try {
-    $arResult = new GroupsCallCourier($_POST);
-    $arResult->currentClient()
+    $result = new GroupsCallCourier($_POST);
+    $result->currentClient()
         ->soapLink()
         ->invoiceList()
         ->prepareListFor1c()
         ->setDocsClient()
+        ->setCallCourier()
         ->checkInvBase()
         ->sendPost();
-}
-catch(Exception $e){
+}catch(Exception $e){
     echo(json_encode(['error' => iconv('windows-1251', 'utf-8', $e->getMessage())]));
     exit();
 }
 
-if($arResult->current){
-    $arrIds['ids'] = $arResult->content['ids'];
+/*dump($result);
+exit();*/
+
+
+if($result->current){
+    $arrIds['ids'] = $result->content['ids'];
     $arrIds['current'] = 1;
     $jsonIds = json_encode(convArrayToUTF($arrIds));
     echo $jsonIds;

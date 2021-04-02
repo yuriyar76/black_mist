@@ -881,7 +881,7 @@ if ($arResult['MODE'] != 'close')
                             "INDEX_RECIPIENT" => $reqv['PROPERTY_INDEX_RECIPIENT_VALUE'],
                             "REGION_RECIPIENT" => $arCityRECIPIENT[1],
                             "ADRESS_RECIPIENT" => $reqv['PROPERTY_ADRESS_RECIPIENT_VALUE']['TEXT'],
-                            "PAYMENT" => $reqv["PROPERTY_FOR_PAYMENT_VALUE"],
+                            "PAYMENT" => $reqv["PROPERTY_FOR_PAYMENT_VALUE"]?:'0',
                             "PAYMENT_COD" => $reqv["PROPERTY_PAYMENT_COD_VALUE"],
                             // TODO [x]Заполнить следующие 5 полей
                             "DATE_TAKE_FROM" => $date_take_from,
@@ -2561,7 +2561,7 @@ if ($arResult['MODE'] != 'close')
             $arResult['OPEN'] = false;
             if ($arResult['ADMIN_AGENT'])
             {
-                $arResult["WARNINGS"][] = GetMessage('ERR_OPEN_ADMIN',array('#LINK#' => $arParams['LINK']));
+                $arResult["WARNINGS"][] = GetMessage('ERR_OPEN_ADMIN', ['#LINK#' => $arParams['LINK']]);
             }
             else
             {
@@ -3074,7 +3074,7 @@ if ($arResult['MODE'] != 'close')
                             else
                             {
                                 $arChanges[562] = $_POST['TYPE_PAYS'];
-                                $arChanges[563] = $arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT'][intval($_POST['WHOSE_ORDER'])];
+                                $arChanges[563] = $arResult['CURRENT_CLIENT_INFO']['PROPERTY_BY_AGENT'][(int)$_POST['WHOSE_ORDER']];
                                 $arChanges[737] = (int)$_POST['WHOSE_ORDER'];
                             }
                         }
@@ -3198,7 +3198,7 @@ if ($arResult['MODE'] != 'close')
                         $total_gabweight1 = $total_gabweight1 + $arCurStr['gabweight'];
                         $arJsonDescr[] = $arCurStr;
 
-                        $total_weight1 = $total_weight1 + floatval(str_replace(',','.',$description_str['weight']));
+                        $total_weight1 += floatval(str_replace(',', '.', $description_str['weight']));
                     }
 
                     // посмотрим что здесь есть
@@ -3875,10 +3875,10 @@ if ($arResult['MODE'] != 'close')
 
 
                 // если более 255 символов
-                if (strlen($_POST['INSTRUCTIONS']) > 255)
+               /* if (strlen($_POST['INSTRUCTIONS']) > 255)
                 {
                     $arResult["ERR_FIELDS"]["INSTRUCTIONS"] = 'has-error err08inst';
-                }
+                }*/
 
                 // --------------------------------------------------------------------
                 if (($arResult['CURRENT_CLIENT'] == ID_TEST) || ($arResult['CURRENT_CLIENT'] == ID_SUKHOI)){
@@ -4454,7 +4454,8 @@ if ($arResult['MODE'] != 'close')
                         978 => $NOTE,
                         979 => $sum_dev,
                         981 => $_POST['CENTER_EXPENSES'],
-                        982 => trim($_POST['RAND'])
+                        982 => trim($_POST['RAND']),
+                        1082 => htmlspecialchars(strip_tags($_POST['INSTRUCTIONS'])),
                     ];
                     $PROPERTY_VAL = [
                         545 => $arResult['CURRENT_CLIENT'],
@@ -6609,8 +6610,8 @@ if ($arResult['MODE'] != 'close')
                                 "PROPERTY_TRANSPORT_TYPE",
                                 "PROPERTY_WITH_RETURN",
                                 "PROPERTY_CENTER_EXPENSES.NAME",
-                                "PROPERTY_ISOFFICE"
-
+                                "PROPERTY_ISOFFICE",
+                                "PROPERTY_DESCRIPTION",
                             ]
                         );
                         if ($ob = $res->GetNextElement())
@@ -6781,7 +6782,7 @@ if ($arResult['MODE'] != 'close')
                                 "INDEX_RECIPIENT" => $reqv['PROPERTY_INDEX_RECIPIENT_VALUE'],
                                 "REGION_RECIPIENT" => $arCityRECIPIENT[1],
                                 "ADRESS_RECIPIENT" => $reqv['PROPERTY_ADRESS_RECIPIENT_VALUE']['TEXT'],
-                                "PAYMENT" => $reqv["PROPERTY_FOR_PAYMENT_VALUE"],
+                                "PAYMENT" => $reqv["PROPERTY_FOR_PAYMENT_VALUE"]?:'0',
                                 "PAYMENT_COD" => $reqv["PROPERTY_PAYMENT_COD_VALUE"],
                                 "DATE_TAKE_TO" => $date_take_from,
                                 "DATE_TAKE_FROM" => $date_take_without_date[0],
@@ -6793,6 +6794,7 @@ if ($arResult['MODE'] != 'close')
                                 "PAYMENT_TYPE" => $reqv['TO_1C_PAYMENT_TYPE'],
                                 "DELIVERY_CONDITION" => $reqv['TO_1C_DELIVERY_CONDITION'],
                                 "INSTRUCTIONS" => $reqv['PROPERTY_INSTRUCTIONS_VALUE']['TEXT'],
+                                "DESCRIPTION" => $reqv['PROPERTY_DESCRIPTION_VALUE']['TEXT'],
                                 "TYPE" => ($reqv['PROPERTY_TYPE_PACK_ENUM_ID'] == 247) ? 0 : 1,
                                 "Dimensions" => $reqv['PROPERTY_Dimensions'],
                                 'ID' => $reqv['ID'],
@@ -6887,7 +6889,7 @@ if ($arResult['MODE'] != 'close')
 
             }
         }
-        AddToLogs('AcceptanceOnRequest',$arLog);
+       // AddToLogs('AcceptanceOnRequest',$arLog);
         $arResult['RESULTS'] = convArrayToUTF($arResult['RESULTS']);
         $arResult['RES_JSON'] = json_encode($arResult['RESULTS']);
     }
@@ -7397,37 +7399,7 @@ if ($arResult['MODE'] != 'close')
                                             $number_nakl = $id_in['number'].'-'.$key;
                                             $city_sender = GetCityId($value['CitySender']);
                                             $city_recipient = GetCityId($value['CityRecipient']);
-                                          /*  $numstr = $key+1;
-                                            if(!$city_sender){
 
-                                                $arResult['ERRORS'][] = "Накладная на строке {$numstr} не записана в базу. Город отправителя не найден (CitySender).";
-                                                $err++;
-                                            }
-                                            if(!$city_recipient){
-                                                $arResult['ERRORS'][] =  "Накладная на строке {$numstr} не записана в базу.Город получателя не найден (CityRecipient).";
-                                                $err++;
-                                            }
-                                            if(empty($value['PhoneSender'])){
-                                                $arResult['ERRORS'][] = "Накладная на строке {$numstr} не записана в базу. Не заполнено поле Телефон Отправителя (PhoneSender)";
-                                                $err++;
-                                            }
-                                            if(empty($value['PhoneRecipient'])){
-                                                $arResult['ERRORS'][] = "Накладная на строке {$numstr} не записана в базу. Не заполнено поле Телефон Получателя (PhoneRecipient)";
-                                                $err++;
-                                            }
-                                            if(empty($value['AdressSender'])){
-                                                $arResult['ERRORS'][] = "Накладная на строке {$numstr} не записана в базу. Не заполнено поле Адрес Отправителя (AdressSender)";
-                                                $err++;
-                                            }
-                                            if(empty($value['AdressRecipient'])){
-                                                $arResult['ERRORS'][] = "Накладная на строке {$numstr} не записана в базу. Не заполнено поле Адрес Получателя (AdressRecipient)";
-                                                $err++;
-                                            }
-
-                                            if($err > 0){
-                                                $err = 0;
-                                                continue;
-                                            }*/
                                             if ($value['DateApplicationExecution']) {
                                                 $date_call = preg_replace('/-+/', '/',
                                                     $value['DateApplicationExecution']);
@@ -7551,33 +7523,38 @@ if ($arResult['MODE'] != 'close')
 
                                         // end foreach
                                     }else{
-                                        if($USER->isAdmin()){
-                                           // dump($res_arr);
-                                        }
-
-                                        foreach($res_arr as $key=>$value){
-                                            /* написать другую функцию поиса ид */
+                                       foreach($res_arr as $key=>$value){
                                             $arSelect = ["ID"];
                                             if(!empty($value['ShipperCity'])){
 
                                                 $sender_city = trim($value['ShipperCity']);
-                                                $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_city . '%'];
+                                                $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_city,
+                                                    [
+                                                        "LOGIC" => "OR",
+                                                        ["=SECTION_ID" => 2545],
+                                                        ["=SECTION_ID" => 641],
+                                                    ],
+                                                ];
                                                 $res = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
                                                 while($ob = $res->GetNextElement())
                                                 {
                                                     $arFields = $ob->GetFields();
                                                 }
                                                 $city_sender = (int)$arFields['ID'];
-                                                if($city_sender == 54760616){ // не найден, отдает Аксарай
-                                                    $city_sender = false;
-                                                }
+
                                             }else{
                                                 $city_sender = false;
                                             }
 
                                             if(!empty($value['ConsigneeCity'])){
                                                 $sender_recipient = trim($value['ConsigneeCity']);
-                                                $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_recipient . '%'];
+                                                $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_recipient,
+                                                    [
+                                                        "LOGIC" => "OR",
+                                                        ["=SECTION_ID" => 2545],
+                                                        ["=SECTION_ID" => 641],
+                                                    ],
+                                                    ];
                                                 $res = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
                                                 while($ob = $res->GetNextElement())
                                                 {
@@ -7585,14 +7562,10 @@ if ($arResult['MODE'] != 'close')
                                                 }
 
                                                 $city_recipient = (int)$arFields['ID'];
-                                                if($city_recipient == 54760616){  // не найден, отдает Аксарай
-                                                    $city_recipient = false;
-                                                }
+
                                             }else{
                                                 $city_recipient = false;
                                             }
-
-
 
                                             if(!$city_sender){
 
@@ -7604,8 +7577,16 @@ if ($arResult['MODE'] != 'close')
                                                 $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу.Город получателя не найден (CityRecipient).";
                                                 $err++;
                                             }
+                                            if(empty($value['ShipperFIO'])){
+                                                $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу. Не заполнено поле ФИО отправителя (ShipperFIO).";
+                                                $err++;
+                                            }
                                             if(empty($value['ShipperPhone'])){
                                                 $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу. Не заполнено поле Телефон Отправителя (PhoneSender)";
+                                                $err++;
+                                            }
+                                            if(empty($value['ConsigneeFIO'])){
+                                                $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу. Не заполнено поле ФИО получателя (ConsigneeFIO).";
                                                 $err++;
                                             }
                                             if(empty($value['ConsigneePhone'])){
@@ -7626,12 +7607,12 @@ if ($arResult['MODE'] != 'close')
                                                 continue;
                                             }
 
-                                            if ($value['DateDelivery']){
+                                          /*  if ($value['DateDelivery']){
                                                 $date_call = preg_replace('/-+/','/',$value['DateDelivery']);
                                                 $date_call =date('d.m.Y',strtotime($date_call));
                                             }else{
                                                 $date_call = '';
-                                            }
+                                            }*/
 
 
                                             switch($value['Payment'])
@@ -7857,7 +7838,9 @@ if ($arResult['MODE'] != 'close')
                                                 724 => ($arGoods)?json_encode($arGoods):'',
                                                 737 => false,
                                                 682 => ($PackDescr)?json_encode($PackDescr):'',
-                                                979 => $sum_dev
+                                                979 => $sum_dev,
+                                                1082 => ($value['SpecDelivery'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
+                                                    $value['SpecDelivery']]]:'',
                                             ];
                                             //dump($resecho);
                                             //exit;

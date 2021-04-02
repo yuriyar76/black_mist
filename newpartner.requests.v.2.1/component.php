@@ -208,8 +208,6 @@ if ($mode === 'inapps')
     $arResult['INAPPS_TO_DATE'] = date('d.m.Y', $todate);
     $prevdate = strtotime('-1 month');
     $arResult['INAPPS_FROM_DATE'] = date('d.m.Y',$prevdate);
-   /* $arResult['INAPPS_FROM_DATE_FOR_1C'] = date('Y-m-d',$prevdate);
-    $arResult['INAPPS_TO_DATE_FOR_1C'] = date('Y-m-d');*/
 
     if ($_GET['ChangePeriodInapps'] === 'Y')
     {
@@ -220,33 +218,10 @@ if ($mode === 'inapps')
             $currentdate = strtotime(date('Y-m-d'));
             $timePostDateTo = strtotime($arPostDateTo['year'].'-'.str_pad($arPostDateTo['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($arPostDateTo['day'],2,'0',STR_PAD_LEFT));
             $timePostDateFrom = strtotime($arPostDateFrom['year'].'-'.str_pad($arPostDateFrom['month'],2,'0',STR_PAD_LEFT).'-'.str_pad($arPostDateFrom['day'],2,'0',STR_PAD_LEFT));
-
-          /*  if ($timePostDateFrom > $timePostDateTo)
-            {
-                $vremVar = $timePostDateTo;
-                $timePostDateTo = $timePostDateFrom;
-                $timePostDateFrom = $vremVar;
-                $timeFromToRazn = $timePostDateTo - $timePostDateFrom;
-            }
-            if ($timePostDateTo > $currentdate)
-            {
-                $timePostDateTo = $currentdate;
-            }
-            if ($timePostDateFrom > $timePostDateTo)
-            {
-                $timePostDateFrom = strtotime('-1 month',$timePostDateTo);
-            }
-            $timeFromToRazn = $timePostDateTo - $timePostDateFrom;
-            if (($timeFromToRazn/86400) > 90)
-            {
-                $timePostDateFrom = strtotime('-3 month',$timePostDateTo);
-            }*/
-
             $arResult['INAPPS_FROM_DATE'] = trim($_GET['datefrom']);
             $_SESSION['INAPPS_FROM_DATE'] = trim($_GET['datefrom']);
             $arResult['INAPPS_TO_DATE'] = trim($_GET['dateto']);
             $_SESSION['INAPPS_TO_DATE'] = trim($_GET['dateto']);
-
         }
     }
     $arResult['LIST_OF_AGENTS'] = false;
@@ -260,7 +235,7 @@ if ($mode === 'inapps')
         if(isset($_SESSION['CURRENT_AGENT_ID'])){
             $agent_id =  $_SESSION['CURRENT_AGENT_ID'];
         }
-       // dump( $arResult['LIST_OF_AGENTS']);
+
         if ($_GET['ChangeAgentInapps'] === 'Y')
         {
             if (isset($arResult['LIST_OF_AGENTS'][$_GET['agent']]))
@@ -291,7 +266,6 @@ if ($mode === 'inapps')
             }
         }
     }
-    //dump($arResult['CURRENT_INN']);
 
     if (!empty($_SESSION['INAPPS_TO_DATE']))
     {
@@ -2465,7 +2439,8 @@ if ($mode === '1c')
                     $inn_agent = $arRes['inn'];
                 }
 
-                if(!$inn_agent){
+                // если обновление, найти накладную, которую обновлять и если найдена, перевести upd в true
+                if($_POST['type'] !== 'pickup'){
                     $arFilter = ["IBLOCK_ID" => 117, "ACTIVE" => "Y",  "PROPERTY_1056" => $number_uid];
                     $arSelect = [
                         "ID", 'IBLOCK_ID', 'PROPERTY_1076'
@@ -2474,7 +2449,9 @@ if ($mode === '1c')
                     while ($ob = $resUid->GetNextElement()) {
                         $uid = $ob->GetFields();
                     }
-                    $inn_agent = $uid['PROPERTY_1076_VALUE'];
+                    if(!$inn_agent){
+                        $inn_agent = $uid['PROPERTY_1076_VALUE'];
+                    }
                     $id_rec = $uid['ID'];
                     if($id_rec){
                         $upd = true;
@@ -2712,7 +2689,6 @@ if ($mode === '1c')
 }
 
 if ($mode === 'inapps_update'){
-
     $arRes = [];
     foreach($_POST as $item){
         $arRes[] = htmlspecialcharsEx(trim($item));
@@ -2748,14 +2724,20 @@ if ($mode === 'inapps_update'){
     $result = $request->return;
     $result = arFromUtfToWin(json_decode($result, true));
     $arrC = GetIDAgentByINN($inn_agent, 53, false, true);
-    AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2748'=>['$result' => $result]]);
+    AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2751'=>['$result' => $result]]);
     $creator = $arrC[0]['ID'];
     if(!$creator){
         AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2750'=> ['Error' => 'Агент не найден',
             'number_uid'=>$number_uid]] );
         exit();
     }
-    setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent, $id_rec);
+    $resSet = setAppForAgent($result, $id_uk, $arrC, $number_uid, $creator, $inn_agent, $id_rec);
+    if(is_array($resSet) && $resSet['del'] === 'Y'){
+        AddToLogs('1c_pickup_upd', ['newpartner.requests.v2.1-2759'=>['delete'=> $resSet]]);
+        $jsonArr = json_encode(convArrayToUTF($resSet));
+        echo $jsonArr;
+        exit();
+    }
 
     if(!empty($id_rec)){
         $arFilter = ["IBLOCK_ID" => 117, "ACTIVE" => "Y",  "ID" => $id_rec];

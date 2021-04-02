@@ -162,6 +162,18 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
              </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+    <div id="edit_number" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                 <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                 </div>
+                <div style='display:none;' class="alert alert-danger" role="alert"></div>
+                <div class="modal-body"></div>
+
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
     <?php foreach($arResult['AGENT_DATA'] as $res):?>
         <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="modal_<?=$res['ID']?>" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -475,18 +487,32 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
             ?>
             <tr id = "<?=$res['ID'];?>" class="<?=$color_class;?>">
                 <td id="NAME_<?=$res['ID'];?>"><?=$res['NAME']?></td>
-                <td id="PROPERTY_1023_<?=$res['ID'];?>"><?=$res['PROPERTY_1023']?></td>
+                <td  id="PROPERTY_1023_<?=$res['ID'];?>">
+                    <div style="display: flex; flex-direction: column; align-items: center">
+                        <?php if($res['PROPERTY_1062'] !== 'Доставлено'):?>
+                        <p style="cursor: pointer;" id="num_edit_<?=$res['ID'];?>"
+                           class="glyphicon glyphicon-pencil"
+                           aria-hidden="true" data-toggle="tooltip" data-placement="right"
+                           title="Изменить номер накладной">
+                        </p>
+                        <?endif;?>
+                        <p id="PROPERTY_1023_<?=$res['ID'];?>_p"><?=$res['PROPERTY_1023']?></p>
+                    </div>
+
+                </td>
                 <td id="PROPERTY_1061_<?=$res['ID'];?>"><?=$res['PROPERTY_1061']?></td>
                 <td id="PROPERTY_1053_<?=$res['ID'];?>"><?=$res['PROPERTY_1053']?></td>
                 <td>
-             <span style="cursor: pointer;" id="update_<?=$res['ID'];?>"
-                   class="glyphicon glyphicon-repeat" data-uk='<?=$res['PROPERTY_1075'];?>'
-                   data-uid="<?=$res['PROPERTY_1056'];?>" data-inn="<?=$res['PROPERTY_1076'];?>"
-                   aria-hidden="true" data-toggle="tooltip" data-placement="left"
-                   title="Обновить">
-             </span>
-                    <br>
-                    <span id="status_<?=$res['ID'];?>"><?=$res['PROPERTY_1062']?></span>
+                    <div style="display: flex; flex-direction: column; align-items: center">
+                     <p style="cursor: pointer;" id="update_<?=$res['ID'];?>"
+                           class="glyphicon glyphicon-repeat" data-uk='<?=$res['PROPERTY_1075'];?>'
+                           data-uid="<?=$res['PROPERTY_1056'];?>" data-inn="<?=$res['PROPERTY_1076'];?>"
+                           aria-hidden="true" data-toggle="tooltip" data-placement="left"
+                           title="Обновить">
+                     </p>
+
+                    <p id="status_<?=$res['ID'];?>"><?=$res['PROPERTY_1062']?></p>
+                    </div>
                 </td>
                 <td>
                     <a href="" data-toggle="modal"
@@ -523,5 +549,14 @@ if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED!==true)
             <?php echo $pagen; ?>
         </div>
     </div>
-<?endif;
+<?endif;?>
+
+    <script>
+    $('#edit_number_form').submit(function (e) {
+        e.preventDefault();
+        let data = $(this).serializeArray();
+        console.log(data);
+        return false;
+    });
+</script>
 
