@@ -73,6 +73,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
         $('#report_as').on('click', function(){
             jsonStrPhp = <?=$arraymergutfjson?>;
             jsonStr = JSON.stringify(jsonStrPhp);
+           // console.log(jsonStr);
             $.ajax({
                 url: "/api/reports.php?report_as=Y",
                 type: "post",
@@ -93,7 +94,7 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
             jsonStr = JSON.stringify(jsonStrPhp);
             $('#modal-for-alert').modal('show');
             $.ajax({
-                url: "/api/GetSum.php?report_1с=Y",
+                url: "/api/GetSum.php?report_1=Y",
                 type: "post",
                 data: {'dataForReport': jsonStr},
                 dataType: "json",
@@ -443,12 +444,23 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
            e.preventDefault();
            let data = this;
            let fields = $(data).serializeArray();
+           let sbmt = $('#call_courier_form_ids');
+           sbmt.attr('disabled', 'disabled');
+           $('#call_courier_form_mess_ids').html(
+               `<div style="height:120px;display: flex;
+            flex-direction: row;
+            justify-content: center;" id="alert-preload">
+                <img src="/bitrix/components/black_mist/newpartner.invoice.v.2.4/templates/.default/images/preloader.gif" alt="">
+            </div>`
+           );
+
            $.ajax({
                type: "POST",
                dataType: "json",
                url: "/api/groupsCallCourier.php",
                data: fields,
                success: function(data){
+                   $('#call_courier_form_mess_ids').html('');
                    let err_bl = $('#myCallCurier_ids .alert.alert-danger');
                    if(data.error){
                        err_bl.attr('style', 'display:block');
@@ -759,7 +771,7 @@ if ($arResult['OPEN'])
     ?>
     <span id = "current_client" style="visibility: hidden; font-size: 1px"><?=$arResult['CURRENT_CLIENT'] ?></span>
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <?php if ($arResult['CURRENT_CLIENT'] > 0):?>
                 <div style="display:flex; flex-direction: row; justify-content: start; margin-left: 5px;" class="btn-group">
                     <?php if ((count($arResult['REQUESTS']) > 0) ||  (count($arResult['ARCHIVE']) > 0)) :?>
@@ -808,14 +820,16 @@ if ($arResult['OPEN'])
                                <i style="font-weight: 600;" class="far fa-file-excel"></i>
                          </button>
                       </div>
-                     <?if ($arResult['CURRENT_CLIENT'] == 56103010 ):?>
+                     <?php
+                       // отчет из 1с
+                       if ($arResult['CURRENT_CLIENT'] == 56103010 ):?>
                        <div class="btn-group" role="group">
                            <button id = "report_from_1c"  class="btn btn-default" data-toggle="tooltip"
                                    data-placement="bottom" title="Скачать отчет из 1с">
                                <i style="font-weight: 600;" class="far fa-file-excel"></i>
                            </button>
                        </div>
-                   <?php endif;?>
+                      <?php endif;?>
                     <?php endif; ?>
                     <?php
                     // отчет для Вымпелкома и Абсолюта выводит накладные С Возвратом
@@ -833,18 +847,56 @@ if ($arResult['OPEN'])
 
                             </div>
                         </form>
-
                     <?php endif;?>
+
+
+                    <?php
+                    // архив отчетов 1с для Абсолюта
+                    if ($arResult['CURRENT_CLIENT'] == 56103010 ):?>
+                       <? $arFilter = [
+                            "IBLOCK_ID" => 118,
+                            "ACTIVE" => "Y",
+                            "=PROPERTY_COMPANY.ID" => $arResult['CURRENT_CLIENT']
+                        ];
+                        $report_xls_1s = GetInfoArr(false, false, false, false, $arFilter, false );
+
+                        foreach ($report_xls_1s as $key=>$value){
+                          if($value['PROPERTY_1086']){
+                              $path = CFile::GetPath( $value['PROPERTY_1086'] );
+                              if($path){
+                                  CIBlockElement::SetPropertyValuesEx($value['ID'], 118,
+                                      [
+                                          1084 => 'http://delivery-russia.ru' . $path
+                                      ]);
+                                  $report_xls_1s[$key]['PROPERTY_1084'] =  'http://delivery-russia.ru' . $path;
+                              }
+                          }
+                       }
+
+                        if(!empty($report_xls_1s)):?>
+                            <div class="dropdown">
+                                <button class="btn btn-primary" id="dLabel" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Архив отчетов из 1с
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dLabel">
+                                    <?php foreach($report_xls_1s as $value):?>
+                                        <li><a href="<?=$value['PROPERTY_1084'];?>"><?php echo $value['NAME']?></a></li>
+                                    <?php endforeach;?>
+                                </ul>
+                            </div>
+                        <?php endif;?>
+                     <?php endif;?>
                 </div>
             <?php endif;?>
 
         </div>
-        <div class="client-filterform col-md-9 text-right">
+        <div class="client-filterform col-md-8 text-right">
             <form action="" method="get" name="filterform" class="form-inline">
                 <?php
                 if ($arResult['LIST_OF_CLIENTS']):?>
                     <div class="form-group">
-                        <select name="client" size="1" class="form-control selectpicker" id="client" onChange="ChangeClient();" data-live-search="true" data-width="auto">
+                        <select name="client" size="1" class="form-control selectpicker" id="client" onChange="ChangeClient();" data-live-search="true" data-width="800px">
                             <option value="0"></option>
                             <?php
                             foreach ($arResult['LIST_OF_CLIENTS'] as $k => $v)

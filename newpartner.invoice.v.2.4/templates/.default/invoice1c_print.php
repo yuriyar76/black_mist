@@ -21,6 +21,7 @@ font-family: Tahoma, Geneva, sans-serif;
 font-size: 12px;
 color:black;
 width:950px;
+    /*margin-bottom: 250px;*/
 }
 
 div.block1

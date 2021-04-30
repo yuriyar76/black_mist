@@ -1162,11 +1162,13 @@ if ($arResult['OPEN'])
                         ?>
                         <td class="b20"><?=$Property_creator_name;?></td>
                         <td class="b21">
+
                             <a href="<?=$arParams['LINK'];?>index.php?mode=add&copyfrom=<?=$r['ID_SITE'];?>&copy=Y&numdoc=<?=$r['NAME']?>">
                         		<span class="glyphicon glyphicon-copy"
                                       aria-hidden="true" data-toggle="tooltip"
                                       data-placement="left" title="Копировать"></span>
                             </a>
+
                         </td>
                         <?php
                         if ($viewcolv === "Y"):?>

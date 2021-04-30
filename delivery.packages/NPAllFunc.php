@@ -329,7 +329,8 @@ abstract class NPAllFunc
      * @param bool $prop
      * @return mixed
      */
-    static public function GetInfoArr($code = '', $id = '', $iblock_id = 0, $arSelect = [], $arFilter = [], $flag=true, $prop=true)
+    static public function GetInfoArr($code = '', $id = '', $iblock_id = 0, $arSelect = [],
+                                      $arFilter = [], $flag=true, $prop=true)
     {
 
         if($code){

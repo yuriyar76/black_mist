@@ -8304,9 +8304,27 @@ function addAgentSubscription($type, $sf_EMAIL, $userid)
     return true;
 }
 
+
+function stripWhitespaces($string) {
+    $old_string = $string;
+    $string = strip_tags($string);
+    $string = preg_replace('/([^\pL\pN\pP\pS\pZ])|([\xC2\xA0])/u', ' ', $string);
+    $string = str_replace('  ',' ', $string);
+    $string = trim($string);
+
+    if ($string === $old_string) {
+        return $string;
+    } else {
+        return stripWhitespaces($string);
+    }
+}
+
+
 /***”даление знаков табул€ции и переноса строки****/
 function deleteTabs($b1)
 {
+    $b1 = strip_tags($b1);
+    $b1 = htmlspecialcharsEx($b1);
     $b1 = str_replace(["\r\n", "\r", "\n", "\t", '  ', '    ', '    '], '', $b1);
     $b1 = trim($b1);
     return $b1;
@@ -8441,73 +8459,73 @@ function convArrayToUTF($obj) {
     $arRes = array();
     foreach ($obj as $k => $v)
     {
-        $k_tr = iconv('windows-1251', 'utf-8', $k);
+        $k_tr = iconv('windows-1251', 'utf-8', trim($k));
         if (is_array($v))
         {
             foreach ($v as $kk => $vv)
             {
-                $kk_tr = iconv('windows-1251', 'utf-8', $kk);
+                $kk_tr = iconv('windows-1251', 'utf-8', trim($kk));
                 if (is_array($vv))
                 {
                     foreach ($vv as $kkk => $vvv)
                     {
-                        $kkk_tr = iconv('windows-1251', 'utf-8', $kkk);
+                        $kkk_tr = iconv('windows-1251', 'utf-8', trim($kkk));
                         if (is_array($vvv))
                         {
                             foreach ($vvv as $kkkk => $vvvv)
                             {
-                                $kkkk_tr = iconv('windows-1251', 'utf-8', $kkkk);
+                                $kkkk_tr = iconv('windows-1251', 'utf-8', trim($kkkk));
                                 if (is_array($vvvv))
                                 {
                                     foreach ($vvvv as $kkkkk => $vvvvv)
                                     {
-                                        $kkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkk);
+                                        $kkkkk_tr = iconv('windows-1251', 'utf-8', trim($kkkkk));
                                         if (is_array($vvvvv))
                                         {
                                             foreach ($vvvvv as $kkkkkk => $vvvvvv)
                                             {
-                                                $kkkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkkk);
+                                                $kkkkkk_tr = iconv('windows-1251', 'utf-8', trim($kkkkkk));
                                                 if (is_array($vvvvvv))
                                                 {
                                                     foreach ($vvvvvv as $kkkkkkk => $vvvvvvv)
                                                     {
-                                                        $kkkkkkk_tr = iconv('windows-1251', 'utf-8', $kkkkkkk);
+                                                        $kkkkkkk_tr = iconv('windows-1251', 'utf-8', trim($kkkkkkk));
                                                         $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr][$kkkkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvvvv);
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvvv);
+                                                    $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr][$kkkkkk_tr] = iconv('windows-1251', 'utf-8', trim($vvvvvv));
                                                 }
                                             }
                                         }
                                         else
                                         {
-                                            $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr] = iconv('windows-1251', 'utf-8', $vvvvv);
+                                            $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr][$kkkkk_tr] = iconv('windows-1251', 'utf-8', trim($vvvvv));
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr] = iconv('windows-1251', 'utf-8', $vvvv);
+                                    $arRes[$k_tr][$kk_tr][$kkk_tr][$kkkk_tr] = iconv('windows-1251', 'utf-8', trim($vvvv));
                                 }
                             }
                         }
                         else
                         {
-                            $arRes[$k_tr][$kk_tr][$kkk_tr] = iconv('windows-1251', 'utf-8', $vvv);
+                            $arRes[$k_tr][$kk_tr][$kkk_tr] = iconv('windows-1251', 'utf-8', trim($vvv));
                         }
                     }
                 }
                 else
                 {
-                    $arRes[$k_tr][$kk_tr] = iconv('windows-1251', 'utf-8', $vv);
+                    $arRes[$k_tr][$kk_tr] = iconv('windows-1251', 'utf-8', trim($vv));
                 }
             }
         }
         else
         {
-            $arRes[$k_tr] = iconv('windows-1251', 'utf-8', $v);
+            $arRes[$k_tr] = iconv('windows-1251', 'utf-8', trim($v));
         }
     }
     return $arRes;

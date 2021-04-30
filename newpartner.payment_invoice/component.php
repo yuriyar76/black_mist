@@ -1,19 +1,28 @@
-<?php
+ <?php
 if (!defined("B_PROLOG_INCLUDED") || B_PROLOG_INCLUDED !== true) die();
 
-$arResult = json_decode($_SESSION['DataInvoicePay'], true);
-foreach($arResult as $key=>$value){
-    $arResult[$key] = htmlspecialchars(strip_tags(trim($value)));
-}
-if($arResult['Number_inv'] && !$arResult['Number_inv_z']){
-    $number =$arResult['Number_inv'];
-}elseif(!$arResult['Number_inv'] && $arResult['Number_inv_z']){
-    $number = $arResult['Number_inv_z'];
-}elseif($arResult['Number_inv'] && $arResult['Number_inv_z']){
-    $number =  $arResult['Number_inv'].'/'.$arResult['Number_inv_z'];
+if(!empty($_GET['org_inv'])){
+
+    $data = json_decode($_SESSION['DataInvoicePay'], true);
+    //print_r($data);
+    $number_inv = $data['Number_inv'];
+    $number_z = $data['Number_inv_z'];
+    $summ = $data['Sum'];
+    if($number_inv && !$number_z){
+        $number = $number_inv;
+    }elseif(!$number_inv && $number_z){
+        $number = $number_z;
+    }elseif($number_inv && $number_z){
+        $number =  $number_inv.'/'.$number_z;
+    }
+    $arResult['number_inv'] = $number_inv;
+    $arResult['number_z'] = $number_z;
+    $arResult['summ'] = $summ;
+    $arResult['number'] = $number;
+
+    $this->IncludeComponentTemplate();
 }
 
-$arResult['number'] = $number;
-//dump($arResult);
-$this->IncludeComponentTemplate();?>
+
+?>
 

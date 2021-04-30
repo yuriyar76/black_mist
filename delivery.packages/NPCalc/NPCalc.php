@@ -26,7 +26,7 @@ class NPCalc extends NPAllFunc implements NPCalcI
     private $tarif_ex2;
     private $tarif_ex4;
     private $tarif_ex8;
-    private $arrPost = [];
+    public $arrPost = [];
     public $current;
     private $in_get;
     public $id_sender;
@@ -62,15 +62,39 @@ class NPCalc extends NPAllFunc implements NPCalcI
         if($inner){
             if ($in_get['api'] === 'Y'){
                 $capital = 'Россия';
-                $city_send_api = $in_post['city_sender'];
-                $region_send_api = $in_post['region_cender'];
-                $city_rec_api = $in_post['city_recipient'];
-                $region_rec_api = $in_post['region_recipient'];
+                if(mb_detect_encoding($in_post['city_sender'] === 'UTF-8')){
+                    $city_send_api = iconv('utf-8', 'windows-1251', $in_post['city_sender']);
+                }else{
+                    $city_send_api =  $in_post['city_sender'];
+                }
+
+                if(mb_detect_encoding($in_post['region_sender'] === 'UTF-8')){
+                    $region_send_api =  iconv('utf-8', 'windows-1251',$in_post['region_sender']);
+                }else{
+                    $region_send_api =  $in_post['region_sender'];
+                }
+
+                if(mb_detect_encoding($in_post['city_recipient'] === 'UTF-8')){
+                    $city_rec_api =  iconv('utf-8', 'windows-1251',$in_post['city_recipient']);
+                }else{
+                    $city_rec_api =  $in_post['city_recipient'];
+                }
+
+                if(mb_detect_encoding($in_post['region_recipient'] === 'UTF-8')){
+                    $region_rec_api =  iconv('utf-8', 'windows-1251',$in_post['region_recipient']);
+                }else{
+                    $region_rec_api = $in_post['region_recipient'];
+                }
+
+
                 $in_post['city_sender'] =  $city_send_api . ', ' . $region_send_api . ', ' . $capital;
                 $in_post['city_recipient'] = $city_rec_api . ', ' . $region_rec_api . ', ' . $capital;
+
+
+
                 if (empty($in_post['weight']))  $in_post['weight'] = 1.0;
-                $id_city_send = GetCityId(iconv('utf-8', 'windows-1251',$in_post['city_sender']));
-                $id_city_rec = GetCityId(iconv('utf-8', 'windows-1251',$in_post['city_recipient']));
+                $id_city_send = NPAllFunc::GetCityId(iconv('utf-8', 'windows-1251',$in_post['city_sender']));
+                $id_city_rec = NPAllFunc::GetCityId(iconv('utf-8', 'windows-1251',$in_post['city_recipient']));
                 $data_in = [];
                 $data_in['city_1'] = $in_post['city_sender'];
                 $data_in['citycode_1'] = (int)$id_city_send;
@@ -81,6 +105,7 @@ class NPCalc extends NPAllFunc implements NPCalcI
                 $data_in['r3'][0] = '';
                 $data_in['ves'][0] = $in_post['weight'];
                 $this->arrPost = $data_in;
+
             }
         }else{
             $this->arrPost = static::arFromUtfToWin($in_post);

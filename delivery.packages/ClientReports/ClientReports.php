@@ -11,12 +11,6 @@ class ClientReports extends IndexComponent
     protected $numbers = [];
     public $dataJson;
 
-    /**
-     * ClientReports constructor.
-     * @param array $data
-     * @param array $get
-     * @throws Exception
-     */
     public function __construct(array $data, array $get=[])
     {
         parent::__construct();
@@ -24,10 +18,6 @@ class ClientReports extends IndexComponent
         $this->setData($data);
     }
 
-    /**
-     * @param array $data
-     * @throws Exception
-     */
     protected function setData(array $data)
     {
         if ($this->get['report_as'] === 'Y'){
@@ -35,7 +25,7 @@ class ClientReports extends IndexComponent
             $result = json_decode($data['numbersphp'], true);
             foreach($result as $value){
                 $key = $value['NAME'];
-                $res[$key] = htmlspecialchars($value);
+                $res[$key] = htmlspecialcharsEx($value);
                 $numbers[] = $value['NAME'];
             }
             $this->data = NPAllFunc::arrUtfToWin($res);
@@ -66,13 +56,10 @@ class ClientReports extends IndexComponent
 
     }
 
-    /**
-     * @return $this
-     */
     public function repoEx()
 {
     if ($this->get['report_as'] === 'Y'){
-        $Result = convArrayToUTF($this->data);
+        $Result = NPAllFunc::convArrToUTF ($this->data);
         $arData = [];
         $arData[] =
             [ iconv('windows-1251', 'utf-8','Номер накладной'),

@@ -280,6 +280,13 @@
 	}
 </script>
 
+
+<?php
+       if($_GET['adm'] === 'Y'){
+          // dump($arResult['INVOICE']['PROPERTY_CENTER_EXPENSES_VALUE']);
+       }
+?>
+
 <div class="row">
 		<div class="col-md-12">
             <h3><?=$arResult['TITLE'];?></h3>
@@ -323,12 +330,45 @@ if ($arResult['OPEN'])
         <input type="hidden" name="number" value="<?=$arResult['INVOICE']['NAME'];?>">
         <input type="hidden" name="save_ctrl" value="Сохранить">
         <div class="row">
+            <div class="col-md-4">
+
+                <?php
+                // Вывод центра затрат для Абсолют Страхование  || $arResult['CURRENT_CLIENT'] == 56103010
+                if ($arResult['CURRENT_CLIENT'] == 56103010):
+                    $arSelect = [
+                        "ID", "NAME"
+                    ];
+                    $resArr = GetInfoArr(false, false, 115, $arSelect, [], false);
+                    ?>
+                    <div class="form-group <?=$arResult['ERR_FIELDS']['ADRESS_SENDER'];?>">
+                        <label for="center_expenses" class="control-label">Центр затрат</label>
+                        <select style = "width:50%" class="form-control" name="CENTER_EXPENSES" id="center_expenses" required>
+                            <option value="<?=$arResult['INVOICE']['PROPERTY_CENTER_EXPENSES_VALUE']?>">
+                                <?=$arResult['INVOICE']['PROPERTY_CENTER_EXPENSES_NAME']?></option>
+                            <?php foreach($resArr as $value):?>
+                               <? if($value['ID'] !== $arResult['INVOICE']['PROPERTY_CENTER_EXPENSES_VALUE']):?>
+                                <option value="<?=$value['ID']?>"><?=$value['NAME']?></option>
+                               <?endif;?>
+                            <?php endforeach;?>
+                        </select>
+                    </div>
+                <?php endif;?>
+            </div>
+
+        </div>
+        <div class="row">
         	 <div class="col-md-3">
              	<h4>Отправитель</h4>
 				<div class="edit2 form-group <?=$arResult['ERR_FIELDS']['COMPANY_SENDER'];?>">
 					<label class="control-label">Компания</label>
 					<input type="text" class="form-control" name="COMPANY_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_COMPANY_SENDER_VALUE'];?>" id="COMPANY_SENDER">
 				</div>
+                 <?php if ($arResult['CURRENT_CLIENT'] == 56103010):?>
+                     <div class="form-group <?=$arResult['ERR_FIELDS']['INN_SENDER'];?>">
+                         <label class="control-label">ИНН</label>
+                         <input type="text" class="form-control" name="INN_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_INN_SENDER_VALUE'];?>" id="INN_SENDER">
+                     </div>
+                 <?php endif; ?>
 				<div class="form-group <?=$arResult['ERR_FIELDS']['NAME_SENDER'];?>">
 					<label class="control-label">Фамилия</label>
 					<input type="text" class="form-control" name="NAME_SENDER" value="<?=$arResult['INVOICE']['PROPERTY_NAME_SENDER_VALUE'];?>" id="NAME_SENDER">
@@ -356,7 +396,13 @@ if ($arResult['OPEN'])
 					<label class="control-label">Компания</label>
 					<input type="text" class="form-control" name="COMPANY_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_COMPANY_RECIPIENT_VALUE'];?>" id="company">
 				</div>
-				<div class="form-group <?=$arResult['ERR_FIELDS']['NAME_RECIPIENT'];?>">
+                 <?php if ($arResult['CURRENT_CLIENT'] == 56103010):?>
+                     <div class="form-group <?=$arResult['ERR_FIELDS']['INN_RECIPIENT'];?>">
+                         <label class="control-label">ИНН</label>
+                         <input type="text" class="form-control" name="INN_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_INN_RECIPIENT_VALUE'];?>" id="inn">
+                     </div>
+                 <?php endif; ?>
+                 <div class="form-group <?=$arResult['ERR_FIELDS']['NAME_RECIPIENT'];?>">
 					<label class="control-label">Фамилия</label>
 					<input type="text" class="form-control" name="NAME_RECIPIENT" value="<?=$arResult['INVOICE']['PROPERTY_NAME_RECIPIENT_VALUE'];?>" id="name">
 				</div>

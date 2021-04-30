@@ -384,13 +384,13 @@ if ($arResult['MODE'] != 'close')
 {
     $arResult["OPEN"] = true;
 
-    AddToLogs('uk_info', ['data'=> $arResult["OPEN"] ]);
+  //  AddToLogs('uk_info', ['data'=> $arResult["OPEN"] ]);
 
     if ($arResult['MODE'] === 'list')
     {
         if($USER->isAdmin()){
             $start = microtime(true);
-            AddToLogs('test_logs', ['time_start' => $start, 'mess' => 'Начало выполнения скрипта']);
+          //  AddToLogs('test_logs', ['time_start' => $start, 'mess' => 'Начало выполнения скрипта']);
         }
         $arResult['LIST_TO_DATE'] = date('d.m.Y');
         $prevdate = strtotime('-2 days');
@@ -582,7 +582,7 @@ if ($arResult['MODE'] != 'close')
                         $el = new CIBlockElement;
                         $res = $el->Update($id, ["ACTIVE"=>"N"]);
                     }
-                    AddToLogs('InvoicesDelete', ['IDs' => implode(', ',$_POST['ids'])]);
+                  //  AddToLogs('InvoicesDelete', ['IDs' => implode(', ',$_POST['ids'])]);
                     $arResult['MESSAGE'][] = 'Накладные успешно удалены';
 
                 }
@@ -1060,11 +1060,11 @@ if ($arResult['MODE'] != 'close')
                         }
                     }
                     unset($arLogs['Delivery']);
-                    AddToLogs('InvoicesSend',$arLogs);
+                   // AddToLogs('InvoicesSend',$arLogs);
                     $result = $client->SetManifest(['ListOfDocs' => json_encode($arManifestTo1cUTF)]);
                     //TODO [x]Заменить функцию на SetManifest, изменив входящие значения
                     $mResult = $result->return;
-                    AddToLogs('InvoicesSendAnswer', ['Answer' => $mResult]);
+                   // AddToLogs('InvoicesSendAnswer', ['Answer' => $mResult]);
                     //TODO [x]Разбор полученных данных из SetManifest
                     $obj = json_decode($mResult, true);
                     $arRes = arFromUtfToWin($obj);
@@ -1776,8 +1776,8 @@ if ($arResult['MODE'] != 'close')
         if($USER->isAdmin()){
             $finish = microtime(true);
             $delta = $finish - $start;
-            AddToLogs('test_logs', ['time_1' => $delta,
-                'mess' => 'время с начала до конца list']);
+           /* AddToLogs('test_logs', ['time_1' => $delta,
+                'mess' => 'время с начала до конца list']);*/
         }
         /*if ($USER->isAdmin()){
             $arResult['MODE'] = 'list_test';
@@ -2617,12 +2617,14 @@ if ($arResult['MODE'] != 'close')
                     "PROPERTY_NAME_SENDER",
                     "PROPERTY_PHONE_SENDER",
                     "PROPERTY_COMPANY_SENDER",
+                    "PROPERTY_INN_SENDER",
                     "PROPERTY_CITY_SENDER",
                     "PROPERTY_INDEX_SENDER",
                     "PROPERTY_ADRESS_SENDER",
                     "PROPERTY_NAME_RECIPIENT",
                     "PROPERTY_PHONE_RECIPIENT",
                     "PROPERTY_COMPANY_RECIPIENT",
+                    "PROPERTY_INN_RECIPIENT",
                     "PROPERTY_CITY_RECIPIENT",
                     "PROPERTY_INDEX_RECIPIENT",
                     "PROPERTY_ADRESS_RECIPIENT",
@@ -2866,6 +2868,7 @@ if ($arResult['MODE'] != 'close')
                 {
                     $arJsonGoods[] = [
                         'GoodsName' => iconv('windows-1251','utf-8',$goods_str['name']),
+                        'Artikul' => iconv('windows-1251','utf-8',$goods_str['art']),
                         'Amount' => (int)$goods_str['amount'],
                         'Price' => (float)str_replace(',', '.', $goods_str['price']),
                         'Sum' => (float)str_replace(',', '.', $goods_str['sum']),
@@ -2894,12 +2897,29 @@ if ($arResult['MODE'] != 'close')
                 if ($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
                     if (!strlen($_POST['CENTER_EXPENSES']))
                     {
-                        $arResult["ERR_FIELDS"]["CENTER_EXPENSES"] = 'has-error';
+                        $arResult["ERR_FIELDS"]["CENTER_EXPENSES"] = 'has-error err_center_exp01';
                     }
                     else
                     {
                         $arChanges[981] = (int)$_POST['CENTER_EXPENSES'];
                     }
+                    if(!empty($_POST['INN_RECIPIENT'])){
+                        if(preg_match('/^[0-9]+$/', trim($_POST['INN_RECIPIENT'])) == 0){
+                            $arResult["ERR_FIELDS"]["INN_RECIPIENT"] = 'has-error err_inn_recipient';
+                        }
+                    }else{
+                        $arChanges[1079] = $_POST['INN_RECIPIENT'];
+                    }
+                    if(!empty($_POST['INN_SENDER'])){
+                        if(preg_match('/^[0-9]+$/', trim($_POST['INN_SENDER'])) == 0){
+                            $arResult["ERR_FIELDS"]["INN_SENDER"] = 'has-error err_inn_sender';
+                        }
+
+                    }else{
+                        $arChanges[1078] = $_POST['INN_SENDER'];
+                    }
+
+
                 }
 
 
@@ -3185,20 +3205,20 @@ if ($arResult['MODE'] != 'close')
                             $sizes[] = (float)str_replace(',', '.', $sz);
                         }
 
-                        $arCurStr = array(
+                        $arCurStr = [
                             'name' => iconv('windows-1251','utf-8',$description_str['name']),
                             'place' => (int)$description_str['place'],
                             'weight' => (float)str_replace(',', '.', $description_str['weight']),
                             'size' => $sizes,
                             'gabweight' => (($sizes[0]*$sizes[1]*$sizes[2])/$arResult['CURRENT_CLIENT_COEFFICIENT_VW'])
-                        );
+                        ];
 
                         $total_place1 = $total_place1 + $arCurStr['place'];
                         //$total_weight1 = $total_weight + $arCurStr['weight'];
                         $total_gabweight1 = $total_gabweight1 + $arCurStr['gabweight'];
                         $arJsonDescr[] = $arCurStr;
 
-                        $total_weight1 += floatval(str_replace(',', '.', $description_str['weight']));
+                        $total_weight1 += (float)str_replace(',', '.', $description_str['weight']);
                     }
 
                     // посмотрим что здесь есть
@@ -3429,7 +3449,8 @@ if ($arResult['MODE'] != 'close')
             }
             $arResult['ERRORS'] = (is_array($arResult['ERRORS'])) ? $arResult['ERRORS'] : array();
             $arResult['ERR_FIELDS'] = (is_array($arResult['ERR_FIELDS'])) ? $arResult['ERR_FIELDS'] : array();
-            AddToLogs('InvEditErrors',array_merge($arResult['ERRORS'], $arResult["ERR_FIELDS"]));
+          /*  AddToLogs('InvEditErrors',array_merge($arResult['ERRORS'], $arResult["ERR_FIELDS"]));
+       */
         }
 
     }
@@ -3901,7 +3922,7 @@ if ($arResult['MODE'] != 'close')
 
                     // *******************
                     // тестовый внутренний номер add
-                    if ((false !== strpos($_POST['InternalNumber'], "999999999"))|| (trim($_POST['InternalNumber'])=='') || (count($arCnt)!=0)){
+                    if ((false !== strpos($_POST['InternalNumber'], "999999999")) || (trim($_POST['InternalNumber'])=='') || (count($arCnt)!=0)){
                         $arResult["ERR_FIELDS"]["INNER_NUMBER"] = 'has-error err081';
                     }
                 }
@@ -3909,19 +3930,25 @@ if ($arResult['MODE'] != 'close')
                 /* если не выбран Центр затрат для Абсолют страхование */
                 if ($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
                     if(empty($_POST['CENTER_EXPENSES'])){
-                        $arResult["ERR_FIELDS"]['CENTER_EXPENSES'] = 'has-error';
+                        $arResult["ERR_FIELDS"]['CENTER_EXPENSES'] = 'has-error err_center_exp';
+                    }
+                    if(!empty($_POST['INN_RECIPIENT'])){
+                        if(preg_match('/^[0-9]+$/', trim($_POST['INN_RECIPIENT'])) == 0){
+                            $arResult["ERR_FIELDS"]["INN_RECIPIENT"] = 'has-error err_inn_recipient';
+                        }
+                    }
+                    if(!empty($_POST['INN_SENDER'])){
+                        if(preg_match('/^[0-9]+$/', trim($_POST['INN_SENDER'])) == 0){
+                            $arResult["ERR_FIELDS"]["INN_SENDER"] = 'has-error err_inn_sender';
+                        }
+
                     }
                 }
                 if (!strlen($_POST['NAME_SENDER']))
                 {
                     $arResult["ERR_FIELDS"]["NAME_SENDER"] = 'has-error err08';
                 }
-                if(!empty($_POST['INN_SENDER'])){
-                    if(preg_match('/^[0-9]+$/', trim($_POST['INN_SENDER'])) == 0){
-                        $arResult["ERR_FIELDS"]["INN_SENDER"] = 'has-error';
-                    }
 
-                }
                 if (!strlen($_POST['PHONE_SENDER']))
                 {
                     $arResult["ERR_FIELDS"]["PHONE_SENDER"] = 'has-error err09';
@@ -3932,41 +3959,37 @@ if ($arResult['MODE'] != 'close')
                 }
                 if (!strlen($_POST['CITY_SENDER']))
                 {
-                    $arResult["ERR_FIELDS"]["CITY_SENDER"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["CITY_SENDER"] = 'has-error err_city_sender';
                 }
                 else
                 {
                     $city_sender = GetCityId(trim($_POST['CITY_SENDER']));
                     if ($city_sender == 0)
                     {
-                        $arResult["ERR_FIELDS"]["CITY_SENDER"] = 'has-error';
+                        $arResult["ERR_FIELDS"]["CITY_SENDER"] = 'has-error err_city_sender01';
                     }
                 }
                 if (!strlen($_POST['ADRESS_SENDER']))
                 {
-                    $arResult["ERR_FIELDS"]["ADRESS_SENDER"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["ADRESS_SENDER"] = 'has-error err_addr_sender';
                 }
 
                 if (!strlen($_POST['NAME_RECIPIENT']))
                 {
-                    $arResult["ERR_FIELDS"]["NAME_RECIPIENT"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["NAME_RECIPIENT"] = 'has-error err_name_recipient';
                 }
-                if(!empty($_POST['INN_RECIPIENT'])){
-                    if(preg_match('/^[0-9]+$/', trim($_POST['INN_SENDER'])) == 0){
-                        $arResult["ERR_FIELDS"]["INN_RECIPIENT"] = 'has-error';
-                    }
-                }
+
                 if (!strlen($_POST['PHONE_RECIPIENT']))
                 {
-                    $arResult["ERR_FIELDS"]["PHONE_RECIPIENT"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["PHONE_RECIPIENT"] = 'has-error err_phone_recipient';
                 }
                 if (!strlen($_POST['COMPANY_RECIPIENT']))
                 {
-                    $arResult["ERR_FIELDS"]["COMPANY_RECIPIENT"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["COMPANY_RECIPIENT"] = 'has-error err_company_recipient';
                 }
                 if (!strlen($_POST['CITY_RECIPIENT']))
                 {
-                    $arResult["ERR_FIELDS"]["CITY_RECIPIENT"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["CITY_RECIPIENT"] = 'has-error err_city_recipient';
                 }
                 else
                 {
@@ -3979,25 +4002,25 @@ if ($arResult['MODE'] != 'close')
                             $res = $el->Update($city_recipient, ["ACTIVE"=>"Y"]);
                         }
                     }else{
-                        $arResult["ERR_FIELDS"]["CITY_RECIPIENT"] = 'has-error';
+                        $arResult["ERR_FIELDS"]["CITY_RECIPIENT"] = 'has-error err_city_recipient01';
                     }
                 }
                 if (!strlen($_POST['ADRESS_RECIPIENT']))
                 {
-                    $arResult["ERR_FIELDS"]["ADRESS_RECIPIENT"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["ADRESS_RECIPIENT"] = 'has-error err_addr_recipient';
                 }
 
                 if (!$_POST['TYPE_DELIVERY'])
                 {
-                    $arResult["ERR_FIELDS"]["TYPE_DELIVERY"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["TYPE_DELIVERY"] = 'has-error err_type_dev';
                 }
                 if (!$_POST['TYPE_PACK'])
                 {
-                    $arResult["ERR_FIELDS"]["TYPE_PACK"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["TYPE_PACK"] = 'has-error err_type_pack';
                 }
                 if (!$_POST['WHO_DELIVERY'])
                 {
-                    $arResult["ERR_FIELDS"]["WHO_DELIVERY"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["WHO_DELIVERY"] = 'has-error err_who_dev';
                 }
                 $WHOSE_ORDER = false;
                 $pays_text = '';
@@ -4012,7 +4035,7 @@ if ($arResult['MODE'] != 'close')
                 if($_POST['callcourier'] === 'yes' && $_POST['callcourierdate']){
                     $dd = strtotime($_POST['callcourierdate']);
                     if(date('N', $dd) == 7){
-                        $arResult["ERR_FIELDS"]['callcourierdate'] = 'has-error';
+                        $arResult["ERR_FIELDS"]['callcourierdate'] = 'has-error err_callcourierdate';
                     }
                 }
 
@@ -4091,15 +4114,15 @@ if ($arResult['MODE'] != 'close')
                 }
                 if (($total_place <= 0) || ($total_place >= 10000))
                 {
-                    $arResult["ERR_FIELDS"]["PLACES"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["PLACES"] = 'has-error err_places';
                 }
                 if (($total_weight <= 0) || ($total_weight >= 10000))
                 {
-                    $arResult["ERR_FIELDS"]["WEIGHT"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["WEIGHT"] = 'has-error err_weight';
                 }
                 if ($total_gabweight >= 10000)
                 {
-                    $arResult["ERR_FIELDS"]["SIZE"] = 'has-error';
+                    $arResult["ERR_FIELDS"]["SIZE"] = 'has-error err_size';
                 }
 
                 $arJsonGoods = [];
@@ -4107,22 +4130,23 @@ if ($arResult['MODE'] != 'close')
 
                 foreach ($_POST['goods'] as $goods_str)
                 {
-
                     $arJsonGoods[] = [
-                        'GoodsName' => iconv('windows-1251','utf-8',$goods_str['name']),
+                        'GoodsName' => iconv('windows-1251','utf-8', deleteTabs($goods_str['name'])),
+                        'Artikul' => iconv('windows-1251','utf-8',deleteTabs($goods_str['art'])),
                         'Amount' => (int)$goods_str['amount'],
-                        'Price' => (float)str_replace(',', '.', $goods_str['price']),
-                        'Sum' => (float)str_replace(',', '.', $goods_str['sum']),
-                        'SumNDS' => (float)str_replace(',', '.', $goods_str['sumnds']),
+                        'Price' => (float)str_replace(',', '.', deleteTabs($goods_str['price'])),
+                        'Sum' => (float)str_replace(',', '.', deleteTabs($goods_str['sum'])),
+                        'SumNDS' => (float)str_replace(',', '.', deleteTabs($goods_str['sumnds'])),
                         'PersentNDS' => (int)$goods_str['persentnds']
                     ];
                     $arJsonGoodsSource[] = [
-                        'GoodsName' => iconv('windows-1251','utf-8',$goods_str['name']),
-                        'Amount' => iconv('windows-1251','utf-8',$goods_str['amount']),
-                        'Price' => iconv('windows-1251','utf-8',$goods_str['price']),
-                        'Sum' => iconv('windows-1251','utf-8',$goods_str['sum']),
-                        'SumNDS' => iconv('windows-1251','utf-8',$goods_str['sumnds']),
-                        'PersentNDS' => iconv('windows-1251','utf-8',$goods_str['persentnds'])
+                        'GoodsName' => iconv('windows-1251','utf-8',deleteTabs($goods_str['name'])),
+                        'Artikul' => iconv('windows-1251','utf-8',deleteTabs($goods_str['art'])),
+                        'Amount' => iconv('windows-1251','utf-8',deleteTabs($goods_str['amount'])),
+                        'Price' => iconv('windows-1251','utf-8',deleteTabs($goods_str['price'])),
+                        'Sum' => iconv('windows-1251','utf-8',deleteTabs($goods_str['sum'])),
+                        'SumNDS' => iconv('windows-1251','utf-8',deleteTabs($goods_str['sumnds'])),
+                        'PersentNDS' => iconv('windows-1251','utf-8',deleteTabs($goods_str['persentnds']))
                     ];
                 }
 
@@ -4191,7 +4215,7 @@ if ($arResult['MODE'] != 'close')
                                 $mess => "Ошибка записи",
                                 $data => $arLoadProductArray2
                             ];
-                            AddToLogs('SaveRecipientId',$errLog);
+                          /*  AddToLogs('SaveRecipientId',$errLog);*/
                         }
                     }
                     else
@@ -4237,7 +4261,7 @@ if ($arResult['MODE'] != 'close')
                                     574 => NewQuotes($_POST['NAME_SENDER']),
                                     575 => NewQuotes($_POST['PHONE_SENDER']),
                                     576 => $city_sender,
-                                    577 => $_POST['INDEX_SENDER'],
+                                    577 => NewQuotes($_POST['INDEX_SENDER']),
                                     578 => NewQuotes($_POST['ADRESS_SENDER']),
                                     580 => 259,
                                     713 => date('d.m.Y H:i:s'),
@@ -4282,11 +4306,11 @@ if ($arResult['MODE'] != 'close')
                         /* end настройки */
 
                         if($arResult['IndividualPrice']){
-                            $cr = trim($_POST['CITY_RECIPIENT']);
+                            $cr = NewQuotes($_POST['CITY_RECIPIENT']);
                             $cr_arr = explode(',', $cr);
                             $cr_post = $cr_arr[0];
                             $rr_post = $cr_arr[1];
-                            $cs = trim($_POST['CITY_SENDER']);
+                            $cs = NewQuotes($_POST['CITY_SENDER']);
                             $cs_arr = explode(',', $cs);
                             $cs_post = $cs_arr[0];
                             $rs_post = $cs_arr[1];
@@ -4381,13 +4405,13 @@ if ($arResult['MODE'] != 'close')
 
                     /* сохранить накладную */
                     //$id_in = MakeInvoiceNumber(83, 7, '90-');
-                    if (strlen(trim($_POST['NUMBER'])))
+                    if (NewQuotes($_POST['NUMBER']))
                     {
                         $id_in = [
                             'max_id' => 0
                         ];
 
-                        $number_n = trim($_POST['NUMBER']);
+                        $number_n = NewQuotes($_POST['NUMBER']);
                         $number_nakl = (string)$number_n;
                         if(preg_match('/[а-яё]+-/i', $number_nakl)){
                             $nm = preg_replace('/[а-яё]+-/i','90-', $number_nakl);
@@ -4406,8 +4430,8 @@ if ($arResult['MODE'] != 'close')
                     }
                     // сумма доставки для клиентов с инд. прайсом - лог url в 1с
                     //AddToLogs('url_for_sum', [ $number_nakl => $url_for_sum_dev ]);
-                    $number_internal = trim($_POST['InternalNumber']);
-                    $date_to = deleteTabs($_POST['TO_DELIVER_BEFORE_DATE']);
+                    $number_internal = NewQuotes($_POST['InternalNumber']);
+                    $date_to = NewQuotes($_POST['TO_DELIVER_BEFORE_DATE']);
                     // добавить в поле спец. инструкций
                     if($date_to){
                         $spec_instr = ' '.NewQuotes($_POST['INSTRUCTIONS']).'  '.'ДОСТАВИТЬ ДО ДАТЫ: '.$date_to.'. ';
@@ -4421,8 +4445,9 @@ if ($arResult['MODE'] != 'close')
                         $TRANSPORT_TYPE = 0;
                     }
 
-                    if(isset($_POST['WITH_RETURN'])){
+                    if(!empty($_POST['WITH_RETURN'])){
                         $WITH_RETURN = 1;
+
                     }else{
                         $WITH_RETURN = 0;
                     }
@@ -4453,9 +4478,10 @@ if ($arResult['MODE'] != 'close')
                         861 => $TRANSPORT_TYPE,
                         978 => $NOTE,
                         979 => $sum_dev,
-                        981 => $_POST['CENTER_EXPENSES'],
+                        981 => NewQuotes($_POST['CENTER_EXPENSES']),
                         982 => trim($_POST['RAND']),
-                        1082 => htmlspecialchars(strip_tags($_POST['INSTRUCTIONS'])),
+                        1082 => NewQuotes($_POST['INSTRUCTIONS']),
+                        1079 => NewQuotes($_POST['INN_RECIPIENT'])
                     ];
                     $PROPERTY_VAL = [
                         545 => $arResult['CURRENT_CLIENT'],
@@ -4464,7 +4490,7 @@ if ($arResult['MODE'] != 'close')
                         547 => NewQuotes($_POST['PHONE_SENDER']),
                         548 => NewQuotes($_POST['COMPANY_SENDER']),
                         549 => $city_sender,
-                        550 => deleteTabs($_POST['INDEX_SENDER']),
+                        550 => NewQuotes($_POST['INDEX_SENDER']),
                         551 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => NewQuotes($_POST['ADRESS_SENDER'])]],
                         552 => NewQuotes($_POST['NAME_RECIPIENT']),
                         553 => NewQuotes($_POST['PHONE_RECIPIENT']),
@@ -4474,7 +4500,7 @@ if ($arResult['MODE'] != 'close')
                         562 => $_POST['TYPE_PAYS'],
                         570 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => $spec_instr]],
                         571 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => NewQuotes($_POST['ADRESS_RECIPIENT'])]],
-                        560 => deleteTabs($_POST['IN_DATE_DELIVERY']),
+                        560 => NewQuotes($_POST['IN_DATE_DELIVERY']),
                         565 => (float)str_replace(',', '.', $_POST['FOR_PAYMENT']),
                         733 => (float)str_replace(',', '.', $_POST['PAYMENT_COD']),
                         566 => (float)str_replace(',', '.', $_POST['COST']),
@@ -4492,6 +4518,10 @@ if ($arResult['MODE'] != 'close')
                     {
                         $vcomm = true;       // метка Служебное для вымпелкома
                     }
+                    if ($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
+                        $PROPERTY_VAL[1079] = NewQuotes($_POST['INN_RECIPIENT']);
+                        $PROPERTY_VAL[1078] = NewQuotes($_POST['INN_SENDER']);
+                    }
 
                     if ($WITH_RETURN == 1) {
                         /* массив свойств для возвратной накладной */
@@ -4506,8 +4536,8 @@ if ($arResult['MODE'] != 'close')
                         $COMPANY_SENDER = NewQuotes($_POST['COMPANY_RECIPIENT']);
                         $INDEX_SENDER = deleteTabs($_POST['INDEX_RECIPIENT']);
                         $ADRESS_SENDER = NewQuotes($_POST['ADRESS_RECIPIENT']);
-                        $CITY_RECIPIENT = $_POST['CITY_SENDER'];
-                        $CITY_SENDER = $_POST['CITY_RECIPIENT'];
+                        $CITY_RECIPIENT = NewQuotes($_POST['CITY_SENDER']);
+                        $CITY_SENDER = NewQuotes($_POST['CITY_RECIPIENT']);
                         $city_sender_ret = $city_recipient;
                         $city_recipient_ret = $city_sender;
                         $spec_instr_ret = "ВНИМАНИЕ! Это обратный забор при доставке накладной - № $number_nakl";
@@ -4534,13 +4564,23 @@ if ($arResult['MODE'] != 'close')
                         if (!empty($_POST['IN_DATE_DELIVERY'])) {
                             $IN_DATE = $_POST['IN_DATE_DELIVERY'];
                             $IN_DATE_DELIVERY = date('d.m.Y', strtotime($IN_DATE . "1 day"));
-                        }
-                        $date_to = deleteTabs($_POST['TO_DELIVER_BEFORE_DATE']);
+                            if(date('N', strtotime($IN_DATE_DELIVERY)) === '6'){
+                                $IN_DATE_DELIVERY = date('d.m.Y', strtotime($IN_DATE . "3 day"));
+                            }
+                         }
+                        $date_to = NewQuotes($_POST['TO_DELIVER_BEFORE_DATE']);
                         // добавить в поле спец. инструкций
                         $date_to_ret = '';
                         if ($date_to) {
-                            $date_to_ret = date('d.m.Y', strtotime($date_to . "1 day"));
-                            $spec_instr_ret .= ' ' . 'ДОСТАВИТЬ ДО ДАТЫ: ' . $date_to_ret . '. ';
+                            if( $_POST['TYPE_DELIVERY'] == '345' ||
+                                $_POST['TYPE_DELIVERY'] == '346' ||
+                                $_POST['TYPE_DELIVERY'] == '338' ){
+                                $date_to_ret = $date_to;
+                            }else{
+                                $date_to_ret = date('d.m.Y', strtotime($date_to . "1 day"));
+                            }
+
+                            $spec_instr_ret .= ' ДОСТАВИТЬ ДО ДАТЫ: ' . $date_to_ret . '. ';
                         }
 
                         $PROPERTY_RET = [
@@ -4570,7 +4610,10 @@ if ($arResult['MODE'] != 'close')
                             987 => trim($GoodsNamestr),
                             989 => '1'
                         ];
-
+                        if ($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
+                            $PROPERTY_RET[1079] = NewQuotes($_POST['INN_RECIPIENT']);
+                            $PROPERTY_RET[1078] = NewQuotes($_POST['INN_SENDER']);
+                        }
                         $PROPERTY_VALUES_RET = $PROPERTY_RET + $prop;
 
                     } // end свойства возвратной накладной
@@ -4587,13 +4630,13 @@ if ($arResult['MODE'] != 'close')
                         "ACTIVE" => "Y"
                     ];
                     $i = 0;
-                    while($i < 2){
+                    while($i <= 5){
                         $z_nakl_id = $el->Add($arLoadProductArray);
                         if($z_nakl_id){
                             break;
                         }
 
-                        sleep(1);
+                        sleep(3);
                         $i++;
                     }
 
@@ -4610,22 +4653,30 @@ if ($arResult['MODE'] != 'close')
                         ];
 
                         $i = 0;
-                        while($i < 2){
+                        while($i <= 5){
                             $z_nakl_id_ret = $el_ret->Add($arLoadProductArrayRet);
                             if($z_nakl_id_ret){
                                 break;
                             }
 
-                            sleep(1);
+                            sleep(3);
                             $i++;
                         }
 
-
                         if ($_POST['callcourier'] === 'yes'){
+                            if(!empty($_POST['IN_DATE_DELIVERY'])){
+                                $sbor = date('d.m.Y',  strtotime($_POST['IN_DATE_DELIVERY']));
+                            }else{
+                                $sbor = date('d.m.Y', strtotime($_POST['callcourierdate'] . "1 day"));
+                                if(date("N", strtotime($sbor)) === '6'){
+                                    $sbor =  date('d.m.Y',strtotime($_POST['callcourierdate'] . "3 day"));
+                                }
+
+                            }
                             CIBlockElement::SetPropertyValuesEx($z_nakl_id_ret, 83,
                                 [
                                     977=>'Y',
-                                    984 => date('d.m.Y', strtotime($_POST['callcourierdate'] . "1 day")),
+                                    984 => $sbor,
                                     985 => NewQuotes($_POST['callcourtime_from']),
                                     986 => NewQuotes($_POST['callcourtime_to'])
                                 ]);
@@ -4634,9 +4685,8 @@ if ($arResult['MODE'] != 'close')
                         {
                             $error = $el_ret->LAST_ERROR;
                             AddToLogs('InvAddErrors', ['ERROR' => $error, 'mess' => 'Проблемы с сохранением возвратной накладной']);
+
                             $arResult['ERRORS'][] = $error;
-                        }else{
-                            AddToLogs('invoices-return',convArrayToUTF($arLoadProductArray));
                         }
                     }
 
@@ -4674,7 +4724,7 @@ if ($arResult['MODE'] != 'close')
                     if (!$z_nakl_id)
                     {
                         $error = $el->LAST_ERROR;
-                        AddToLogs('InvAddErrors', ['ERROR' => $error, 'mess' => 'Проблемы с сохранением накладной']);
+                       /* AddToLogs('InvAddErrors', ['ERROR' => $error, 'mess' => 'Проблемы с сохранением накладной']);*/
                         $arResult['ERRORS'][] = $error;
                     }
 
@@ -4969,31 +5019,30 @@ if ($arResult['MODE'] != 'close')
                     // ********************************************************************
 
                     $file = $_SERVER['DOCUMENT_ROOT']."/upload/pdf/".$number_nakl.".txt";
-
                     ob_start();
                     print_r($arPDF);
-                    $textualRepresentation = ob_get_contents();
-                    ob_end_clean();
+                    $textualRepresentation = ob_get_clean();
                     file_put_contents($file, $textualRepresentation);
 
                     /* создать массив для pdf  возвратной  накладной */
                     if ($WITH_RETURN == 1 )  {
                         $newInstructionsret = $spec_instr_ret;
                         if (!empty($_POST['callcourierdate'])){
-                            $datecall = date('d.m.Y', strtotime($_POST['callcourierdate'] . "1 day"));
-                            $newInstructionsret .= '  ВЫЗОВ КУРЬЕРА: ' . $datecall . ' с '.$_POST['callcourtime_from'].' до '.$_POST['callcourtime_to'].'.';
+                            $newInstructionsret .= '  ВЫЗОВ КУРЬЕРА: ' . $sbor . ' с ' . $_POST['callcourtime_from'] .
+                                ' до ' . $_POST['callcourtime_to'] . '.';
                         }
                         if($date_to_ret){
-                            $newInstructionsret .= '  ДОСТАВИТЬ ДО ДАТЫ: '.$date_to_ret.'.';
+                            $newInstructionsret .= '  ДОСТАВИТЬ ДО ДАТЫ: ' . $date_to_ret . '.';
                         }
 
-                        if ($_POST['IN_DATE_DELIVERY'] !=''){
-                            $datecalldev = date('d.m.Y', strtotime($_POST['IN_DATE_DELIVERY'] . "1 day"));
+                            $datecalldev = date('d.m.Y', strtotime($sbor . "1 day"));
+                            if(date('N', strtotime($datecalldev)) === '6'){
+                                $datecalldev = date('d.m.Y', strtotime($sbor . "3 day"));
+                            }
                             $newInstructionsret .= ' Доставить в дату: ' . $datecalldev;
-                        }
-                        if ($_POST['IN_TIME_DELIVERY'] !=''){
 
-                            $newInstructionsret .= ' до часа '.$_POST['IN_TIME_DELIVERY'];
+                        if (!empty($_POST['IN_TIME_DELIVERY'])){
+                            $newInstructionsret .= ' до часа ' . $_POST['IN_TIME_DELIVERY'];
                         }
                         $sitysender = explode(", ", $CITY_SENDER);
                         $s_sender = $sitysender[0];
@@ -5076,8 +5125,7 @@ if ($arResult['MODE'] != 'close')
 
                         ob_start();
                         print_r($arPDF_RET);
-                        $textualRepresentation = ob_get_contents();
-                        ob_end_clean();
+                        $textualRepresentation = ob_get_clean();
                         file_put_contents($file, $textualRepresentation);
                         MakeZakazPDF(encodeArray($arPDF_RET, "cp1251"));
                         $_SESSION['MESSAGE'][] = "Накладная на обратный забор № <span id='new_invoice_made_ret'>".$number_nakl_ret."</span> успешно создана";
@@ -5152,8 +5200,8 @@ if ($arResult['MODE'] != 'close')
                         if (!$z_id)
                         {
                             $error = $el->LAST_ERROR;
-                            AddToLogs('InvAddErrors', ['ERROR' => $error,
-                                'mess' => 'Проблемы с сохранением вызова курьера']);
+                          /*  AddToLogs('InvAddErrors', ['ERROR' => $error,
+                                'mess' => 'Проблемы с сохранением вызова курьера']);*/
                             $arResult['ERRORS'][] = $error;
                         }
 
@@ -5173,8 +5221,8 @@ if ($arResult['MODE'] != 'close')
                                     612 => $arResult['CURRENT_CLIENT'],
                                     664 => $arResult['CURRENT_BRANCH'],
                                     613 => [
-                                        $datecall . ' ' . $_POST['callcourtime_from'] . ':00',
-                                        $datecall . ' ' . $_POST['callcourtime_to'] . ':00'
+                                        $sbor . ' ' . $_POST['callcourtime_from'] . ':00',
+                                        $sbor . ' ' . $_POST['callcourtime_to'] . ':00'
                                     ],
                                     614 => $city_sender_ret,
                                     615 => $ADRESS_SENDER,
@@ -5199,8 +5247,8 @@ if ($arResult['MODE'] != 'close')
                             if (!$z_id_cur_ret)
                             {
                                 $error = $el->LAST_ERROR;
-                                AddToLogs('InvAddErrors', ['ERROR' => $error,
-                                    'mess' => 'Проблемы с сохранением вызова курьера (обратный забор)']);
+                              /*  AddToLogs('InvAddErrors', ['ERROR' => $error,
+                                    'mess' => 'Проблемы с сохранением вызова курьера (обратный забор)']);*/
                                 $arResult['ERRORS'][] = $error;
                             }
                         }
@@ -5215,7 +5263,8 @@ if ($arResult['MODE'] != 'close')
                             $newInstructions .= '. ';
                         }
                         //  поправляем
-                        $newInstructions .= '  ВЫЗОВ КУРЬЕРА: '.$_POST['callcourierdate'].' с '.$_POST['callcourtime_from'].' до '.$_POST['callcourtime_to'].'.';
+                        $newInstructions .= '  ВЫЗОВ КУРЬЕРА: '.$_POST['callcourierdate'].' с '.$_POST['callcourtime_from'] .
+                            ' до '.$_POST['callcourtime_to'].'.';
                         if($date_to){
                             $newInstructions .= '  ДОСТАВИТЬ ДО ДАТЫ: '.$date_to.'.';
                         }
@@ -5334,7 +5383,7 @@ if ($arResult['MODE'] != 'close')
                                 "NUMBER" => $id_in_cur_ret,
                                 "COMPANY" => $arResult['AGENT']['NAME'],
                                 "BRANCH" => ($arResult['USER_IN_BRANCH']) ? 'Филиал: <strong>'.$arResult['BRANCH_INFO']['NAME'].'</strong><br />' : '',
-                                "DATE_TIME" => $datecall . ' с ' . $_POST['callcourtime_from'] . ' до ' . $_POST['callcourtime_to'],
+                                "DATE_TIME" => $datecalldev . ' с ' . $_POST['callcourtime_from'] . ' до ' . $_POST['callcourtime_to'],
                                 "CITY" => $CITY_SENDER,
                                 "ADRESS" => $ADRESS_SENDER,
                                 "CONTACT" => $NAME_SENDER,
@@ -5345,7 +5394,8 @@ if ($arResult['MODE'] != 'close')
                                  "SIZE_3" => $gabarit3,
                                  "SIZE_4" => $gabarit4,
                                  "SIZE_5" => $gabarit5,*/
-                                "COMMENT" => "Обратный забор к накладной $number_nakl. Накладная № " . $number_nakl_ret,
+                                "COMMENT" => "Обратный забор к накладной $number_nakl. Накладная № " .
+                                    $number_nakl_ret,
                                 'AGENT_EMAIL' => $arResult['ADD_AGENT_EMAIL'],
                                 'UK_EMAIL' => $arResult['EMAIL_CALLCOURIER'],
                                 'TYPE_PAYS' => $payment_type1,
@@ -5611,7 +5661,7 @@ if ($arResult['MODE'] != 'close')
                         $arLogResult = ['Response' => $mResult, 'status' => $arRes[0]['status'],
                             'comment' => $arRes[0]['comment']];
                         $arLog = array_merge($arLogTitle,$arJs,$arLogResult);
-                        AddToLogs('callingCourier',$arLogResult);
+                     //   AddToLogs('callingCourier',$arLogResult);
                         //    }
                         $_SESSION["MESSAGE"][] = "Вызов курьера №".$id_in_cur." успешно зарегистрирован";
 
@@ -5631,8 +5681,8 @@ if ($arResult['MODE'] != 'close')
                                 'PAYMENT_TYPE' => $payment_type,
                                 'DELIVERY_PAYER' => $delivery_payer_ret,
                                 'DELIVERY_CONDITION' => $delivery_condition,
-                                'DATE_TAKE_FROM' => substr($datecall,6,4).'-'.substr($datecall,3,2).'-'.substr($datecall,0,2).' '.$datecall.':00',
-                                'DATE_TAKE_TO' => substr($datecall,6,4).'-'.substr($datecall,3,2).'-'.substr($datecall,0,2).' '.$datecall.':00',
+                                'DATE_TAKE_FROM' => substr($datecalldev,6,4).'-'.substr($datecalldev,3,2).'-'.substr($datecalldev,0,2).' '.$datecalldev.':00',
+                                'DATE_TAKE_TO' => substr($datecalldev,6,4).'-'.substr($datecalldev,3,2).'-'.substr($datecalldev,0,2).' '.$datecalldev.':00',
                                 'INSTRUCTIONS' => "Обратный забор по накладной $number_nakl. Накладная № " . $number_nakl_ret,
                                 "TRANSPORT_TYPE" => (int)$TRANSPORT_TYPE,
                                 "ISOFFICE" => $isoffice,
@@ -5665,7 +5715,7 @@ if ($arResult['MODE'] != 'close')
                             $arLogResult = ['Response' => $mResult, 'status' => $arRes[0]['status'],
                                 'comment' => $arRes[0]['comment']];
                             $arLog = array_merge($arLogTitle,$arJsRet,$arLogResult);
-                            AddToLogs('callingCourier',$arLogResult);
+                           // AddToLogs('callingCourier',$arLogResult);
                             //    }
                             $_SESSION["MESSAGE"][] = "Вызов курьера на обратный забор №".$id_in_cur_ret." успешно зарегистрирован";
 
@@ -5769,8 +5819,8 @@ if ($arResult['MODE'] != 'close')
                                     break;
                             }
 
-                            $DATE_TAKE_FROM_RET    = substr($datecall,6,4).'-'.substr($datecall,3,2).'-'.substr($datecall,0,2).' '.$_POST['callcourtime_from'].':00';
-                            $DATE_TAKE_TO_RET      = substr($datecall,6,4).'-'.substr($datecall,3,2).'-'.substr($datecall,0,2).' '.$_POST['callcourtime_to'].':00';
+                            $DATE_TAKE_FROM_RET    = substr($datecalldev,6,4).'-'.substr($datecalldev,3,2).'-'.substr($datecalldev,0,2).' '.$_POST['callcourtime_from'].':00';
+                            $DATE_TAKE_TO_RET      = substr($datecalldev,6,4).'-'.substr($datecalldev,3,2).'-'.substr($datecalldev,0,2).' '.$_POST['callcourtime_to'].':00';
 
                             $arDeliverySequenceRet = [
                                 "ID"            => $z_nakl_id_ret,
@@ -5830,13 +5880,11 @@ if ($arResult['MODE'] != 'close')
                         if ($arResult['CURRENT_CLIENT'] == ID_SUKHOI) {
                             set_time_limit(0);
                             $i = 1;
-                            while (true) {
+                            while ($i <= 5) {
                                 $result = $client->SetDocsListClient($arParamsJson);
                                 $mResult = $result->return;
                                 $obj = json_decode($mResult, true);
-                                if ($i > 5){
-                                    break;
-                                }
+
                                 if (isset($obj['Doc_1']["ID"]) && $obj['Doc_1']["ID"] > 0) {
                                     $obj['Doc_1']['DATE'] = date("d.m.Y H:i:s");
                                     break;
@@ -5845,7 +5893,7 @@ if ($arResult['MODE'] != 'close')
                                     $obj['Doc_1']['ERROR'] = "not response from 1c";
                                     $obj['Doc_1']['DATE'] = date("d.m.Y H:i:s");
                                     $obj['Doc_1']['arDeliverySequence'] = convArrayToUTF($arDeliverySequence);
-                                    sleep(2);
+                                    sleep(3);
                                 }
                                 $i++;
                             }
@@ -5868,13 +5916,11 @@ if ($arResult['MODE'] != 'close')
 
                         }else{
                             $i = 1;
-                            while(true) {
+                            while($i <= 5) {
                                 $result = $client->SetDocsListClient($arParamsJson);
                                 $mResult = $result->return;
                                 $obj = json_decode($mResult, true);
-                                if ($i > 10){
-                                    break;
-                                }
+
                                 if (isset($obj['Doc_1']["ID"]) && $obj['Doc_1']["ID"] > 0) {
                                     $obj['Doc_1']['DATE'] = date("d.m.Y H:i:s");
                                     break;
@@ -5883,17 +5929,17 @@ if ($arResult['MODE'] != 'close')
                                     $obj['Doc_1']['ERROR'] = "not response from 1c";
                                     $obj['Doc_1']['DATE'] = date("d.m.Y H:i:s");
                                     $obj['Doc_1']['arDeliverySequence'] = convArrayToUTF($arDeliverySequence);
-                                    sleep(1);
+                                    sleep(3);
                                 }
                                 $i++;
                             }
                             if (!empty($obj['Doc_1']["ID"]) && $obj['Doc_1']["ID"] > 0) {
                                 $ar_res = arFromUtfToWin($obj);
-                                AddToLogs('RESPONSEInvoice1c',
+                               /* AddToLogs('RESPONSEInvoice1c',
                                     [   'Count' => $i,
                                         'Response'=>$ar_res,
                                         'Date'=>date("d.m.Y H:i:s")
-                                    ] );
+                                    ] );*/
                                 CIBlockElement::SetPropertyValuesEx($z_nakl_id, 83,
                                     [
                                         977=>'Y'   // курьер вызван
@@ -5901,7 +5947,8 @@ if ($arResult['MODE'] != 'close')
 
                             }else{
 
-                                $arEventFields['MESS_ERR_1C'] = 'Вызов курьера из ЛК был произведен, но из-за ошибки соединения с 1С в очередь не попал!';
+                                $arEventFields['MESS_ERR_1C'] = 'Вызов курьера из ЛК был произведен,
+                                 но из-за ошибки соединения с 1С в очередь не попал!';
                                 CIBlockElement::SetPropertyValuesEx($z_nakl_id, 83,
                                     [
                                         977=>''    // курьер не вызван
@@ -5910,7 +5957,7 @@ if ($arResult['MODE'] != 'close')
                             // отправляем в 1с возвратную накладную Абсолют страхование
                             if ($WITH_RETURN == 1)  {
                                 $i = 1;
-                                while ($i <= 10) {
+                                while ($i < 5) {
                                     $result = $client->SetDocsListClient($arParamsJsonRet);
                                     $mResult = $result->return;
                                     $obj = json_decode($mResult, true);
@@ -5922,24 +5969,25 @@ if ($arResult['MODE'] != 'close')
                                         $obj['Doc_1']['ERROR'] = "not response from 1c";
                                         $obj['Doc_1']['DATE'] = date("d.m.Y H:i:s");
                                         $obj['Doc_1']['arDeliverySequence'] = convArrayToUTF($arDeliverySequence);
-                                        sleep(1);
+                                        sleep(3);
                                     }
                                     $i++;
                                 }
                                 if (!empty($obj['Doc_1']["ID"]) && $obj['Doc_1']["ID"] > 0) {
                                     $ar_res = arFromUtfToWin($obj);
-                                    AddToLogs('RESPONSEInvoice1c',
+                                   /* AddToLogs('RESPONSEInvoice1c',
                                         [   'Count' => $i,
                                             'Response'=>$ar_res,
                                             'Date'=>date("d.m.Y H:i:s")
-                                        ] );
+                                        ] );*/
                                     CIBlockElement::SetPropertyValuesEx($z_nakl_id_ret, 83,
                                         [
                                             977=>'Y'   // курьер вызван
                                         ]);
 
                                 }else{
-                                    $arEventFields['MESS_ERR_1C'] = 'Вызов курьера на обратный забор из ЛК был произведен, но из-за ошибки в очередь не попал!';
+                                    $arEventFields['MESS_ERR_1C'] = 'Вызов курьера на обратный забор из ЛК был произведен,
+                                     но из-за ошибки в очередь не попал!';
                                     CIBlockElement::SetPropertyValuesEx($z_nakl_id_ret, 83,
                                         [
                                             977=>''    // курьер не вызван
@@ -5953,11 +6001,16 @@ if ($arResult['MODE'] != 'close')
                         if($TRANSPORT_TYPE==1){
                             $event->SendImmediate("NEWPARTNER_LK", "S5", $arEventFields, "N", 290);
                         }
-                        if($arResult['CURRENT_CLIENT'] == ID_SUKHOI) $arEventFields['CITY_RECIPIENT'] = 'Город получателя: ' .
-                            '<strong>' . $CITY_RECIPIENT . '</strong>';
+                        if($arResult['CURRENT_CLIENT'] == ID_SUKHOI) {
+                            $arEventFields['CITY_RECIPIENT'] = 'Город получателя: ' .
+                                '<strong>' . $CITY_RECIPIENT . '</strong>';
+                        }
+
+
+
                         $event->SendImmediate("NEWPARTNER_LK", "S5", $arEventFields, "N", 220, [$fileId]);
                         CFile::Delete($fileId);
-                        AddToLogs('RESPONSEInvoice1c', ['Response'=>$obj,  'Date'=>date("d.m.Y H:i:s")] );
+                       // AddToLogs('RESPONSEInvoice1c', ['Response'=>$obj,  'Date'=>date("d.m.Y H:i:s")] );
 
                         // прошла посылка в нашу очередь НЕ  успешна
 
@@ -6020,7 +6073,7 @@ if ($arResult['MODE'] != 'close')
 
             $arResult['ERRORS'] = (is_array($arResult['ERRORS'])) ? $arResult['ERRORS'] : [];
             $arResult['ERR_FIELDS'] = (is_array($arResult['ERR_FIELDS'])) ? $arResult['ERR_FIELDS'] : [];
-            AddToLogs('InvAddErrors',array_merge($arResult['ERRORS'], $arResult["ERR_FIELDS"]));
+           // AddToLogs('InvAddErrors',array_merge($arResult['ERRORS'], $arResult["ERR_FIELDS"]));
             /* если город добавлен из формы добавления, деактивировать его в базе */
             /* if($_POST['CITY_RECIPIENT_ID']){
                  $id_el = (int)NewQuotes($_POST['CITY_RECIPIENT_ID']);
@@ -6829,12 +6882,12 @@ if ($arResult['MODE'] != 'close')
                             if ($orderTo1c['result'])
                             {
                                 $arManifestTo1c = $orderTo1c['result'];
-                                AddToLogs('ZaprosFromDms',$orderTo1c['result']);
+                              //  AddToLogs('ZaprosFromDms',$orderTo1c['result']);
                             }
                             else
                             {
                                 $arResult["ERRORS"][] = $orderTo1c['errors'];
-                                AddToLogs('ZaprosFromDms', ['error' => $orderTo1c['errors']]);
+                               // AddToLogs('ZaprosFromDms', ['error' => $orderTo1c['errors']]);
                             }
                         }
                     }
@@ -7478,12 +7531,12 @@ if ($arResult['MODE'] != 'close')
                                                 981 => $center_cost_id,
                                                 546 => $value['ContactPerson'],
                                                 547 => $value['PhoneSender'],
-                                                548 => $value['Company'],
+                                                548 => NewQuotes($value['Company']),
                                                 549 => $city_sender,
                                                 551 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => $value['AdressSender']]],
                                                 552 => $value['NameRecipient'],
                                                 553 => $value['PhoneRecipient'],
-                                                554 => $value['CompanyRecipient'],
+                                                554 => NewQuotes($value['CompanyRecipient']),
                                                 555 => $city_recipient,
                                                 557 => $TYPE_DELIVERY,
                                                 560 => $date_call,
@@ -7529,6 +7582,7 @@ if ($arResult['MODE'] != 'close')
 
                                                 $sender_city = trim($value['ShipperCity']);
                                                 $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_city,
+                                                    "ACTIVE" => "Y",
                                                     [
                                                         "LOGIC" => "OR",
                                                         ["=SECTION_ID" => 2545],
@@ -7542,6 +7596,20 @@ if ($arResult['MODE'] != 'close')
                                                 }
                                                 $city_sender = (int)$arFields['ID'];
 
+                                                /* если не Москва 2545 и не область 641, искать в базе первое что найдет */
+                                                if(!$city_sender){
+                                                    $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_city,
+                                                        "ACTIVE" => "Y",
+
+                                                    ];
+                                                    $res = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
+                                                    while($ob = $res->GetNextElement())
+                                                    {
+                                                        $arFields = $ob->GetFields();
+                                                    }
+                                                    $city_sender = (int)$arFields['ID'];
+                                                }
+
                                             }else{
                                                 $city_sender = false;
                                             }
@@ -7549,6 +7617,7 @@ if ($arResult['MODE'] != 'close')
                                             if(!empty($value['ConsigneeCity'])){
                                                 $sender_recipient = trim($value['ConsigneeCity']);
                                                 $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_recipient,
+                                                    "ACTIVE" => "Y",
                                                     [
                                                         "LOGIC" => "OR",
                                                         ["=SECTION_ID" => 2545],
@@ -7562,6 +7631,20 @@ if ($arResult['MODE'] != 'close')
                                                 }
 
                                                 $city_recipient = (int)$arFields['ID'];
+
+                                                /* если не Москва 2545 и не область 641, искать в базе первое что найдет */
+                                                if(!$city_recipient){
+                                                    $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_recipient,
+                                                        "ACTIVE" => "Y",
+
+                                                    ];
+                                                    $res = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
+                                                    while($ob = $res->GetNextElement())
+                                                    {
+                                                        $arFields = $ob->GetFields();
+                                                    }
+                                                    $city_recipient = (int)$arFields['ID'];
+                                                }
 
                                             }else{
                                                 $city_recipient = false;
@@ -7765,7 +7848,7 @@ if ($arResult['MODE'] != 'close')
                                                     $username =  iconv('windows-1251','utf-8',"DMSUser");
                                                     $password =  iconv('windows-1251','utf-8',"1597534682");
                                                     $host_api = "http://92.42.209.242/sd_msk/hs/Delivery/Account/7717739535/7701902970/GetTarif?ves=$resecho_weight&vesv=$total_gabweight&idcity1=$city_sender&idcity2=$city_recipient&deliverytype=c";
-                                                    AddToLogs("SKOLKOVO", ['host_api' => $host_api]);
+                                                  //  AddToLogs("SKOLKOVO", ['host_api' => $host_api]);
                                                 }
 
                                                 if ($host_api){
@@ -7802,14 +7885,14 @@ if ($arResult['MODE'] != 'close')
                                                 545 => $arResult['CURRENT_CLIENT'],  /* id клиента  */
                                                 546 => $value['ShipperFIO'],
                                                 547 => $value['ShipperPhone'],
-                                                548 => $value['ShipperCompany'],
+                                                548 => NewQuotes($value['ShipperCompany']),
                                                 549 => $city_sender,
                                                 550 => $value['ShipperZip'],
                                                 551 =>  ($value['ShipperAddress'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
                                                     $value['ShipperAddress']]]:'',
                                                 552 => $value['ConsigneeFIO'],
                                                 553 => $value['ConsigneePhone'],
-                                                554 => $value['ConsigneeCompany'],
+                                                554 => NewQuotes($value['ConsigneeCompany']),
                                                 555 => $city_recipient,
                                                 556 => $value['ConsigneeZip'],
                                                 557 => $TYPE_DELIVERY,
@@ -7839,9 +7922,16 @@ if ($arResult['MODE'] != 'close')
                                                 737 => false,
                                                 682 => ($PackDescr)?json_encode($PackDescr):'',
                                                 979 => $sum_dev,
-                                                1082 => ($value['SpecDelivery'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
-                                                    $value['SpecDelivery']]]:'',
+                                                
                                             ];
+
+                                            if(empty($value['Description'])){
+                                                $resecho[1082] = ['VALUE' => ['TYPE' => 'text', 'TEXT' =>
+                                                    $value['SpecDelivery']]];
+                                            }else{
+                                                $resecho[1082] = ['VALUE' => ['TYPE' => 'text', 'TEXT' =>
+                                                    $value['Description']]];
+                                            }
                                             //dump($resecho);
                                             //exit;
                                             $el = new CIBlockElement;
@@ -7902,7 +7992,7 @@ if ($arResult['MODE'] != 'close')
         }
         if (count($arLogs) > 0)
         {
-            AddToLogs('InvoicesUpload',$arLogs);
+           // AddToLogs('InvoicesUpload',$arLogs);
         }
     }
     /*  -0.1 if end */
@@ -7919,7 +8009,7 @@ if ($arResult['MODE'] != 'close')
             if($res){
 
                 $arResult['MESSAGE'][] = "Накладная  $name_invoice успешно удалена";
-                AddToLogs('InvoicesDelete', $arResult);
+              //  AddToLogs('InvoicesDelete', $arResult);
                 /*  $event = new CEvent;
                   $event->SendImmediate("NEWPARTNER_LK", "S5", [
                       'COMPANY'=>$arResult['CURRENT_CLIENT_ADDON']['NAME'],
@@ -8004,7 +8094,7 @@ if ($arResult['MODE'] != 'close')
         $number_nakl = $arResult['REQUEST']['name'];
 
         $result = GetInfoArr(false, $z_id, 83 );
-        AddToLogs('arDeliverySequence', ['comp2.4-7851'=>$result] );
+       // AddToLogs('arDeliverySequence', ['comp2.4-7851'=>$result] );
         /* записать вызов в базу */
         $id_in_cur = GetMaxIDIN(87, 7);
         $arHistory = [['date' => date('d.m.Y H:i:s'), 'status' => 315,
@@ -8043,12 +8133,15 @@ if ($arResult['MODE'] != 'close')
         $zv_id = $el->Add($arLoadProductArray);
 
         /* сформировать инструкции для вызова */
-        $newInstructions = NewQuotes($_POST['INSTRUCTIONS']);
+        $newInstructions = '';
+        $newInstrData = GetInfoArr(false, $z_id, 83);
+        if($newInstrData['PROPERTY_570']['TEXT']){
+            $newInstructions = $newInstrData['PROPERTY_570']['TEXT'];
+        }
         //' '.NewQuotes($_POST['INSTRUCTIONS']).'  '.'ДОСТАВИТЬ ДО ДАТЫ: '.$date_to.'. ';
         if (strlen($newInstructions)) {
             $newInstructions .= '. ';
         }
-
         $newInstructions .= '  ВЫЗОВ КУРЬЕРА: ' . $arResult['REQUEST']['callcourcomment'] .
             ' с ' . $arResult['REQUEST']['callcourtime_from'] . ' до ' . $arResult['REQUEST']['callcourtime_to '] . '.';
         if ($date_to) {
@@ -8179,7 +8272,7 @@ if ($arResult['MODE'] != 'close')
         $arLogTitle = ['Title' => 'Вызов курьера из накладной'];
         $arLogResult = ['Response' => $mResult, 'status' => $arRes[0]['status'], 'comment' => $arRes[0]['comment']];
         $arLog = array_merge($arLogTitle,$arJs,$arLogResult);
-        AddToLogs('callingCourier',$arLogResult);
+       // AddToLogs('callingCourier',$arLogResult);
 
 
 
@@ -8284,7 +8377,7 @@ if ($arResult['MODE'] != 'close')
             "DocNumber" => $number_nakl,
             "TRANSPORT_TYPE" => (int)$result['PROPERTIES']['TRANSPORT_TYPE']['VALUE'],
         ];
-        AddToLogs('arDeliverySequence', ['comp2.4-8128'=>$arDeliverySequence] );
+      //  AddToLogs('arDeliverySequence', ['comp2.4-8128'=>$arDeliverySequence] );
         $arDeliverySequence = convArrayToUTF($arDeliverySequence);
         $arParamsJson = [
             'ListOfDocs' => "[".json_encode($arDeliverySequence)."]"
@@ -8300,7 +8393,7 @@ if ($arResult['MODE'] != 'close')
                 $obj['Doc_1']['DATE'] = date("d.m.Y H:i:s");
                 break;
             } else {
-                sleep(2);
+                sleep(3);
             }
             $i++;
         }
