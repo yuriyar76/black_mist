@@ -36,12 +36,15 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
         $newarr[$key]['center_cost'] = $value['center_cost'];
         $newarr[$key]['tarif'] = $value['Tarif'];
         $newarr[$key]['PROPERTY_CITY_RECIPIENT_NAME'] = $value['PROPERTY_CITY_RECIPIENT_NAME'];
+        $newarr[$key]['PROPERTY_CITY_RECIPIENT_ID'] = $value['PROPERTY_CITY_RECIPIENT_ID'];
         $newarr[$key]['PROPERTY_NAME_RECIPIENT_VALUE'] = $value['PROPERTY_NAME_RECIPIENT_VALUE'];
         $newarr[$key]['PROPERTY_COMPANY_RECIPIENT_VALUE'] = $value['PROPERTY_COMPANY_RECIPIENT_VALUE'];
         $newarr[$key]['PROPERTY_CITY_SENDER_NAME'] = $value['PROPERTY_CITY_SENDER_NAME'];
+        $newarr[$key]['PROPERTY_CITY_SENDER_ID'] = $value['PROPERTY_CITY_SENDER_ID'];
         $newarr[$key]['PROPERTY_NAME_SENDER_VALUE'] = $value['PROPERTY_NAME_SENDER_VALUE'];
         $newarr[$key]['PROPERTY_COMPANY_SENDER_VALUE'] = $value['PROPERTY_COMPANY_SENDER_VALUE'];
         $newarr[$key]['PROPERTY_WEIGHT_VALUE'] = $value['PROPERTY_WEIGHT_VALUE'];
+        $newarr[$key]['PROPERTY_OB_WEIGHT'] = $value['PROPERTY_OB_WEIGHT'];
     }
 
   $new_report = [];
@@ -63,16 +66,116 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
 //var_dump($arResult['IndividualPrice']);
  ?>
 <script type="text/javascript">
+    <?php if($USER->isAdmin()):?>
 
-    <?php
+    // обновление нвкладной из списка и списка накладных (новый функционал для Абсолют страхование)
+    $(document).ready(function () {
+        // ...накладной
+        $('.fixed-table-container').on('click', function (e) {
 
-    if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 62537553 ):?>
+            let el = e.target;
+            if(el.getAttribute('data-number')){
+                let num = el.getAttribute('data-number');
+                $('#report_as_modal .message_title').text('Обновление накладной ' + num);
+                $('#report_as_modal').modal('show');
+                let id_company = <?=$arResult['CURRENT_CLIENT']?>;
+                let data = {
+                    'number': num,
+                    'id_company': id_company,
+                };
+                console.log(num);
+                $.ajax({
+                    url: "/api/update_invoice_from_1c.php?update=" + num,
+                    type: "post",
+                    data: data,
+                    dataType: "json",
+                    success: function (data) {
+                        $('#report_as_modal').modal('hide');
+                        if(data.error){
+                            $('#report_as_modal .message_title').text('Ошибка обновления...');
+                            $('#report_as_modal .preloader').text(data.error);
+                            $('#report_as_modal').modal('show');
+                            return false;
+                        }
+                        if(data.update) {
+                            let stat = data.status.trim();
+                            if (stat) {
+                                //console.log('Статус - '+ typeof(data.status) + ' ' + data.stat.length);
+                                let mod = $(`#modal_tr_${data.update[0]} table tbody`);
+                                $(`#stat_${data.number}`).text(data.status); // замена  статуса
+                                $(`#stat_date_${data.number}`).text('');
+
+
+                                let events = JSON.parse(data.list);
+                                let htmlTable = '';
+                                $.each(events, function (i, list) {
+                                    $.each(list, function (i, event) {
+                                        let dateEvent = event.DateEvent + ' ' + event.TimeEvent;
+                                        let eventM = event.Event;
+                                        let infEvent = event.InfoEvent;
+                                        htmlTable += `<tr>
+                                                        <td width="30%">${dateEvent}</td>
+                                                        <td width="35%">${eventM}</td>
+                                                        <td width="35%">${infEvent}</td>
+                                                    </tr>`;
+
+                                });
+                            });
+                            mod.html(htmlTable);  // замена данных в модальном окне статуса
+                        }
+
+                        }
+                    }
+                });
+            }
+
+        });
+
+
+        // ...списка накладных
+        $('#update_from_1c').on('click', function () {
+            let date_from = $('#list-from-date').val();
+            let date_to = $('#list-to-date').val();
+            let id_company = <?=$arResult['CURRENT_CLIENT']?>;
+            let data = {
+                'dateFrom': date_from,
+                'date_to': date_to,
+                'id_company': id_company
+            };
+            $('#report_as_modal .message_title').text('Обновление списка накладных...');
+            $('#report_as_modal').modal('show');
+            console.log(data);
+            $.ajax({
+                url: "/api/update_invoice_from_1c.php",
+                type: "post",
+                data: data,
+                dataType: "json",
+                success: function (data) {
+                    $('#report_as_modal').modal('hide');
+                    if(data.error){
+                        $('#report_as_modal .message_title').text('Ошибка обновления...');
+                        $('#report_as_modal .preloader').text(data.error);
+                        $('#report_as_modal').modal('show');
+                        return false;
+                     }
+                    if(data.update){
+                        location.reload();
+                    }
+                }
+            });
+        });
+    });
+   <?php endif;?>
+
+    <?php if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 62537553 ):?>
 
     $(document).ready(function() {
         // вывод формы отчета абсолют страхование и Росгазификация
         $('#report_as').on('click', function(){
             jsonStrPhp = <?=$arraymergutfjson?>;
             jsonStr = JSON.stringify(jsonStrPhp);
+            $('#report_as_modal .message_title').text('Формирование отчета...');
+            $('#report_as_modal').modal('show');
            // console.log(jsonStr);
             $.ajax({
                 url: "/api/reports.php?report_as=Y",
@@ -80,9 +183,11 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
                 data: {'numbersphp': jsonStr},
                 dataType: "json",
                 success: function (data) {
+                    $('#report_as_modal').modal('hide');
                     if(data.path){
                         window.open(data.path, '_blank');
                     }else{
+
                         alert(' Ошибка формирования отчета. Обратитесь в техподдержку ');
                     }
 
@@ -92,6 +197,8 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
         $('#report_from_1c').on('click', function(){
             var jsonStrPhp = $('form[name="filterform"]').serializeArray();
             jsonStr = JSON.stringify(jsonStrPhp);
+            console.log(jsonStrPhp);
+
             $('#modal-for-alert').modal('show');
             $.ajax({
                 url: "/api/GetSum.php?report_1=Y",
@@ -619,12 +726,29 @@ if($arResult['CURRENT_CLIENT'] == 56103010 || $arResult['CURRENT_CLIENT'] == 625
     <?php
     endif;
     ?>
+
+
+
 </script>
 <style>
     .sumdelivery{
         display: block;
     }
 </style>
+
+<div id="report_as_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div style=" display: flex; flex-direction: column; align-items: center; justify-content: center" class="modal-content">
+             <h5 class="message_title"></h5>
+
+            <div style=" height: 50px;" class="preloader">
+                <img src="/bitrix/templates/lk-newpartner/images/ajax-loader.gif" alt="">
+            </div>
+
+        </div>
+
+    </div>
+</div>
 
 <!-- Modal вызов курьера -->
 <div class="modal fade" id="myCallCurier_ids" tabindex="-1" role="dialog"
@@ -762,11 +886,11 @@ if ($arResult['OPEN'])
     <?php if($USER->isAdmin()){
         $finish = microtime(true);
         $delta = $finish - $start;
-        AddToLogs('test_logs', ['time_1' => $delta,
-            'mess' => 'время до начала вывода']);
+        //AddToLogs('test_logs', ['time_1' => $delta,
+         //   'mess' => 'время до начала вывода']);
 
         $start = microtime(true);
-        AddToLogs('test_logs', ['time_start' => $start, 'mess' => 'Начало вывода шаблона']);
+       // AddToLogs('test_logs', ['time_start' => $start, 'mess' => 'Начало вывода шаблона']);
     }
     ?>
     <span id = "current_client" style="visibility: hidden; font-size: 1px"><?=$arResult['CURRENT_CLIENT'] ?></span>
@@ -776,7 +900,8 @@ if ($arResult['OPEN'])
                 <div style="display:flex; flex-direction: row; justify-content: start; margin-left: 5px;" class="btn-group">
                     <?php if ((count($arResult['REQUESTS']) > 0) ||  (count($arResult['ARCHIVE']) > 0)) :?>
                     <form style="display: flex; flex-direction: row;" action="<?=$arParams['LINK'];?>index.php?mode=list_xls&pdf=Y" method="post"
-                          name="xlsform"  target="_blank">  <input type="hidden" name="DATA"  value="">
+                          name="xlsform"  target="_blank">
+                        <input type="hidden" name="DATA"  value="">
                         <?php endif;?>
                         <?php if( !$_SESSION['СontractEndDate']):?>
                             <div class="btn-group" role="group">
@@ -785,6 +910,7 @@ if ($arResult['OPEN'])
                                     Новая накладная
                                 </a>
                             </div>
+
                             <div class="btn-group" role="group">
                                 <a href="<?=$arParams['LINK'];?>index.php" class="btn btn-default" data-toggle="tooltip"
                                    data-placement="bottom"  title="Обновить список накладных">
@@ -809,6 +935,14 @@ if ($arResult['OPEN'])
                         <?php endif;?>
                         <?php if ((count($arResult['REQUESTS']) > 0) || (count($arResult['ARCHIVE']) > 0)) :?>
                     </form>
+                <?php if($USER->isAdmin()):?>
+                    <div class="btn-group" role="group">
+                        <button id="update_from_1c" class="btn btn-default" data-toggle="tooltip"
+                                data-placement="bottom"  title="Обновить список накладных">
+                            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                <?php endif;?>
                 <?php endif;?>
                     <?php
                     // отчет для Абсолют страхование (56103010) и АО «Росгазификация» (62537553)
@@ -896,7 +1030,8 @@ if ($arResult['OPEN'])
                 <?php
                 if ($arResult['LIST_OF_CLIENTS']):?>
                     <div class="form-group">
-                        <select name="client" size="1" class="form-control selectpicker" id="client" onChange="ChangeClient();" data-live-search="true" data-width="800px">
+                        <select name="client" size="1" class="form-control selectpicker" id="client"
+                                onChange="ChangeClient();" data-live-search="true" data-width="800px">
                             <option value="0"></option>
                             <?php
                             foreach ($arResult['LIST_OF_CLIENTS'] as $k => $v)
@@ -1214,8 +1349,7 @@ if ($arResult['OPEN'])
                         $arResult['CURRENT_CLIENT'] == 56389269 ||
                         $arResult['CURRENT_CLIENT'] == 56389270 ||
                         $arResult['CURRENT_CLIENT'] == 56389272 ||
-                        $arResult['CURRENT_CLIENT'] == 49540621 ||
-                        $USER->isAdmin()):?>
+                        $arResult['CURRENT_CLIENT'] == 49540621 ):?>
                         <td></td>
                         <?php endif;?>
                     <td class="a3" data-halign="center" data-align="center" data-valign="center">
@@ -1536,7 +1670,6 @@ if($USER->isAdmin()){
                             <td class="b3"  data-halign="center" data-align="center" data-valign="center">
                                 <?php // выводим накладные в печатной форме для "сухого"
                                 if (strlen(trim($r['NAME']))) {?>
-
                                     <?php if (($arResult['CURRENT_CLIENT'] == ID_SUKHOI) ||
                                         ($arResult['CURRENT_CLIENT'] == ID_TEST))  { ?>
                                         <a href="/index.php?mode=invoice1c_printsukhoi&f001=<?=$r['NAME'];?>&printsukhoi=Y&print=Y" target="_blank">
@@ -1573,7 +1706,6 @@ if($USER->isAdmin()){
                                     </a>
                                 <?php endif;?>
                             </td>
-
                             <td >
                                 <?php if(!empty($r['SCAN_DOCS_PATH'])):?>
                                     <a  data-toggle="modal"
@@ -1602,7 +1734,13 @@ if($USER->isAdmin()){
                             <?php endif;?>
                             <td  class="b5" >
                                 <span class="numberinvoice" <?php if($r['state_text'] === 'Доставлено'){echo " delivered='Y'";}?>>
-                                    <?=$r['NAME'];?>
+
+                                    <?php if($USER->isAdmin()):?>
+                                        <span style="cursor:pointer; text-decoration: underline;"  aria-hidden="true" data-toggle="tooltip" data-number = "<?=$r['NAME'];?>"
+                                           data-placement="left" title="Обновить накладную"><?=$r['NAME'];?></span>
+                                    <?php else:?>
+                                        <?=$r['NAME'];?>
+                                    <?php endif;?>
                                 </span>
                             </td>
                             <?php
@@ -1705,15 +1843,15 @@ if($USER->isAdmin()){
                             <td   class="b17"  ><?=WeightFormat($r['PROPERTY_WEIGHT_VALUE'], false);?></td>
                             <td   class="b18" ><?=WeightFormat($r['PROPERTY_OB_WEIGHT'],false);?></td>
                             <td   class="b19" ><?=WeightFormat($r['PROPERTY_RATE_VALUE'],false);?></td>
-
                             <?php
-                            $obElement = CIBlockElement::GetByID($r['ID']);
-                            if($arEl = $obElement->GetNext())
-                            {
-                                $rsUser = CUser::GetByID($arEl["CREATED_BY"]);
-                                $arUser = $rsUser->Fetch();
-                                $Property_creator_name = $arUser["NAME"]." ".$arUser["LAST_NAME"];
-                            }
+                                $obElement = CIBlockElement::GetByID($r['ID']);
+                                if($arEl = $obElement->GetNext())
+                                {
+                                    $rsUser = CUser::GetByID($arEl["CREATED_BY"]);
+                                    $arUser = $rsUser->Fetch();
+                                    $Property_creator_name = $arUser["NAME"]." ".$arUser["LAST_NAME"];
+                                }
+
                             ?>
                             <td class="b20"><?=$Property_creator_name;?></td>
                             <td class="b21">
@@ -1845,7 +1983,8 @@ if($USER->isAdmin()){
                             <div class="row">
                                 <div class="col-md-12">
                                     <p>&nbsp;</p>
-                                    <table cellpadding="5" bordercolor="#ccc" border="1" width="600" style=" border-collapse: collapse;" class="show_tracks table table-striped table-hover">
+                                    <table cellpadding="5" bordercolor="#ccc" border="1" width="600" style=" border-collapse: collapse;"
+                                           class="show_tracks table table-striped table-hover">
                                         <thead>
                                         <tr>
                                             <th colspan="3">Трек отправления <?=$r['NAME'];?></th>

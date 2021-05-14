@@ -7,10 +7,16 @@ include($_SERVER['DOCUMENT_ROOT'].'/bitrix/_black_mist/PhpExcel/Classes/PHPExcel
 class ClientReports extends IndexComponent
 {
     protected $get = [];
-    protected $data = [];
+    public $data = [];
     protected $numbers = [];
     public $dataJson;
 
+    /**
+     * ClientReports constructor.
+     * @param array $data
+     * @param array $get
+     * @throws Exception
+     */
     public function __construct(array $data, array $get=[])
     {
         parent::__construct();
@@ -18,6 +24,10 @@ class ClientReports extends IndexComponent
         $this->setData($data);
     }
 
+    /**
+     * @param array $data
+     * @throws Exception
+     */
     protected function setData(array $data)
     {
         if ($this->get['report_as'] === 'Y'){
@@ -25,7 +35,7 @@ class ClientReports extends IndexComponent
             $result = json_decode($data['numbersphp'], true);
             foreach($result as $value){
                 $key = $value['NAME'];
-                $res[$key] = htmlspecialcharsEx($value);
+                $res[$key] = $value;
                 $numbers[] = $value['NAME'];
             }
             $this->data = NPAllFunc::arrUtfToWin($res);
@@ -42,7 +52,8 @@ class ClientReports extends IndexComponent
             "ACTIVE" => "Y"
         ];
         $arSelect = [
-            "ID", "NAME", "PROPERTY_SUMM_DEV", "PROPERTY_CENTER_EXPENSES.NAME"
+            "ID", "NAME", "PROPERTY_SUMM_DEV", "PROPERTY_INN_RECIPIENT", "PROPERTY_INN_SENDER",
+            "PROPERTY_CENTER_EXPENSES.NAME"
         ];
         $resArr =  NPAllFunc::GetInfoArr(false, false, 83, $arSelect, $arFilter, false);
         foreach($resArr as $key => $value){
@@ -52,10 +63,17 @@ class ClientReports extends IndexComponent
                         979 => $this->data[$value['NAME']]['tarif']
                     ]);
                 $this->data[$value['NAME']]['PROPERTY_CENTER_EXPENSES_NAME'] = $value['PROPERTY_CENTER_EXPENSES_NAME'];
+                $this->data[$value['NAME']]['PROPERTY_INN_RECIPIENT_VALUE'] = $value['PROPERTY_INN_RECIPIENT_VALUE'];
+                $this->data[$value['NAME']]['PROPERTY_INN_SENDER_VALUE'] = $value['PROPERTY_INN_SENDER_VALUE'];
         }
 
     }
 
+
+
+    /**
+     * @return $this
+     */
     public function repoEx()
 {
     if ($this->get['report_as'] === 'Y'){
@@ -114,7 +132,7 @@ class ClientReports extends IndexComponent
             ]
         ];
         $i = 1;
-        $arJ = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+        $arJ = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N'];
 
         foreach  ($arData as $items)
         {
@@ -124,7 +142,13 @@ class ClientReports extends IndexComponent
             {
 
                 $num_sel = $arJ[$n].$i;
-                $aSheet->setCellValue($num_sel,$val);
+
+                if(preg_match('/^G.+/', $num_sel) || preg_match('/^K.+/', $num_sel)){
+                    $aSheet->setCellValueExplicit($num_sel, $val, PHPExcel_Cell_DataType::TYPE_STRING);
+                }else{
+                    $aSheet->setCellValue($num_sel,$val);
+                }
+
                 $n++;
             }
             $i++;
@@ -133,10 +157,14 @@ class ClientReports extends IndexComponent
         foreach ($arJ as $cc)
         {
             $aSheet->getColumnDimension($cc)->setWidth(17);
+            if($cc === 'F' || $cc === 'J'){
+                $aSheet->getColumnDimension($cc)->setWidth(25);
+            }
+
         }
-        $aSheet->getStyle('A1:L1')->applyFromArray($head_style);
-        $aSheet->getStyle('A1:L'.$i)->getAlignment()->setWrapText(true);
-        $aSheet->getStyle('A1:L'.$i)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP);
+        $aSheet->getStyle('A1:N1')->applyFromArray($head_style);
+        $aSheet->getStyle('A1:N'.$i)->getAlignment()->setWrapText(true);
+        $aSheet->getStyle('A1:N'.$i)->getAlignment()->setVertical(PHPExcel_Style_Alignment::VERTICAL_TOP);
         $objwriter = new PHPExcel_Writer_Excel5($pExcel);
         $path = $_SERVER['DOCUMENT_ROOT'] . "/report_" . date('d.m.Y').'.xls';
         $objwriter->save($path);

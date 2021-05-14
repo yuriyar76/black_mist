@@ -8305,19 +8305,6 @@ function addAgentSubscription($type, $sf_EMAIL, $userid)
 }
 
 
-function stripWhitespaces($string) {
-    $old_string = $string;
-    $string = strip_tags($string);
-    $string = preg_replace('/([^\pL\pN\pP\pS\pZ])|([\xC2\xA0])/u', ' ', $string);
-    $string = str_replace('  ',' ', $string);
-    $string = trim($string);
-
-    if ($string === $old_string) {
-        return $string;
-    } else {
-        return stripWhitespaces($string);
-    }
-}
 
 
 /***Удаление знаков табуляции и переноса строки****/
@@ -8454,7 +8441,7 @@ function AddToLogs($folder = '', $params = array(), $mainfolder = '')
     file_put_contents($mainfolder, print_r($params, true), FILE_APPEND);
     return true;
 }
-
+/* смена кодировки */
 function convArrayToUTF($obj) {
     $arRes = array();
     foreach ($obj as $k => $v)

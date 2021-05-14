@@ -465,7 +465,7 @@ abstract class NPAllFunc
                 "PROPERTY_DEFAULT_DELIVERY", "PROPERTY_DEFAULT_CASH", "PROPERTY_ID_IN", "PROPERTY_LEGAL_NAME", "PROPERTY_CONTRACT",
                 "PROPERTY_ACTING", "PROPERTY_CITY.NAME", "PROPERTY_PREFIX", "PROPERTY_FOLDER", "PROPERTY_PREFIX_REPORTS",
                 "PROPERTY_RESPONSIBLE_PERSON", "PROPERTY_LEGAL_NAME_FULL", "PROPERTY_COST_ORDERING", "PROPERTY_TYPE",
-                "PROPERTY_UK", "PROPERTY_ON_PAGE", "PROPERTY_TYPE_IM", "PROPERTY_RESPONSIBLE_PERSON_IN", "PROPERTY_REPORT_SIGNS",
+                "PROPERTY_UK", "PROPERTY_UK.ID", "PROPERTY_SETTINGS.ID", "PROPERTY_ON_PAGE", "PROPERTY_TYPE_IM", "PROPERTY_RESPONSIBLE_PERSON_IN", "PROPERTY_REPORT_SIGNS",
                 'PROPERTY_TARIFF_TD', 'PROPERTY_CODE_1C', 'PROPERTY_COEFFICIENT_VW', "PROPERTY_TYPE_WORK_BRANCHES", "PROPERTY_SHOW_LIMITS",
                 "PROPERTY_BY_AGENT", "PROPERTY_INN_REAL", "PROPERTY_ACCOUNT_LK_SETTINGS", "PROPERTY_BY_AGENT.NAME",
                 'PROPERTY_AVAILABLE_WH_WH', 'PROPERTY_AVAILABLE_CALL_COURIER', 'PROPERTY_LEGAL_NAME_NDS',
@@ -484,7 +484,7 @@ abstract class NPAllFunc
             $a = $ob->GetFields();
             $a['PROPERTY_CITY'] = self::GetFullNameOfCity($a['PROPERTY_CITY_VALUE']);
             $a['PROPERTY_DEFAULT_CITY'] = self::GetFullNameOfCity($a['PROPERTY_DEFAULT_CITY_VALUE']);
-            $db_props = CIBlockElement::GetProperty(40, $a["PROPERTY_UK_VALUE"], array("sort" => "asc"),
+            $db_props = CIBlockElement::GetProperty(40, $a["PROPERTY_UK_VALUE"], ["sort" => "asc"],
                 ["CODE"=>"LEGAL_NAME"]);
             if($ar_props = $db_props->Fetch())
             {
@@ -680,17 +680,23 @@ abstract class NPAllFunc
         return $b1;
     }
 
-    static public function soapLink($idUk)
+    static public function soapLink($idUk, $settings_id=null)
     {
-        $arrUK = self::GetInfoArr(false, $idUk, 40, [
-            'ID',
-            "NAME",
-            "ACTIVE",
-            "PROPERTY_INN",
-            "PROPERTY_INN_REAL",
-            "PROPERTY_SETTINGS.ID"
-        ]);
-        $uCompSettingsId = $arrUK['PROPERTY_SETTINGS_ID'];
+        //2197189
+        if(!$settings_id){
+            $arrUK = self::GetInfoArr(false, $idUk, 40, [
+                'ID',
+                "NAME",
+                "ACTIVE",
+                "PROPERTY_INN",
+                "PROPERTY_INN_REAL",
+                "PROPERTY_SETTINGS.ID"
+            ]);
+            $uCompSettingsId = $arrUK['PROPERTY_SETTINGS_ID'];
+        }else{
+            $uCompSettingsId = $settings_id;
+        }
+        // 2378056
         $arrUKSettings = self::GetInfoArr(false,  $uCompSettingsId, 47, [
             'ID',
             "NAME",

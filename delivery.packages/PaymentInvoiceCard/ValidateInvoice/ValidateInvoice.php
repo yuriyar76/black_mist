@@ -18,9 +18,9 @@ class ValidateInvoice extends Model implements InvoiceModelInterface
 
     private function parseParams(array $params)
     {
-        foreach($params as $value){
-            foreach ($value as $k=>$val){
-                $this->data[$k] = iconv('utf-8','windows-1251',$val);
+        foreach ($params as $value) {
+            foreach ($value as $k => $val) {
+                $this->data[$k] = iconv('utf-8', 'windows-1251', $val);
             }
         }
 
@@ -29,9 +29,8 @@ class ValidateInvoice extends Model implements InvoiceModelInterface
 
     public function getInvoice()
     {
-        if($this->data[self::NUMBER_Z]){
-              $this->data[self::NUMBER_Z . '_value'] = Model::getDataNumber($this);
-
+        if ($this->data[self::NUMBER_Z]) {
+            $this->data[self::NUMBER_Z . '_value'] = Model::getDataNumber($this);
         }
         $this->creator();
     }
@@ -39,18 +38,51 @@ class ValidateInvoice extends Model implements InvoiceModelInterface
     private function creator()
     {
         $id_user = (int)$this->data[self::NUMBER_Z . '_value']['PROPERTIES']['CREATOR']['VALUE'];
-           $users = CUser::GetList($by="id", $order="asc",
+        $users = CUser::GetList($by = "id", $order = "asc",
             ['ID' => $id_user],
             ['FIELDS' => ['ID', 'EMAIL', 'PERSONAL_PHONE']]
-            );
-            $user = $users->Fetch();
-            $this->data['user'] = $user;
-            return $this;
+        );
+        $user = $users->Fetch();
+        $this->data['user'] = $user;
+        return $this;
     }
 
+    public static function GetDocInfoForPayment(array $jsonParam, array $param)
+    {
+        $client = NPAllFunc::soap_inc();
+        $result = $client->GetDocInfoForPayment($jsonParam);
+        $mResult = $result->return;
+        $res = json_decode($mResult, true);
+        $sumRes = str_replace('В ', '', $res['Sum']);
+        $res['Sum'] = $sumRes;
+        $res = arFromUtfToWin($res);
+        if ($res['Error']) {
+            return json_encode(convArrayToUTF(['error' => $res['Error']]));
+        }
+        if (!empty($res['Sum'])) {
+            $number = '';
+            $sum = (float)str_replace(',', '.', $res['Sum']);
+            $inn = (int)$res['Organization'];
+            if ($inn == '7718905538') {
+                $org = 'MSD';
+            } elseif ($inn == '7717739535') {
+                $org = 'NP';
+            }
+            $arJsonP = [
+                'Sum' => $sum,
+                'Org' => $org,
+                'Number_inv' => $number,
+                'Number_inv_z' => $param['number_z'],
+                'Email' => $param['email'],
+                'Phone' => $param['phone']
+            ];
+            return ['validate'=>1, 'dataJson' => json_encode(convArrayToUTF($arJsonP))];
 
+        }
+        return json_encode(convArrayToUTF(['error' => 'Нет данных о сумме заявки']));
+
+    }
 }
-
 // {"mess":{"data":[{"number_z":"\u0424\u041b-06836"}]}}
 
 /*

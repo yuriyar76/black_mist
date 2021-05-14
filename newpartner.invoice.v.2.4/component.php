@@ -780,7 +780,7 @@ if ($arResult['MODE'] != 'close')
                         }
                         //TO_DELIVER_BEFORE_DATE 772
                         //$reqv['PROPERTY_TO_DELIVER_BEFORE_DATE_VALUE'],
-                        $cell = array(
+                        $cell = [
                             '',
                             $reqv['NAME'],
                             $reqv['PROPERTY_COMPANY_SENDER_VALUE'],
@@ -808,7 +808,7 @@ if ($arResult['MODE'] != 'close')
                             $reqv['PROPERTY_FOR_PAYMENT_VALUE'],
                             $reqv['PROPERTY_COST_VALUE'],
                             $reqv['PROPERTY_INSTRUCTIONS_VALUE']['TEXT']
-                        );
+                        ];
                         $arCells[] = $cell;
                         $arCitySENDER = GetFullNameOfCity($reqv['PROPERTY_CITY_SENDER_VALUE'], false, true);
                         $arCityRECIPIENT = GetFullNameOfCity($reqv['PROPERTY_CITY_RECIPIENT_VALUE'], false, true);
@@ -818,23 +818,23 @@ if ($arResult['MODE'] != 'close')
                         $reqv['TO_1C_DELIVERY_PAYER'] = 'О';
                         $reqv['TO_1C_PAYMENT_TYPE'] = 'Б';
                         $reqv['TO_1C_DELIVERY_CONDITION'] = 'А';
-                        $property_enums = CIBlockPropertyEnum::GetList(array("SORT"=>"ASC"), array("IBLOCK_ID"=>83, "CODE"=>"TYPE_DELIVERY", "ID" => $reqv['PROPERTY_TYPE_DELIVERY_ENUM_ID']));
+                        $property_enums = CIBlockPropertyEnum::GetList(["SORT"=>"ASC"], ["IBLOCK_ID"=>83, "CODE"=>"TYPE_DELIVERY", "ID" => $reqv['PROPERTY_TYPE_DELIVERY_ENUM_ID']]);
                         if($enum_fields = $property_enums->GetNext())
                         {
                             $reqv['TO_1C_DELIVERY_TYPE'] = $enum_fields['XML_ID'];
                         }
-                        $property_enums = CIBlockPropertyEnum::GetList(array("SORT"=>"ASC"), array("IBLOCK_ID"=>83, "CODE"=>"TYPE_PAYS", "ID" => $reqv['PROPERTY_TYPE_PAYS_ENUM_ID']));
+                        $property_enums = CIBlockPropertyEnum::GetList(["SORT"=>"ASC"], ["IBLOCK_ID"=>83, "CODE"=>"TYPE_PAYS", "ID" => $reqv['PROPERTY_TYPE_PAYS_ENUM_ID']]);
                         if($enum_fields = $property_enums->GetNext())
                         {
                             $reqv['TO_1C_DELIVERY_PAYER'] = $enum_fields['XML_ID'];
                         }
 
-                        $property_enums = CIBlockPropertyEnum::GetList(array("SORT"=>"ASC"), array("IBLOCK_ID"=>83, "CODE"=>"PAYMENT", "ID" => $reqv['PROPERTY_PAYMENT_ENUM_ID']));
+                        $property_enums = CIBlockPropertyEnum::GetList(["SORT"=>"ASC"], ["IBLOCK_ID"=>83, "CODE"=>"PAYMENT", "ID" => $reqv['PROPERTY_PAYMENT_ENUM_ID']]);
                         if($enum_fields = $property_enums->GetNext())
                         {
                             $reqv['TO_1C_PAYMENT_TYPE'] = $enum_fields['XML_ID'];
                         }
-                        $property_enums = CIBlockPropertyEnum::GetList(array("SORT"=>"ASC"), array("IBLOCK_ID"=>83, "CODE"=>"WHO_DELIVERY", "ID" => $reqv['PROPERTY_WHO_DELIVERY_ENUM_ID']));
+                        $property_enums = CIBlockPropertyEnum::GetList(["SORT"=>"ASC"], ["IBLOCK_ID"=>83, "CODE"=>"WHO_DELIVERY", "ID" => $reqv['PROPERTY_WHO_DELIVERY_ENUM_ID']]);
                         if($enum_fields = $property_enums->GetNext())
                         {
                             $reqv['TO_1C_DELIVERY_CONDITION'] = $enum_fields['XML_ID'];
@@ -1140,10 +1140,12 @@ if ($arResult['MODE'] != 'close')
                     "DATE_CREATE",
                     "PROPERTY_COMPANY_SENDER",
                     "PROPERTY_CITY_SENDER.NAME",
+                    "PROPERTY_CITY_SENDER",
                     "PROPERTY_COMPANY_RECIPIENT",
                     "PROPERTY_NAME_RECIPIENT",
                     "PROPERTY_NAME_SENDER",
                     "PROPERTY_CITY_RECIPIENT.NAME",
+                    "PROPERTY_CITY_RECIPIENT",
                     "PROPERTY_PLACES",
                     "PROPERTY_WEIGHT",
                     "PROPERTY_DIMENSIONS",
@@ -1167,6 +1169,8 @@ if ($arResult['MODE'] != 'close')
 
                 $a = $ob->GetFields();
 
+                $a['PROPERTY_CITY_SENDER_ID'] =  $a['PROPERTY_CITY_SENDER'];
+                $a['PROPERTY_CITY_RECIPIENT_ID'] =  $a['PROPERTY_CITY_RECIPIENT'];
                 $a['ColorRow'] = '';
                 $a['state_icon'] = '<span class="glyphicon glyphicon-new-window" aria-hidden="true" data-toggle="tooltip" data-placement="right" title=""></span>';
                 $a['state_text'] = $a['PROPERTY_STATE_VALUE'];
@@ -1225,233 +1229,614 @@ if ($arResult['MODE'] != 'close')
             {
                 //  Заготовка Не удалять!!!
                 //  разбить получение данных из 1с на несколько запросов
-                /* if ($USER->isAdmin()) {
-                     $segment = 4;  //  количество дней в одном запросе
-                     $period_start = $arResult['LIST_FROM_DATE'] . ' 00:00:00';
-                     $period_end = $arResult['LIST_TO_DATE'] . ' 23:59:59';
-                     $non_ch = false;
-                     $arr_periods = [];  //  массив периодов
-                     // количество дней в периоде
-                     $count_days_for_request = countDaysBetweenDates($filter[">=DATE_CREATE"], $filter["<=DATE_CREATE"]) + 1;
-                     if ($count_days_for_request >= $segment) {
-                         if ($count_days_for_request % $segment == 0) {
-                             // количество запросов
-                             $count_segments = (int)($count_days_for_request / $segment);
-                         } else {
-                             $count_segments = (int)($count_days_for_request / $segment) + 1;
-                             $non_ch = true;
-                         }
-                     } else {
-                         $count_segments = 1;
+              /*  if ($USER->isAdmin()) {
+                    $period_start = $arResult['LIST_FROM_DATE'] . ' 00:00:00';
+                     if(!$_SESSION['period_start']){
+                         $_SESSION['period_start'] = $period_start;
                      }
-
-                     for ($i = 0; $i < $count_segments; $i++) {
-                         if ($i == 0) {
-                             $p_s = $period_start;
-                             $p_e = date('d.m.Y H:i:s', (strtotime($p_s) + $segment * 24 * 60 * 60) - 1);
-                             $arr_periods[] = [
-                                 $p_s,
-                                 $p_e,
-                                 date('Y-m-d', strtotime($p_s)),
-                                 date('Y-m-d', strtotime($p_e))
-                             ];
-                         } else {
-                             $p_s = date('d.m.Y H:i:s', strtotime($arr_periods[$i - 1][1]) + 1);
-                             if ($i + 1 != $count_segments) {
-                                 $p_e = date('d.m.Y H:i:s', (strtotime($p_s) + $segment * 24 * 60 * 60) - 1);
-                             } else {
-                                 if ($non_ch) {
-                                     $p_e = date('d.m.Y H:i:s', (strtotime($p_s) + ($segment - 1) * 24 * 60 * 60 - 1));
-                                 } else {
-                                     $p_e = date('d.m.Y H:i:s', (strtotime($p_s) + $segment * 24 * 60 * 60) - 1);
-                                 }
-
-                             }
-                             $arr_periods[] = [
-                                 $p_s,
-                                 $p_e,
-                                 date('Y-m-d', strtotime($p_s)),
-                                 date('Y-m-d', strtotime($p_e))
-                             ];
-                         }
-                     }
-                     $arParamsJson = [];
-                     $result_request = [];
-                     $INN = trim($arResult['CURRENT_CLIENT_INN']);
-                     $BranchID = ($arResult['CURRENT_BRANCH'] > 0) ? iconv('windows-1251', 'utf-8', $arResult['BRANCH_INFO']['PROPERTY_IN_1C_CODE_VALUE']) : '';
-                     $BranchPrefix = ($arResult['CURRENT_BRANCH'] > 0) ? iconv('windows-1251', 'utf-8', $arResult['BRANCH_INFO']['PROPERTY_IN_1C_PREFIX_VALUE']) : '';
-                     krsort($arr_periods);
-
-                     foreach ($arr_periods as $period) {
-                         $StartDate = $period[2];
-                         $EndDate = $period[3];
-                         $arParamsJson = [
-                             'INN' => $INN,
-                             'BranchID' => $BranchID,
-                             'BranchPrefix' => $BranchPrefix,
-                             'StartDate' => $StartDate,
-                             'EndDate' => $EndDate,
-                             'NumPage' => 0,
-                             'DocsToPage' => 10000
-                         ];
-                         $__rr = $client->GetDocsListClient($arParamsJson);
-                         $__mr = $__rr->return;
-                         $__ob = arFromUtfToWin(json_decode($__mr, true));
-                         $result_request[] = $__ob;
-                     }
-
-                     $ind_nakl = 0;
-                     foreach ($result_request as $key => $value) {
-                         foreach ($value['Docs'] as $d) {
-                             $path_scan_docs = [];
-                             if (isset($d['FilesPath']) && !empty($d['FilesPath'])) {
-                                 $path_scan_docs = $d['FilesPath'];
-                             }
-
-                             $a = [
-                                 'ID' => ((int)$d['ID'] > 0) ? (int)$d['ID'] : 'naklid_' . $ind_nakl,
-                                 'ID_SITE' => ((int)$d['ID'] > 0) ? (int)$d['ID'] : 0,
-                                 'NAME' => $d['NumDoc'],
-                                 'DATE_CREATE' => substr($d['DateDoc'], 8, 2) . '.' . substr($d['DateDoc'], 5, 2) . '.' . substr($d['DateDoc'], 0, 4),
-                                 'PROPERTY_STATE_ENUM_ID' => 258,
-                                 'ColorRow' => ($arParams['TYPE'] == 53) ? 'warning' : '',
-                                 'state_icon' => '',
-                                 'PROPERTY_BRANCH_NAME' => $d['ZakazName'],
-                                 'PROPERTY_CITY_SENDER_NAME' => '',
-                                 'PROPERTY_CITY_RECIPIENT_NAME' => '',
-                                 'PROPERTY_COMPANY_SENDER_VALUE' => $d['CompanySender'],
-                                 'PROPERTY_COMPANY_RECIPIENT_VALUE' => $d['CompanyRecipient'],
-                                 'PROPERTY_PLACES_VALUE' => 0,
-                                 'PROPERTY_WEIGHT_VALUE' => 0,
-                                 'PROPERTY_OB_WEIGHT' => 0,
-                                 'PROPERTY_RATE_VALUE' => (float)str_replace(',', '.', $d['Tarif']),
-                                 'PROPERTY_STATE_VALUE' => 'Принято',
-                                 'PROPERTY_STATE_DESCR_VALUE' => '',
-                                 'PROPERTY_NAME_RECIPIENT_VALUE' => $d['NameRecipient'],
-                                 'PROPERTY_NAME_SENDER_VALUE' => $d['NameSender'],
-                                 'start_date' => strlen($d['Date_Create']) ? substr($d['Date_Create'], 8, 2) . '.' . substr($d['Date_Create'], 5, 2) . '.' . substr($d['Date_Create'], 0, 4) : $d['DateDoc'],
-                                 'ZakazName' => $d['ZakazName'],
-                                 'Manager' => $d['Manager'],
-                                 'PROPERTY_INNER_NUMBER_CLAIM_VALUE' => $d['InternalNumber'],
-                                 'SCAN_DOCS_PATH' => $path_scan_docs,
-                                 'Tarif' => $d['Tarif'],
-                             ];
-                             if ($arResult['CURRENT_CLIENT'] == ID_ABSOLUT) {
-                                 if (preg_match('/[а-я]+/i', $d['CENTER_EXPENSES'])) {
-                                     $a['center_cost'] = $d['CENTER_EXPENSES'];
-                                 }
-
-                             }
-                             if ((int)$d['CitySender'] > 0) {
-                                 $rr = CIBlockElement::GetByID((int)$d['CitySender']);
-                                 if ($ar_rr = $rr->GetNext()) {
-                                     $a['PROPERTY_CITY_SENDER_NAME'] = $ar_rr['NAME'];
-                                 }
-                             }
-
-                             if ((int)$d['CityRecipient'] > 0) {
-                                 $rr = CIBlockElement::GetByID((int)$d['CityRecipient']);
-                                 if ($ar_rr = $rr->GetNext()) {
-                                     $a['PROPERTY_CITY_RECIPIENT_NAME'] = $ar_rr['NAME'];
-                                 }
-                             }
-
-                             foreach ($d['Dimensions'] as $dimensions) {
-                                 $a['PROPERTY_PLACES_VALUE'] = $a['PROPERTY_PLACES_VALUE'] + $dimensions['Places'];
-                                 $a['PROPERTY_WEIGHT_VALUE'] += (float)str_replace(',', '.', $dimensions['Weight']);
-                                 if ((float)str_replace(',', '.', $dimensions['WeightV']) > 0) {
-                                     $a['PROPERTY_OB_WEIGHT'] = (float)str_replace(',', '.', $dimensions['WeightV']);
-                                 } else {
-                                     $a['PROPERTY_OB_WEIGHT'] = $a['PROPERTY_OB_WEIGHT'] + ((float)str_replace(',', '.',
-                                                 $dimensions['Size_1']) * (float)str_replace(',', '.',
-                                                 $dimensions['Size_2']) * (float)str_replace(',', '.',
-                                                 $dimensions['Size_3'])) / $arResult['CURRENT_CLIENT_COEFFICIENT_VW'];
-                                 }
-                             }
-                             foreach ($d['Events'] as $ev) {
-                                 $a['PROPERTY_STATE_VALUE'] = $ev['Event'];
-                                 $a['PROPERTY_STATE_DESCR_VALUE'] = $ev['InfoEvent'];
-                                 $a['Events'][] = [
-                                     'Date' => $ev['DateEvent'] . '&nbsp;' . substr($ev['TimeEvent'], 0, 5),
-                                     'Event' => $ev['Event'],
-                                     'InfoEvent' => $ev['InfoEvent']
-                                 ];
-                             }
-                             if (($a['ID'] == 0) || (!strlen($a['PROPERTY_COMPANY_SENDER_VALUE'])) || (!strlen($a['PROPERTY_COMPANY_RECIPIENT_VALUE']))) {
-                                 $filter = ["IBLOCK_ID" => 83, "PROPERTY_CREATOR" => (int)$arResult['CURRENT_CLIENT'], "ACTIVE" => "Y"];
-                                 if ((int)$a['ID'] > 0) {
-                                     $filter['ID'] = (int)$a['ID'];
-                                 }
-                                 else
-                                 {
-                                     $filter['NAME'] = $a["NAME"];
-                                 }
-                                 if ((int)$arResult['CURRENT_BRANCH'] > 0) {
-                                     $filter["PROPERTY_BRANCH"] = (int)$arResult['CURRENT_BRANCH'];
-                                 }
-                                 $res = CIBlockElement::GetList(["id" => "desc"], $filter, false, ["nTopCount" => 1],
-                                     ["ID", "PROPERTY_COMPANY_SENDER", "PROPERTY_COMPANY_RECIPIENT"]);
-                                 if ($ob = $res->GetNextElement()) {
-                                     $arFields = $ob->GetFields();
-                                     $a['ID'] = ($a['ID'] == 0) ? $arFields['ID'] : $a['ID'];
-                                     $a['PROPERTY_COMPANY_SENDER_VALUE'] = (!strlen($a['PROPERTY_COMPANY_SENDER_VALUE'])) ? $arFields['PROPERTY_COMPANY_SENDER_VALUE'] : $a['PROPERTY_COMPANY_SENDER_VALUE'];
-                                     $a['PROPERTY_COMPANY_RECIPIENT_VALUE'] = (!strlen($a['PROPERTY_COMPANY_RECIPIENT_VALUE'])) ? $arFields['PROPERTY_COMPANY_RECIPIENT_VALUE'] : $a['PROPERTY_COMPANY_RECIPIENT_VALUE'];
-
-                                 }
-                             }
-                             if ($agent_type == 242) {
-                                 $a['state_icon'] = '<span class="glyphicon glyphicon-send" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
-                                 $a['state_text'] = 'Доставляется';
-                             } else {
-                                 $a['state_icon'] = '<span class="glyphicon glyphicon-new-window" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
-                                 $a['state_text'] = $a['PROPERTY_STATE_VALUE'];
-                             }
-                             switch ($a['PROPERTY_STATE_VALUE']) {
-                                 case 'В офисе до востребования':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 270;
-                                     break;
-                                 case 'Возврат интернет-магазину':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 271;
-                                     break;
-                                 case 'Возврат по просьбе отправителя':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 272;
-                                     break;
-                                 case 'Выдано курьеру на маршрут':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 273;
-                                     break;
-                                 case 'Выдано на областную доставку':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 274;
-                                     break;
-                                 case 'Доставлено':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 275;
-                                     break;
-                                 case 'Исключительная ситуация!':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 276;
-                                     break;
-                                 case 'Оприходовано офисом':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 277;
-                                     break;
-                                 case 'Отправлено в город':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 278;
-                                     break;
-                                 case 'Уничтожено по просьбе заказчика':
-                                     $a['PROPERTY_STATE_ENUM_ID'] = 279;
-                                     break;
-                             }
-
-                             $arResult['ARCHIVE'][] = $a;
-                             $ind_nakl++;
-
-                         }
-                     }
-
-                    dump(count($arResult['ARCHIVE']));
-
-                 }*/
+                    $period_end = $arResult['LIST_TO_DATE'] . ' 23:59:59';
+                    if(!$_SESSION['period_end']) {
+                        $_SESSION['period_end'] = $period_end;
+                    }
+                   if($_SESSION['period_start'] == $period_start && $_SESSION['period_end'] ==  $period_end){
+                       if($_SESSION['ARCHIVE']){
+                          // dump( $_SESSION['arr_periods']);
+                           $_SESSION['period_end'] = $period_end;
+                           $_SESSION['period_start'] = $period_start;
+                           $arResult['ARCHIVE'] = $_SESSION['ARCHIVE'];
+                           $this->IncludeComponentTemplate($arResult['MODE']);
+                           exit();
+                       }
+                   }
 
 
-                //dump($result_request);
+                    $segment = 1;  //  количество дней в одном запросе
 
+                   // dump($period_start);
+                   // dump($period_end);
+                   // dump($_SESSION['period_start']);
+                   // dump($_SESSION['period_end']);
+
+                    $non_ch = false;
+                    $arr_periods = [];  //  массив периодов
+
+
+                        // количество дней в периоде
+                        $count_days_for_request = countDaysBetweenDates($filter[">=DATE_CREATE"], $filter["<=DATE_CREATE"]) + 1;
+                        if ($count_days_for_request >= $segment) {
+                            if ($count_days_for_request % $segment == 0) {
+                                // количество запросов
+                                $count_segments = (int)($count_days_for_request / $segment);
+                            } else {
+                                $count_segments = (int)($count_days_for_request / $segment) + 1;
+                                $non_ch = true;
+                            }
+                        } else {
+                            $count_segments = 1;
+                        }
+
+                        for ($i = 0; $i < $count_segments; $i++) {
+                            if ($i == 0) {
+                                $p_s = $period_start;
+                                $p_e = date('d.m.Y H:i:s', (strtotime($p_s) + $segment * 24 * 60 * 60) - 1);
+                                $arr_periods[] = [
+                                    $p_s,
+                                    $p_e,
+                                    date('Y-m-d', strtotime($p_s)),
+                                    date('Y-m-d', strtotime($p_e))
+                                ];
+                            } else {
+                                $p_s = date('d.m.Y H:i:s', strtotime($arr_periods[$i - 1][1]) + 1);
+                                if ($i + 1 != $count_segments) {
+                                    $p_e = date('d.m.Y H:i:s', (strtotime($p_s) + $segment * 24 * 60 * 60) - 1);
+                                } else {
+                                    if ($non_ch) {
+                                        $p_e = date('d.m.Y H:i:s', (strtotime($p_s) + ($segment - 1) * 24 * 60 * 60 - 1));
+                                    } else {
+                                        $p_e = date('d.m.Y H:i:s', (strtotime($p_s) + $segment * 24 * 60 * 60) - 1);
+                                    }
+
+                                }
+                                $arr_periods[] = [
+                                    $p_s,
+                                    $p_e,
+                                    date('Y-m-d', strtotime($p_s)),
+                                    date('Y-m-d', strtotime($p_e))
+                                ];
+                            }
+                        }
+                        krsort($arr_periods);
+                        $_SESSION['period_start'] = $period_start;
+                        $_SESSION['period_end'] = $period_end;
+                        $_SESSION['arr_periods'] = $arr_periods;
+
+
+
+                    //$arr_periods = $_SESSION['arr_periods'];
+                   // dump($arr_periods);
+
+                    $arParamsJson = [];
+                    $result_request = [];
+                    $INN = trim($arResult['CURRENT_CLIENT_INN']);
+                    $BranchID = ($arResult['CURRENT_BRANCH'] > 0) ? iconv('windows-1251', 'utf-8', $arResult['BRANCH_INFO']['PROPERTY_IN_1C_CODE_VALUE']) : '';
+                    $BranchPrefix = ($arResult['CURRENT_BRANCH'] > 0) ? iconv('windows-1251', 'utf-8', $arResult['BRANCH_INFO']['PROPERTY_IN_1C_PREFIX_VALUE']) : '';
+
+
+                        $cnt = count($arr_periods) - 1;
+                       // dump($arr_periods);
+                        foreach ($arr_periods as $num=>$period) {
+                            if($num != $cnt ) continue;
+                            $StartDate = $period[2];
+                            $EndDate = $period[3];
+                            $arParamsJson = [
+                                'INN' => $INN,
+                                'BranchID' => $BranchID,
+                                'BranchPrefix' => $BranchPrefix,
+                                'StartDate' => $StartDate,
+                                'EndDate' => $EndDate,
+                                'NumPage' => 0,
+                                'DocsToPage' => 10000
+                            ];
+                            $__rr = $client->GetDocsListClient($arParamsJson);
+                            $__mr = $__rr->return;
+                            $__ob = arFromUtfToWin(json_decode($__mr, true));
+                            $result_request[] = $__ob;
+
+                        }
+
+                   // $result_request = $_SESSION['result_request'];
+                    dump($result_request);
+                    $ind_nakl = 0;
+
+                        $arResult['ARCHIVE'] = [];
+                        foreach ($result_request as $key => $value) {
+                            foreach ($value['Docs'] as $d) {
+                                $path_scan_docs = [];
+                                if (isset($d['FilesPath']) && !empty($d['FilesPath'])) {
+                                    $path_scan_docs = $d['FilesPath'];
+                                }
+
+                                $a = [
+                                    'ID' => ((int)$d['ID'] > 0) ? (int)$d['ID'] : 'naklid_' . $ind_nakl,
+                                    'ID_SITE' => ((int)$d['ID'] > 0) ? (int)$d['ID'] : 0,
+                                    'NAME' => $d['NumDoc'],
+                                    'DATE_CREATE' => substr($d['DateDoc'], 8, 2) . '.' . substr($d['DateDoc'], 5, 2) . '.' . substr($d['DateDoc'], 0, 4),
+                                    'PROPERTY_STATE_ENUM_ID' => 258,
+                                    'ColorRow' => ($arParams['TYPE'] == 53) ? 'warning' : '',
+                                    'state_icon' => '',
+                                    'PROPERTY_BRANCH_NAME' => $d['ZakazName'],
+                                    'PROPERTY_CITY_SENDER_NAME' => '',
+                                    'PROPERTY_CITY_RECIPIENT_NAME' => '',
+                                    'PROPERTY_COMPANY_SENDER_VALUE' => $d['CompanySender'],
+                                    'PROPERTY_COMPANY_RECIPIENT_VALUE' => $d['CompanyRecipient'],
+                                    'PROPERTY_PLACES_VALUE' => 0,
+                                    'PROPERTY_WEIGHT_VALUE' => 0,
+                                    'PROPERTY_OB_WEIGHT' => 0,
+                                    'PROPERTY_RATE_VALUE' => (float)str_replace(',', '.', $d['Tarif']),
+                                    'PROPERTY_STATE_VALUE' => 'Принято',
+                                    'PROPERTY_STATE_DESCR_VALUE' => '',
+                                    'PROPERTY_NAME_RECIPIENT_VALUE' => $d['NameRecipient'],
+                                    'PROPERTY_NAME_SENDER_VALUE' => $d['NameSender'],
+                                    'start_date' => strlen($d['Date_Create']) ? substr($d['Date_Create'], 8, 2) . '.' . substr($d['Date_Create'], 5, 2) . '.' . substr($d['Date_Create'], 0, 4) : $d['DateDoc'],
+                                    'ZakazName' => $d['ZakazName'],
+                                    'Manager' => $d['Manager'],
+                                    'PROPERTY_INNER_NUMBER_CLAIM_VALUE' => $d['InternalNumber'],
+                                    'SCAN_DOCS_PATH' => $path_scan_docs,
+                                    'Tarif' => $d['Tarif'],
+                                ];
+                                if ($arResult['CURRENT_CLIENT'] == ID_ABSOLUT) {
+                                    if (preg_match('/[а-я]+/i', $d['CENTER_EXPENSES'])) {
+                                        $a['center_cost'] = $d['CENTER_EXPENSES'];
+                                    }
+
+                                }
+                                if ((int)$d['CitySender'] > 0) {
+                                    $rr = CIBlockElement::GetByID((int)$d['CitySender']);
+                                    if ($ar_rr = $rr->GetNext()) {
+                                        $a['PROPERTY_CITY_SENDER_NAME'] = $ar_rr['NAME'];
+                                    }
+                                }
+
+                                if ((int)$d['CityRecipient'] > 0) {
+                                    $rr = CIBlockElement::GetByID((int)$d['CityRecipient']);
+                                    if ($ar_rr = $rr->GetNext()) {
+                                        $a['PROPERTY_CITY_RECIPIENT_NAME'] = $ar_rr['NAME'];
+                                    }
+                                }
+
+                                foreach ($d['Dimensions'] as $dimensions) {
+                                    $a['PROPERTY_PLACES_VALUE'] = $a['PROPERTY_PLACES_VALUE'] + $dimensions['Places'];
+                                    $a['PROPERTY_WEIGHT_VALUE'] += (float)str_replace(',', '.', $dimensions['Weight']);
+                                    if ((float)str_replace(',', '.', $dimensions['WeightV']) > 0) {
+                                        $a['PROPERTY_OB_WEIGHT'] = (float)str_replace(',', '.', $dimensions['WeightV']);
+                                    } else {
+                                        $a['PROPERTY_OB_WEIGHT'] = $a['PROPERTY_OB_WEIGHT'] + ((float)str_replace(',', '.',
+                                                    $dimensions['Size_1']) * (float)str_replace(',', '.',
+                                                    $dimensions['Size_2']) * (float)str_replace(',', '.',
+                                                    $dimensions['Size_3'])) / $arResult['CURRENT_CLIENT_COEFFICIENT_VW'];
+                                    }
+                                }
+                                foreach ($d['Events'] as $ev) {
+                                    $a['PROPERTY_STATE_VALUE'] = $ev['Event'];
+                                    $a['PROPERTY_STATE_DESCR_VALUE'] = $ev['InfoEvent'];
+                                    $a['Events'][] = [
+                                        'Date' => $ev['DateEvent'] . '&nbsp;' . substr($ev['TimeEvent'], 0, 5),
+                                        'Event' => $ev['Event'],
+                                        'InfoEvent' => $ev['InfoEvent']
+                                    ];
+                                }
+                                if (($a['ID'] == 0) || (!strlen($a['PROPERTY_COMPANY_SENDER_VALUE'])) || (!strlen($a['PROPERTY_COMPANY_RECIPIENT_VALUE']))) {
+                                    $filter = ["IBLOCK_ID" => 83, "PROPERTY_CREATOR" => (int)$arResult['CURRENT_CLIENT'], "ACTIVE" => "Y"];
+                                    if ((int)$a['ID'] > 0) {
+                                        $filter['ID'] = (int)$a['ID'];
+                                    }
+                                    else
+                                    {
+                                        $filter['NAME'] = $a["NAME"];
+                                    }
+                                    if ((int)$arResult['CURRENT_BRANCH'] > 0) {
+                                        $filter["PROPERTY_BRANCH"] = (int)$arResult['CURRENT_BRANCH'];
+                                    }
+                                    $res = CIBlockElement::GetList(["id" => "desc"], $filter, false, ["nTopCount" => 1],
+                                        ["ID", "PROPERTY_COMPANY_SENDER", "PROPERTY_COMPANY_RECIPIENT"]);
+                                    if ($ob = $res->GetNextElement()) {
+                                        $arFields = $ob->GetFields();
+                                        $a['ID'] = ($a['ID'] == 0) ? $arFields['ID'] : $a['ID'];
+                                        $a['PROPERTY_COMPANY_SENDER_VALUE'] = (!strlen($a['PROPERTY_COMPANY_SENDER_VALUE'])) ? $arFields['PROPERTY_COMPANY_SENDER_VALUE'] : $a['PROPERTY_COMPANY_SENDER_VALUE'];
+                                        $a['PROPERTY_COMPANY_RECIPIENT_VALUE'] = (!strlen($a['PROPERTY_COMPANY_RECIPIENT_VALUE'])) ? $arFields['PROPERTY_COMPANY_RECIPIENT_VALUE'] : $a['PROPERTY_COMPANY_RECIPIENT_VALUE'];
+
+                                    }
+                                }
+                                if ($agent_type == 242) {
+                                    $a['state_icon'] = '<span class="glyphicon glyphicon-send" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                    $a['state_text'] = 'Доставляется';
+                                } else {
+                                    $a['state_icon'] = '<span class="glyphicon glyphicon-new-window" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                    $a['state_text'] = $a['PROPERTY_STATE_VALUE'];
+                                }
+                                switch ($a['PROPERTY_STATE_VALUE']) {
+                                    case 'В офисе до востребования':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 270;
+                                        break;
+                                    case 'Возврат интернет-магазину':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 271;
+                                        break;
+                                    case 'Возврат по просьбе отправителя':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 272;
+                                        break;
+                                    case 'Выдано курьеру на маршрут':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 273;
+                                        break;
+                                    case 'Выдано на областную доставку':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 274;
+                                        break;
+                                    case 'Доставлено':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 275;
+                                        break;
+                                    case 'Исключительная ситуация!':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 276;
+                                        break;
+                                    case 'Оприходовано офисом':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 277;
+                                        break;
+                                    case 'Отправлено в город':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 278;
+                                        break;
+                                    case 'Уничтожено по просьбе заказчика':
+                                        $a['PROPERTY_STATE_ENUM_ID'] = 279;
+                                        break;
+                                }
+
+                                $arResult['ARCHIVE'][] = $a;
+
+                                $ind_nakl++;
+
+                            }
+                            foreach ($arResult['ARCHIVE'] as $k => $a)
+                            {
+                                $arResult['ARCHIVE'][$k]['test'] = $a['PROPERTY_INNER_NUMBER_CLAIM_VALUE'];
+
+                                if ($agent_type == 242)
+                                {
+                                    switch ($a['PROPERTY_STATE_ENUM_ID'])
+                                    {
+                                        case 276:
+                                            $arResult['ARCHIVE'][$k]['ColorRow'] = 'danger';
+                                            $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                            $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_DESCR_VALUE'];
+                                            break;
+                                        case 275:
+                                            $arResult['ARCHIVE'][$k]['ColorRow'] = 'supersuccess';
+                                            $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-check" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                            $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_VALUE'];
+                                    }
+                                }
+                                else
+                                {
+                                    switch ($a['PROPERTY_STATE_ENUM_ID'])
+                                    {
+                                        case 278:
+                                            $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-send" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                            $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_DESCR_VALUE'];
+                                            break;
+                                        case 273:
+                                            $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-road" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                            $arResult['ARCHIVE'][$k]['state_text'] = 'Выдано на маршрут';
+                                            break;
+                                        case 276:
+                                            $arResult['ARCHIVE'][$k]['ColorRow'] = 'danger';
+                                            $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                            $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_DESCR_VALUE'];
+                                            break;
+                                        case 258:
+                                            $arResult['ARCHIVE'][$k]['ColorRow'] = 'success';
+                                            $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-log-in" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                            break;
+                                        case 277:
+                                            $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-download-alt" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                            $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_DESCR_VALUE'];
+                                            break;
+                                        case 275:
+                                            $arResult['ARCHIVE'][$k]['ColorRow'] = 'supersuccess';
+                                            $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-check" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                    }
+                                }
+                            }
+                           $_SESSION['ARCHIVE'] = $arResult['ARCHIVE'];
+                        }
+
+
+
+
+                    $this->IncludeComponentTemplate($arResult['MODE']);
+
+                    exit();
+                }*/
+
+              /* альтернативное формирование  $arResult['ARCHIVE']*/
+              if($USER->isAdmin()){
+
+                  $arSelect = [
+                      "ID","NAME", "ACTIVE", "PROPERTY_*",
+
+                  ];
+                  $arFilter = [
+                      "IBLOCK_ID" => 98,
+                      "PROPERTY_1134" => $arResult['CURRENT_CLIENT'],
+                      ">=PROPERTY_1110" =>  ConvertDateTime($arResult['LIST_FROM_DATE'], "YYYY-MM-DD"),
+                      "<=PROPERTY_1110" =>  ConvertDateTime($arResult['LIST_TO_DATE'], "YYYY-MM-DD"),
+                      "ACTIVE" => "Y",
+                  ];
+
+                  $res = CIBlockElement::GetList(
+                      ["PROPERTY_1110"=>"DESC", 'ID'=>'DESC'],
+                      $arFilter,
+                      false,
+                      false,
+                      $arSelect);
+
+                  while ($ob = $res->GetNextElement()) {
+                      $obj['Docs'][] = $ob->GetFields();
+                    }
+                  $arResult['ARCHIVE'] = [];
+                  foreach ($obj['Docs'] as $d)
+                  {
+                      $path_scan_docs = [];
+                      if(isset($d['FilesPath']) && !empty($d['PROPERTY_1136'])){
+                          $path_scan_docs = $d['PROPERTY_1136'];
+                      }
+                      $date_create = substr($d['PROPERTY_1127'],8,2).'.'.substr($d['PROPERTY_1127'],5,2).'.'.substr($d['PROPERTY_1127'],0,4);
+                      $start_date = substr($d['PROPERTY_1110'],8,2).'.'.substr($d['PROPERTY_1110'],5,2).'.'.substr($d['PROPERTY_1110'],0,4);
+                      $a = [
+                          'ID' => ((int)$d['ID'] > 0) ? (int)$d['ID'] : 'naklid_'.$ind_nakl,
+                          'ID_SITE' => ((int)$d['ID'] > 0) ? (int)$d['ID'] : 0,
+                          'NAME' => $d['PROPERTY_760'],
+                          'DATE_CREATE' => $date_create,
+                          'PROPERTY_STATE_ENUM_ID' => 258,
+                          'ColorRow' => ($arParams['TYPE'] == 53) ? 'warning' : '',
+                          'state_icon' => '',
+                          'PROPERTY_BRANCH_NAME' =>  $d['PROPERTY_1114'],
+                          'PROPERTY_CITY_SENDER_NAME' => '',
+                          'PROPERTY_CITY_RECIPIENT_NAME' => '',
+                          'PROPERTY_COMPANY_SENDER_VALUE' => $d['PROPERTY_1106'],
+                          'PROPERTY_COMPANY_RECIPIENT_VALUE' => $d['PROPERTY_1107'],
+                          'PROPERTY_PLACES_VALUE' => 0,
+                          'PROPERTY_WEIGHT_VALUE' => 0,
+                          'PROPERTY_OB_WEIGHT' => 0,
+                          'PROPERTY_RATE_VALUE' => (float)str_replace(',', '.', $d['PROPERTY_1112']),
+                          'PROPERTY_STATE_VALUE' => 'Принято',
+                          'PROPERTY_STATE_DESCR_VALUE' => '',
+                          'PROPERTY_NAME_RECIPIENT_VALUE' =>  $d['PROPERTY_1109'],
+                          'PROPERTY_NAME_SENDER_VALUE' =>  $d['PROPERTY_1108'],
+                          'start_date'=> strlen($d['PROPERTY_1110']) ? $start_date : $date_create,
+                          'ZakazName' =>  $d['PROPERTY_1114'],
+                          'Manager' => $d['PROPERTY_1101'],
+                          'PROPERTY_INNER_NUMBER_CLAIM_VALUE' => $d['PROPERTY_1120'],
+                          'SCAN_DOCS_PATH' => $path_scan_docs,
+                          'Tarif' => $d['PROPERTY_1112'],
+                      ];
+                      if($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
+                          if(preg_match('/[а-я]+/i', $d['PROPERTY_1121'])){
+                              $a['center_cost'] = $d['PROPERTY_1121'];
+                          }
+
+                      }
+                      if ((int)$d['PROPERTY_1103'] > 0)
+                      {
+                          $a['PROPERTY_CITY_SENDER_ID'] = $d['PROPERTY_1103'];
+                          $rr = CIBlockElement::GetByID((int)$d['PROPERTY_1103']);
+                          if($ar_rr = $rr->GetNext())
+                          {
+                              $a['PROPERTY_CITY_SENDER_NAME'] = $ar_rr['NAME'];
+                          }
+                      }
+
+                      if ((int)$d['PROPERTY_1104'] > 0)
+                      {
+                          $a['PROPERTY_CITY_RECIPIENT_ID'] =$d['PROPERTY_1104'];
+                          $rr = CIBlockElement::GetByID((int)$d['PROPERTY_1104']);
+                          if($ar_rr = $rr->GetNext())
+                          {
+                              $a['PROPERTY_CITY_RECIPIENT_NAME'] = $ar_rr['NAME'];
+                          }
+                      }
+
+                      $dimension = json_decode(htmlspecialcharsback($d['PROPERTY_1132']), true);
+                      $ardimension = arFromUtfToWin($dimension);
+                     // dump($d['PROPERTY_1132']);
+                      //dump($ardimension);
+                      $events = json_decode(htmlspecialcharsback($d['PROPERTY_1131']), true);
+                      $arevents = arFromUtfToWin($events);
+                      //dump($d['PROPERTY_1131']);
+                      //dump($arevents);
+                      foreach ($ardimension['Dimensions'] as $dimensions)
+                      {
+                          $a['PROPERTY_PLACES_VALUE'] = $a['PROPERTY_PLACES_VALUE'] + $dimensions['Places'];
+                          $a['PROPERTY_WEIGHT_VALUE'] += (float)str_replace(',', '.', $dimensions['Weight']);
+                          if ((float)str_replace(',', '.', $dimensions['WeightV']) > 0)
+                          {
+                              $a['PROPERTY_OB_WEIGHT'] = (float)str_replace(',', '.', $dimensions['WeightV']);
+                          }
+                          else
+                          {
+                              $a['PROPERTY_OB_WEIGHT'] = $a['PROPERTY_OB_WEIGHT'] + ((float)str_replace(',', '.',
+                                          $dimensions['Size_1']) * (float)str_replace(',', '.',
+                                          $dimensions['Size_2']) * (float)str_replace(',', '.',
+                                          $dimensions['Size_3']))/$arResult['CURRENT_CLIENT_COEFFICIENT_VW'];
+                          }
+                      }
+                      foreach ($arevents['Events'] as $ev)
+                      {
+                          $a['PROPERTY_STATE_VALUE'] = $ev['Event'];
+                          $a['PROPERTY_STATE_DATE_VALUE'] = $ev['DateEvent'];
+                          $a['PROPERTY_STATE_DESCR_VALUE'] = $ev['InfoEvent'];
+                          $a['Events'][] = [
+                              'Date' => $ev['DateEvent'].'&nbsp;'.substr($ev['TimeEvent'],0,5),
+                              'Event' => $ev['Event'],
+                              'InfoEvent' => $ev['InfoEvent']
+                          ];
+                      }
+                      if (($a['ID'] == 0) || (!strlen($a['PROPERTY_COMPANY_SENDER_VALUE'])) ||
+                          (!strlen($a['PROPERTY_COMPANY_RECIPIENT_VALUE'])))
+                      {
+                          $filter = ["IBLOCK_ID" => 83, "PROPERTY_CREATOR" => (int)$arResult['CURRENT_CLIENT'], "ACTIVE" => "Y"];
+                          if ((int)$a['ID'] > 0)
+                          {
+                              $filter['ID'] = (int)$a['ID'];
+                          }
+                          else
+
+                          {
+                              $filter['NAME'] = $a["NAME"];
+                          }
+                          if ((int)$arResult['CURRENT_BRANCH'] > 0)
+                          {
+                              $filter["PROPERTY_BRANCH"] = (int)$arResult['CURRENT_BRANCH'];
+                          }
+                          $res = CIBlockElement::GetList(["id" => "desc"], $filter, false, ["nTopCount"=>1],
+                              ["ID","PROPERTY_COMPANY_SENDER","PROPERTY_COMPANY_RECIPIENT"]);
+                          if($ob = $res->GetNextElement())
+                          {
+                              $arFields = $ob->GetFields();
+                              $a['ID'] = ($a['ID'] == 0) ? $arFields['ID'] : $a['ID'];
+                              $a['PROPERTY_COMPANY_SENDER_VALUE'] = (!strlen($a['PROPERTY_COMPANY_SENDER_VALUE'])) ? $arFields['PROPERTY_COMPANY_SENDER_VALUE'] : $a['PROPERTY_COMPANY_SENDER_VALUE'];
+                              $a['PROPERTY_COMPANY_RECIPIENT_VALUE'] = (!strlen($a['PROPERTY_COMPANY_RECIPIENT_VALUE'])) ? $arFields['PROPERTY_COMPANY_RECIPIENT_VALUE'] : $a['PROPERTY_COMPANY_RECIPIENT_VALUE'];
+
+                          }
+                      }
+
+                      if ($agent_type == 242)
+                      {
+                          $a['state_icon'] = '<span class="glyphicon glyphicon-send" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                          $a['state_text'] = 'Доставляется';
+                      }
+                      else
+                      {
+                          $a['state_icon'] = '<span class="glyphicon glyphicon-new-window" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                          $a['state_text'] = $a['PROPERTY_STATE_VALUE'];
+                      }
+                      switch ($a['PROPERTY_STATE_VALUE'])
+                      {
+                          case 'В офисе до востребования':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 270;
+                              break;
+                          case 'Возврат интернет-магазину':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 271;
+                              break;
+                          case 'Возврат по просьбе отправителя':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 272;
+                              break;
+                          case 'Выдано курьеру на маршрут':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 273;
+                              break;
+                          case 'Выдано на областную доставку':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 274;
+                              break;
+                          case 'Доставлено':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 275;
+                              break;
+                          case 'Исключительная ситуация!':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 276;
+                              break;
+                          case 'Оприходовано офисом':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 277;
+                              break;
+                          case 'Отправлено в город':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 278;
+                              break;
+                          case 'Уничтожено по просьбе заказчика':
+                              $a['PROPERTY_STATE_ENUM_ID'] = 279;
+                              break;
+                      }
+                      switch ($d['PROPERTY_1116'])
+                      {
+                          case 'Стандарт':
+                              $a['delivery_t'] = 'с';
+                              break;
+                          case 'Экспресс':
+                              $a['delivery_t'] = 'э';
+                              break;
+                          case 'Экспресс2':
+                              $a['delivery_t'] = '2';
+                              break;
+                          case 'Экспресс4':
+                              $a['delivery_t'] = '4';
+                              break;
+                          case 'Склад-Склад':
+                              $a['delivery_t'] = 'д';
+                              break;
+                          case 'Эконом':
+                              $a['delivery_t']= 'м';
+                              break;
+                          case 'Экспресс8':
+                              $a['delivery_t'] = '8';
+                              break;
+                      }
+
+
+                      $arResult['ARCHIVE'][] = $a;
+
+
+                  }
+                  $arjsonexcel = array_merge( $arResult['REQUESTS'], $arResult['ARCHIVE']);
+                  $_SESSION['REPORTEXCEL'] = $arjsonexcel;
+
+                  foreach ($arResult['ARCHIVE'] as $k => $a)
+                  {
+                      $arResult['ARCHIVE'][$k]['test'] = $a['PROPERTY_INNER_NUMBER_CLAIM_VALUE'];
+
+                      if ($agent_type == 242)
+                      {
+                          switch ($a['PROPERTY_STATE_ENUM_ID'])
+                          {
+                              case 276:
+                                  $arResult['ARCHIVE'][$k]['ColorRow'] = 'danger';
+                                  $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                  $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_DESCR_VALUE'];
+                                  break;
+                              case 275:
+                                  $arResult['ARCHIVE'][$k]['ColorRow'] = 'supersuccess';
+                                  $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-check" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                  $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_VALUE'];
+                          }
+                      }
+                      else
+                      {
+                          switch ($a['PROPERTY_STATE_ENUM_ID'])
+                          {
+                              case 278:
+                                  $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-send" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                  $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_DESCR_VALUE'];
+                                  break;
+                              case 273:
+                                  $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-road" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                  $arResult['ARCHIVE'][$k]['state_text'] = 'Выдано на маршрут';
+                                  break;
+                              case 276:
+                                  $arResult['ARCHIVE'][$k]['ColorRow'] = 'danger';
+                                  $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                  $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_DESCR_VALUE'];
+                                  break;
+                              case 258:
+                                  $arResult['ARCHIVE'][$k]['ColorRow'] = 'success';
+                                  $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-log-in" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                  break;
+                              case 277:
+                                  $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-download-alt" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                                  $arResult['ARCHIVE'][$k]['state_text'] = $a['PROPERTY_STATE_DESCR_VALUE'];
+                                  break;
+                              case 275:
+                                  $arResult['ARCHIVE'][$k]['ColorRow'] = 'supersuccess';
+                                  $arResult['ARCHIVE'][$k]['state_icon'] = '<span class="glyphicon glyphicon-check" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
+                          }
+                      }
+                  }
+                  $this->IncludeComponentTemplate($arResult['MODE']);
+
+                  exit();
+              }
+
+             /* формирование $arResult['ARCHIVE'] */
                 $arParamsJson = [
                     'INN' => trim($arResult['CURRENT_CLIENT_INN']),
                     'BranchID' => ($arResult['CURRENT_BRANCH'] > 0) ? iconv('windows-1251','utf-8',$arResult['BRANCH_INFO']['PROPERTY_IN_1C_CODE_VALUE']) : '',
@@ -1519,6 +1904,7 @@ if ($arResult['MODE'] != 'close')
 
                 if ((int)$d['CitySender'] > 0)
                 {
+                    $a['PROPERTY_CITY_SENDER_ID'] = $d['CitySender'];
                     $rr = CIBlockElement::GetByID((int)$d['CitySender']);
                     if($ar_rr = $rr->GetNext())
                     {
@@ -1528,6 +1914,7 @@ if ($arResult['MODE'] != 'close')
 
                 if ((int)$d['CityRecipient'] > 0)
                 {
+                    $a['PROPERTY_CITY_RECIPIENT_ID'] =$d['CityRecipient'];
                     $rr = CIBlockElement::GetByID((int)$d['CityRecipient']);
                     if($ar_rr = $rr->GetNext())
                     {
@@ -1562,6 +1949,7 @@ if ($arResult['MODE'] != 'close')
                         'InfoEvent' => $ev['InfoEvent']
                     ];
                 }
+
                 if (($a['ID'] == 0) || (!strlen($a['PROPERTY_COMPANY_SENDER_VALUE'])) || (!strlen($a['PROPERTY_COMPANY_RECIPIENT_VALUE'])))
                 {
                     $filter = ["IBLOCK_ID" => 83, "PROPERTY_CREATOR" => (int)$arResult['CURRENT_CLIENT'], "ACTIVE" => "Y"];
@@ -1589,6 +1977,7 @@ if ($arResult['MODE'] != 'close')
 
                     }
                 }
+
                 if ($agent_type == 242)
                 {
                     $a['state_icon'] = '<span class="glyphicon glyphicon-send" aria-hidden="true" data-toggle="tooltip" data-placement="right" title="Просмотр трекинга"></span>';
@@ -4608,11 +4997,12 @@ if ($arResult['MODE'] != 'close')
                             772 => $date_to_ret,
                             983 => $number_nakl,
                             987 => trim($GoodsNamestr),
-                            989 => '1'
+                            989 => '1',
+
                         ];
                         if ($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
-                            $PROPERTY_RET[1079] = NewQuotes($_POST['INN_RECIPIENT']);
-                            $PROPERTY_RET[1078] = NewQuotes($_POST['INN_SENDER']);
+                            $PROPERTY_RET[1078] = NewQuotes($_POST['INN_RECIPIENT']);
+                            $PROPERTY_RET[1079] = NewQuotes($_POST['INN_SENDER']);
                         }
                         $PROPERTY_VALUES_RET = $PROPERTY_RET + $prop;
 
@@ -7394,6 +7784,295 @@ if ($arResult['MODE'] != 'close')
                     $arResult["ERRORS"][] = GetMessage("ERR_REPEATED_FORM");
                 }
                 else {
+                    if($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
+                        if($_FILES['fileupload_ex']['error']==0){
+                            if(!empty($_FILES['fileupload_ex']['name'])){
+                                if( $_FILES['fileupload_ex']['type'] === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                                    || $_FILES['fileupload_ex']['type'] === 'application/msexcel'
+                                    || $_FILES['fileupload_ex']['type'] === 'application/octet-stream'){
+
+                                    $file = $_FILES['fileupload_ex']['tmp_name'];
+                                    $headers = [];
+                                    $res_arr = [];
+
+                                    $resfile = parse_excel_file($file);
+                                    $resfile = arFromUtfToWin($resfile);
+                                    foreach($resfile as $key => &$value){
+                                        if($key === 0){
+                                            foreach($value as $k => $val){
+                                                $val = strip_tags($val);
+                                                $headers[$k] = trim($val);
+                                            }
+                                        }else{
+                                            foreach($value as $k => &$val){
+                                                $val = trim(strip_tags($val));
+                                            }
+                                        }
+                                    }
+                                    unset($resfile[0]);
+                                    foreach($resfile as $key => $item){
+                                        if($item){
+                                            foreach($item as $k => $val){
+                                                if($val && $headers[$k]){
+                                                    $res_arr[$key][$headers[$k]] = $val;
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                    $id_in = MakeInvoiceNumberNew(1, 7, '90-');
+                                    $err = 0;
+                                    foreach($res_arr as $key=>$value) {
+                                        $number_nakl = $id_in['number'].'_'.$key;
+
+                                        if(!empty($value['Город отправителя'])){
+
+                                            $sender_city = trim($value['Город отправителя']);
+                                            $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_city,
+                                                "ACTIVE" => "Y",
+                                                [
+                                                    "LOGIC" => "OR",
+                                                    ["=SECTION_ID" => 2545],
+                                                    ["=SECTION_ID" => 641],
+                                                ],
+                                            ];
+                                            $res = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
+                                            while($ob = $res->GetNextElement())
+                                            {
+                                                $arFields = $ob->GetFields();
+                                            }
+                                            $city_sender = (int)$arFields['ID'];
+
+                                            /* если не Москва 2545 и не область 641, искать в базе первое что найдет */
+                                            if(!$city_sender){
+                                                $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_city,
+                                                    "ACTIVE" => "Y",
+
+                                                ];
+                                                $res = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
+                                                while($ob = $res->GetNextElement())
+                                                {
+                                                    $arFields = $ob->GetFields();
+                                                }
+                                                $city_sender = (int)$arFields['ID'];
+                                            }
+                                        }else{
+                                            $city_sender = false;
+                                        }
+                                        if(!empty($value['Город получателя'])){
+                                            $sender_recipient = trim($value['Город получателя']);
+                                            $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_recipient,
+                                                "ACTIVE" => "Y",
+                                                [
+                                                    "LOGIC" => "OR",
+                                                    ["=SECTION_ID" => 2545],
+                                                    ["=SECTION_ID" => 641],
+                                                ],
+                                            ];
+                                            $res = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
+                                            while($ob = $res->GetNextElement())
+                                            {
+                                                $arFields = $ob->GetFields();
+                                            }
+
+                                            $city_recipient = (int)$arFields['ID'];
+
+                                            /* если не Москва 2545 и не область 641, искать в базе первое что найдет */
+                                            if(!$city_recipient){
+                                                $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_recipient,
+                                                    "ACTIVE" => "Y",
+
+                                                ];
+                                                $res = CIBlockElement::GetList([], $arFilter, false, false, $arSelect);
+                                                while($ob = $res->GetNextElement())
+                                                {
+                                                    $arFields = $ob->GetFields();
+                                                }
+                                                $city_recipient = (int)$arFields['ID'];
+                                            }
+
+                                        }else{
+                                            $city_recipient = false;
+                                        }
+
+                                        if(!$city_sender){
+
+                                            $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу. Город отправителя не найден.";
+                                            $err++;
+                                        }
+
+                                        if(!$city_recipient){
+                                            $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу.Город получателя не найден.";
+                                            $err++;
+                                        }
+
+                                        if(empty($value['Контактное лицо отправителя'])){
+                                            $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу. Не заполнено поле Контактное лицо отправителя.";
+                                            $err++;
+                                        }
+
+                                        if(empty($value['Телефон отправителя'])){
+                                            $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу. Не заполнено поле Телефон отправителя";
+                                            $err++;
+                                        }
+
+                                        if(empty($value['Контактное лицо получателя'])){
+                                            $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу. Не заполнено поле Контактное лицо получателя.";
+                                            $err++;
+                                        }
+
+                                        if(empty($value['Телефон получателя'])){
+                                            $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу. Не заполнено поле Телефон получателя";
+                                            $err++;
+                                        }
+
+                                        if(empty($value['Адрес отправителя'])){
+                                            $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу. Не заполнено поле Адрес отправителя";
+                                            $err++;
+                                        }
+
+                                        if(empty($value['Адрес получателя'])){
+                                            $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу.Не заполнено поле Адрес получателя";
+                                            $err++;
+                                        }
+
+                                        if($err > 0){
+                                            $err = 0;
+                                            continue;
+                                        }
+
+
+
+
+                                        if ($value['Дата']) {
+                                            $date_call = preg_replace('/-+/', '/',
+                                                $value['Дата']);
+                                            $date_call = date('d.m.Y', strtotime($date_call));
+
+                                        } else {
+                                            $date_call = '';
+                                        }
+                                        $Payment = 256;  //  банк
+                                        $TYPE_DELIVERY = 244; // тип Стандарт
+                                        $TypePays = 251;  // отправитель
+                                        $resecho_places = (int)$value['Мест'];
+                                        $resecho_weight = (float)str_replace(',', '.', $value['Вес']);
+                                        $SpecDelivery = '';
+                                        if($value['Специальные инструкции'] || $value['Что забирать']){
+                                            $SpecDelivery = NewQuotes($value['Специальные инструкции']) . ' Что забирать - ' .
+                                                NewQuotes($value['Что забирать']);
+                                        }
+                                        // посчитать стоимость если есть вес
+                                        $sum_dev = 0;
+                                        if($resecho_weight){
+                                            $total_gabweight = 0;
+                                            $host_api = '';
+                                            $username =  iconv('windows-1251','utf-8',"DMSUser");
+                                            $password =  iconv('windows-1251','utf-8',"1597534682");
+                                            $host_api = "http://92.42.209.242/sd_msk/hs/Delivery/Account/7717739535/7728178835/GetTarif?ves=$resecho_weight&vesv=$total_gabweight&idcity1=$city_sender&idcity2=$city_recipient&deliverytype=c";
+                                            if ($host_api){
+                                                $url = iconv('windows-1251','utf-8',$host_api);
+
+                                                if ($ch = curl_init()){
+                                                    curl_setopt($ch, CURLOPT_URL, $url);
+                                                    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+                                                    curl_setopt($ch, CURLOPT_USERPWD, $username . ":" . $password);
+                                                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                                                    $output = curl_exec($ch);
+                                                    curl_close($ch);
+                                                    if(preg_match('/^[0-9]+(\.([0-9]){2})?$/', json_decode($output))){
+                                                        $sum_dev = json_decode($output);
+                                                        $sum_dev =  (float)iconv('utf-8','windows-1251',$sum_dev);
+                                                    }else{
+                                                        $sum_dev = '';
+                                                    }
+                                                }else{
+                                                    $sum_dev = '';
+                                                }
+                                            }
+
+                                        }
+                                        // end sum
+                                        // центр затрат
+                                        $center_cost = '';
+                                        $center_cost_id = false;
+                                        $cc =  NewQuotes($value['Центр затрат']);
+                                        if($cc){
+                                            $arrCenterCost = GetInfoArr(false, false, 115,
+                                                ['ID','NAME', 'IBLOCK_ID'], ['ACTIVE'=>'Y','NAME' => trim($cc)]);
+                                            $center_cost_id = $arrCenterCost['ID'];
+                                            $center_cost = $arrCenterCost['NAME'];
+                                            if(!$center_cost_id){
+                                                $fields = [
+                                                    'IBLOCK_ID' => 115,
+                                                    'NAME' => $cc
+                                                ];
+                                                $el = new CIBlockElement();
+                                                $el_id = $el->Add($fields);
+                                                $center_cost_id = $el_id;
+                                            }
+                                        }
+
+
+                                        $arNakl[] = $number_nakl;
+
+                                        $resecho = [
+                                            544 => $id_in['max_id'],  /* порядковый номер */
+                                            545 => $arResult['CURRENT_CLIENT'],  /* id клиента  */
+                                            981 => $center_cost_id,
+                                            546 =>  NewQuotes($value['Контактное лицо отправителя']),
+                                            547 =>  NewQuotes($value['Телефон отправителя']),
+                                            548 => NewQuotes($value['Компания отправителя']),
+                                            549 => $city_sender,
+                                            551 => ['VALUE' => ['TYPE' => 'text', 'TEXT' =>  NewQuotes($value['Адрес отправителя'])]],
+                                            552 =>  NewQuotes($value['NameRecipient']),
+                                            553 =>  NewQuotes($value['Телефон получателя']),
+                                            554 => NewQuotes($value['Компания получателя']),
+                                            555 => $city_recipient,
+                                            557 => $TYPE_DELIVERY,
+                                            560 => $date_call,
+                                            562 => $TypePays,
+                                            563 => 'Отправитель',
+                                            564 => $Payment,
+                                            567 => $resecho_places,
+                                            568 => $resecho_weight,
+                                            569 => '',
+                                            570 => ($SpecDelivery)?['VALUE' => ['TYPE' => 'text', 'TEXT' => $SpecDelivery]]:'',
+                                            571 => ($value['Адрес получателя'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
+                                                NewQuotes($value['Адрес получателя'])]]:'',
+                                            572 => 257,
+                                            679	=> 1,
+                                            737 => false,
+                                            979 => $sum_dev,
+                                            1079 =>  NewQuotes($value['ИНН Получателя']),
+                                            1078 =>  NewQuotes($value['ИНН Отправителя'])
+                                        ];
+                                        $el = new CIBlockElement;
+                                        $arLoadProductArray = [
+                                            "MODIFIED_BY" => $USER->GetID(),
+                                            "IBLOCK_SECTION_ID" => false,
+                                            "IBLOCK_ID" => 83,
+                                            "PROPERTY_VALUES" => $resecho,
+                                            "NAME" => $number_nakl,
+                                            "ACTIVE" => "Y"
+                                        ];
+                                        if ($z_nakl_id = $el->Add($arLoadProductArray))
+                                        {
+                                            $arResult["MESSAGE"][] = "Загрузка прошла успешно";
+                                        }
+                                        else
+                                        {
+                                            $arResult['ERRORS'][] = "Ошибка загрузки";
+                                        }
+                                    }
+
+                                }else{$arResult["ERRORS"][] = 'Неверный тип файла';}
+                            }else{$arResult["ERRORS"][] = 'Нет файлов для загрузки';}
+                        }else{$arResult["ERRORS"][] = 'Ошибка загрузки';}
+                        $this->IncludeComponentTemplate($arResult['MODE']);
+                        exit;
+                    }
+
                     $_SESSION[$_POST["key_session"]] = $_POST["rand"];
                     $id_client = $arResult['CURRENT_CLIENT'];
                     if($_FILES['fileupload_ex']['error']==0){
@@ -7409,10 +8088,9 @@ if ($arResult['MODE'] != 'close')
                                 $resfile = arFromUtfToWin($resfile);
 
                                 $el_first = trim($resfile[0][0]);
+
                                 $el_first_value = 'Number_invoice';
-                                if($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
-                                    $el_first_value = 'Number';
-                                }
+
 
                                 if($el_first === $el_first_value) {
                                     foreach($resfile as $key => &$value){
@@ -7444,138 +8122,7 @@ if ($arResult['MODE'] != 'close')
                                     }
 
                                     $id_in = MakeInvoiceNumberNew(1, 7, '90-');
-                                    if($arResult['CURRENT_CLIENT'] == ID_ABSOLUT){
-                                        //dump($res_arr);
-                                        $err = 0;
-                                        foreach($res_arr as $key=>$value) {
 
-                                            $number_nakl = $id_in['number'].'-'.$key;
-                                            $city_sender = GetCityId($value['CitySender']);
-                                            $city_recipient = GetCityId($value['CityRecipient']);
-
-                                            if ($value['DateApplicationExecution']) {
-                                                $date_call = preg_replace('/-+/', '/',
-                                                    $value['DateApplicationExecution']);
-                                                $date_call = date('d.m.Y', strtotime($date_call));
-
-                                            } else {
-                                                $date_call = '';
-                                            }
-                                            $Payment = 256;  //  банк
-                                            $TYPE_DELIVERY = 244; // тип Стандарт
-                                            $TypePays = 251;  // отправитель
-                                            $resecho_places = (int)$value['Places'];
-                                            $resecho_weight = (float)str_replace(',', '.', $value['Weight']);
-                                            $SpecDelivery = '';
-                                            if($value['SpecialInstructions'] || $value['WhatShouldTake']){
-                                                $SpecDelivery = $value['SpecialInstructions'] . ' Что забирать - ' .
-                                                    $value['WhatShouldTake'];
-                                            }
-                                            // посчитать стоимость если есть вес
-                                            $sum_dev = 0;
-                                            if($resecho_weight){
-                                                $total_gabweight = 0;
-                                                $host_api = '';
-                                                $username =  iconv('windows-1251','utf-8',"DMSUser");
-                                                $password =  iconv('windows-1251','utf-8',"1597534682");
-                                                $host_api = "http://92.42.209.242/sd_msk/hs/Delivery/Account/7717739535/7728178835/GetTarif?ves=$resecho_weight&vesv=$total_gabweight&idcity1=$city_sender&idcity2=$city_recipient&deliverytype=c";
-                                                if ($host_api){
-                                                    $url = iconv('windows-1251','utf-8',$host_api);
-
-                                                    if ($ch = curl_init()){
-                                                        curl_setopt($ch, CURLOPT_URL, $url);
-                                                        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-                                                        curl_setopt($ch, CURLOPT_USERPWD, $username . ":" . $password);
-                                                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                                                        $output = curl_exec($ch);
-                                                        curl_close($ch);
-                                                        if(preg_match('/^[0-9]+(\.([0-9]){2})?$/', json_decode($output))){
-                                                            $sum_dev = json_decode($output);
-                                                            $sum_dev =  (float)iconv('utf-8','windows-1251',$sum_dev);
-                                                        }else{
-                                                            $sum_dev = '';
-                                                        }
-                                                    }else{
-                                                        $sum_dev = '';
-                                                    }
-                                                }
-
-                                            }
-                                            // end sum
-                                            // центр затрат
-                                            $center_cost = '';
-                                            $center_cost_id = false;
-                                            $cc = $value['CenterCost'];
-                                            if($cc){
-                                                $arrCenterCost = GetInfoArr(false, false, 115,
-                                                    ['ID','NAME', 'IBLOCK_ID'], ['ACTIVE'=>'Y','NAME' => trim($cc)]);
-                                                $center_cost_id = $arrCenterCost['ID'];
-                                                $center_cost = $arrCenterCost['NAME'];
-                                                if(!$center_cost_id){
-                                                    $fields = [
-                                                        'IBLOCK_ID' => 115,
-                                                        'NAME' => $cc
-                                                    ];
-                                                    $el = new CIBlockElement();
-                                                    $el_id = $el->Add($fields);
-                                                    $center_cost_id = $el_id;
-                                                }
-                                            }
-
-
-                                            $arNakl[] = $number_nakl;
-
-                                            $resecho = [
-                                                544 => $id_in['max_id'],  /* порядковый номер */
-                                                545 => $arResult['CURRENT_CLIENT'],  /* id клиента  */
-                                                981 => $center_cost_id,
-                                                546 => $value['ContactPerson'],
-                                                547 => $value['PhoneSender'],
-                                                548 => NewQuotes($value['Company']),
-                                                549 => $city_sender,
-                                                551 => ['VALUE' => ['TYPE' => 'text', 'TEXT' => $value['AdressSender']]],
-                                                552 => $value['NameRecipient'],
-                                                553 => $value['PhoneRecipient'],
-                                                554 => NewQuotes($value['CompanyRecipient']),
-                                                555 => $city_recipient,
-                                                557 => $TYPE_DELIVERY,
-                                                560 => $date_call,
-                                                562 => $TypePays,
-                                                563 => 'Отправитель',
-                                                564 => $Payment,
-                                                567 => $resecho_places,
-                                                568 => $resecho_weight,
-                                                569 => '',
-                                                570 => ($SpecDelivery)?['VALUE' => ['TYPE' => 'text', 'TEXT' => $SpecDelivery]]:'',
-                                                571 => ($value['AdressRecipient'])?['VALUE' => ['TYPE' => 'text', 'TEXT' =>
-                                                    $value['AdressRecipient']]]:'',
-                                                572 => 257,
-                                                679	=> 1,
-                                                737 => false,
-                                                979 => $sum_dev
-                                            ];
-                                            $el = new CIBlockElement;
-                                            $arLoadProductArray = [
-                                                "MODIFIED_BY" => $USER->GetID(),
-                                                "IBLOCK_SECTION_ID" => false,
-                                                "IBLOCK_ID" => 83,
-                                                "PROPERTY_VALUES" => $resecho,
-                                                "NAME" => $number_nakl,
-                                                "ACTIVE" => "Y"
-                                            ];
-                                            if ($z_nakl_id = $el->Add($arLoadProductArray))
-                                            {
-                                                $arResult["MESSAGE"][] = "Загрузка прошла успешно";
-                                            }
-                                            else
-                                            {
-                                                $arResult['ERRORS'][] = "Ошибка загрузки";
-                                            }
-                                        }
-                                        //dump($resecho);
-
-                                        // end foreach
-                                    }else{
                                        foreach($res_arr as $key=>$value){
                                             $arSelect = ["ID"];
                                             if(!empty($value['ShipperCity'])){
@@ -7609,11 +8156,9 @@ if ($arResult['MODE'] != 'close')
                                                     }
                                                     $city_sender = (int)$arFields['ID'];
                                                 }
-
                                             }else{
                                                 $city_sender = false;
                                             }
-
                                             if(!empty($value['ConsigneeCity'])){
                                                 $sender_recipient = trim($value['ConsigneeCity']);
                                                 $arFilter = ["IBLOCK_ID" => 6, "NAME" => $sender_recipient,
@@ -7660,26 +8205,32 @@ if ($arResult['MODE'] != 'close')
                                                 $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу.Город получателя не найден (CityRecipient).";
                                                 $err++;
                                             }
+
                                             if(empty($value['ShipperFIO'])){
                                                 $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу. Не заполнено поле ФИО отправителя (ShipperFIO).";
                                                 $err++;
                                             }
+
                                             if(empty($value['ShipperPhone'])){
                                                 $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу. Не заполнено поле Телефон Отправителя (PhoneSender)";
                                                 $err++;
                                             }
+
                                             if(empty($value['ConsigneeFIO'])){
                                                 $arResult['ERRORS'][] =  "Накладная на строке {$key} не записана в базу. Не заполнено поле ФИО получателя (ConsigneeFIO).";
                                                 $err++;
                                             }
+
                                             if(empty($value['ConsigneePhone'])){
                                                 $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу. Не заполнено поле Телефон Получателя (PhoneRecipient)";
                                                 $err++;
                                             }
+
                                             if(empty($value['ShipperAddress'])){
                                                 $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу. Не заполнено поле Адрес Отправителя (AdressSender)";
                                                 $err++;
                                             }
+
                                             if(empty($value['ConsigneeAddress'])){
                                                 $arResult['ERRORS'][] = "Накладная на строке {$key} не записана в базу.Не заполнено поле Адрес Получателя (AdressRecipient)";
                                                 $err++;
@@ -7953,7 +8504,7 @@ if ($arResult['MODE'] != 'close')
                                             }
 
                                         }
-                                    }
+
 
 
                                 }else{
